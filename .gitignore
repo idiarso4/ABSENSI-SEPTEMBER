@@ -1,77 +1,66 @@
-# IDE and Editor Files
-.idea/
-.vscode/
-*.swp
-*.swo
-*~
-
-# OS Files
-.DS_Store
-Thumbs.db
-
-# Logs
-*.log
-logs/
-
-# Build outputs
-target/
-build/
-dist/
-
-# Maven
+# === Java / Spring Boot ===
+/target/
+!.mvn/wrapper/maven-wrapper.jar
 .mvn/
-mvnw
-mvnw.cmd
+**/logs/
+*.log
+*.iml
+.idea/
+.classpath
+.project
+.settings/
+
+# Maven temporary/backup files
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup
 pom.xml.next
 release.properties
-dependency-reduced-pom.xml
 buildNumber.properties
 .mvn/timing.properties
-.mvn/wrapper/maven-wrapper.jar
 
-# Dependency directories
+# === Node / Frontend ===
+frontend/node_modules/
+frontend/.next/
+frontend/coverage/
+frontend/.turbo/
+**/dist/
+**/.parcel-cache/
+**/.vite/
+**/build/
+
+# Monorepo common
 node_modules/
-jspm_packages/
+coverage/
+dist/
+build/
 
-# Environment variables
-.env
+# === React Native / Mobile ===
+mobile/node_modules/
+mobile/android/.gradle/
+mobile/android/app/build/
+mobile/ios/Pods/
+
+# === OS / Editor ===
+.DS_Store
+Thumbs.db
+.vscode/launch.json
+.vscode/tasks.json
+*.swp
+*.swo
+*~
+
+# === Env / Secrets (keep example templates) ===
+*.env
+!.env.example
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
-# Runtime data
-pids
-*.pid
-*.pid.lock
-
-# Coverage directory used by tools like istanbul
-coverage/
-
-# Temporary folders
-tmp/
-temp/
-
-# Laravel-specific ignores for HRM dan Penggajian
-HRM dan Penggajian/vendor/
-HRM dan Penggajian/node_modules/
-HRM dan Penggajian/storage/
-HRM dan Penggajian/bootstrap/cache/
-HRM dan Penggajian/kodeawal/vendor/
-HRM dan Penggajian/kodeawal/node_modules/
-HRM dan Penggajian/kodeawal/storage/
-HRM dan Penggajian/kodeawal/bootstrap/cache/
-HRM dan Penggajian/kodeawal/__MACOSX/
-HRM dan Penggajian/maven-portable/
-
-# Docker
+# === Docker ===
 .dockerignore
 
-# PowerShell scripts temp
-*.ps1~
-
-# Batch files temp
-*.bat~
+# === Temp ===
+tmp/
+temp/
