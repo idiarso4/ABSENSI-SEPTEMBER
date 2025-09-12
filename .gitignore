@@ -64,3 +64,32 @@ Thumbs.db
 # === Temp ===
 tmp/
 temp/
+
+# === Git backups and artifacts ===
+.git.bak/
+.git-old/
+.git-archive/
+.git_tmp/
+.git_tmp*/
+
+# Additional OS/editor noise
+~$*
+*.tmp
+*.temp
+*.bak
+*.orig
+*.rej
+*.sublime-workspace
+*.sublime-project
+.history/
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/dictionaries
+.idea/**/shelf
+.gradle/
+
+# Logs
+**/*.log*
+**/dev-app.log
+**/error.log
+**/application.log
