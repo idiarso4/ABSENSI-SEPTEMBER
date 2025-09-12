@@ -20,11 +20,13 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 
     List<Invoice> findByStudent(Student student);
     
-    List<Invoice> findByStudentId(Long studentId);
+    @Query("SELECT i FROM Invoice i WHERE i.student.id = :studentId")
+    List<Invoice> findByStudentId(@Param("studentId") Long studentId);
     
     Optional<Invoice> findByInvoiceNumber(String invoiceNumber);
     
-    List<Invoice> findByStatus(String status);
+    @Query("SELECT i FROM Invoice i WHERE i.paymentStatus = :status")
+    List<Invoice> findByStatus(@Param("status") String status);
     
     List<Invoice> findByPaymentStatus(String paymentStatus);
     
@@ -34,7 +36,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     
     List<Invoice> findByCreatedAtBetween(LocalDateTime startDateTime, LocalDateTime endDateTime);
     
-    @Query("SELECT i FROM Invoice i WHERE i.student.id = :studentId AND i.status = :status")
+    @Query("SELECT i FROM Invoice i WHERE i.student.id = :studentId AND i.paymentStatus = :status")
     List<Invoice> findByStudentIdAndStatus(@Param("studentId") Long studentId, @Param("status") String status);
     
     @Query("SELECT i FROM Invoice i WHERE i.student.id = :studentId AND i.paymentStatus = :paymentStatus")
@@ -50,9 +52,11 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     List<Invoice> findByAmountBetween(@Param("minAmount") BigDecimal minAmount, @Param("maxAmount") BigDecimal maxAmount);
     
     // Pagination support
-    Page<Invoice> findByStudentId(Long studentId, Pageable pageable);
+    @Query("SELECT i FROM Invoice i WHERE i.student.id = :studentId")
+    Page<Invoice> findByStudentId(@Param("studentId") Long studentId, Pageable pageable);
     
-    Page<Invoice> findByStatus(String status, Pageable pageable);
+    @Query("SELECT i FROM Invoice i WHERE i.paymentStatus = :status")
+    Page<Invoice> findByStatus(@Param("status") String status, Pageable pageable);
     
     Page<Invoice> findByPaymentStatus(String paymentStatus, Pageable pageable);
     
@@ -60,7 +64,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     
     @Query("SELECT i FROM Invoice i WHERE " +
            "(:studentId IS NULL OR i.student.id = :studentId) AND " +
-           "(:status IS NULL OR i.status = :status) AND " +
+           "(:status IS NULL OR i.paymentStatus = :status) AND " +
            "(:paymentStatus IS NULL OR i.paymentStatus = :paymentStatus) AND " +
            "(:startDate IS NULL OR i.dueDate >= :startDate) AND " +
            "(:endDate IS NULL OR i.dueDate <= :endDate) AND " +
@@ -79,7 +83,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     @Query("SELECT COUNT(i) FROM Invoice i WHERE i.paymentStatus = :paymentStatus")
     long countByPaymentStatus(@Param("paymentStatus") String paymentStatus);
     
-    @Query("SELECT COUNT(i) FROM Invoice i WHERE i.status = :status")
+    @Query("SELECT COUNT(i) FROM Invoice i WHERE i.paymentStatus = :status")
     long countByStatus(@Param("status") String status);
     
     @Query("SELECT SUM(i.amount) FROM Invoice i WHERE i.paymentStatus = 'PAID'")
@@ -94,8 +98,8 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     @Query("SELECT i.paymentStatus as status, COUNT(i) as count FROM Invoice i GROUP BY i.paymentStatus")
     List<Object[]> getPaymentStatusStatistics();
     
-    @Query("SELECT i.status as status, COUNT(i) as count FROM Invoice i GROUP BY i.status")
-    List<Object[]> getInvoiceStatusStatistics();
+       @Query("SELECT i.paymentStatus as status, COUNT(i) as count FROM Invoice i GROUP BY i.paymentStatus")
+       List<Object[]> getInvoiceStatusStatistics();
     
     @Query("SELECT DATE_FORMAT(i.createdAt, '%Y-%m') as month, COUNT(i) as count, SUM(i.amount) as totalAmount " +
            "FROM Invoice i GROUP BY DATE_FORMAT(i.createdAt, '%Y-%m') ORDER BY month DESC")
@@ -115,7 +119,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     BigDecimal getTotalUnpaidAmountByStudent(@Param("studentId") Long studentId);
     
     @Query("SELECT i FROM Invoice i WHERE i.invoiceNumber LIKE %:searchTerm% OR " +
-           "i.student.name LIKE %:searchTerm%")
+           "i.student.namaLengkap LIKE %:searchTerm%")
     List<Invoice> searchInvoices(@Param("searchTerm") String searchTerm);
     
     @Query("SELECT i FROM Invoice i WHERE i.dueDate = :date")
@@ -124,7 +128,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     @Query("SELECT DISTINCT i.paymentMethod FROM Invoice i WHERE i.paymentMethod IS NOT NULL")
     List<String> findDistinctPaymentMethods();
     
-    @Query("SELECT DISTINCT i.status FROM Invoice i WHERE i.status IS NOT NULL")
+    @Query("SELECT DISTINCT i.paymentStatus FROM Invoice i WHERE i.paymentStatus IS NOT NULL")
     List<String> findDistinctStatuses();
     
     @Query("SELECT DISTINCT i.paymentStatus FROM Invoice i WHERE i.paymentStatus IS NOT NULL")

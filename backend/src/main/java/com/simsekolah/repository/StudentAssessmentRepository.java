@@ -84,8 +84,10 @@ public interface StudentAssessmentRepository extends JpaRepository<StudentAssess
     
     /**
      * Calculate weighted average for student in academic period
+     * Using maxScore as weight since Assessment entity doesn't have weight field
      */
-    @Query("SELECT SUM(sa.score * a.weight) / SUM(a.weight) FROM StudentAssessment sa JOIN sa.assessment a " +
+    @Query("SELECT COALESCE(SUM(sa.score * COALESCE(a.maxScore, 100)) / SUM(COALESCE(a.maxScore, 100)), 0) " +
+           "FROM StudentAssessment sa JOIN sa.assessment a " +
            "WHERE sa.student = :student AND a.academicYear = :academicYear AND a.semester = :semester " +
            "AND sa.score IS NOT NULL")
     BigDecimal calculateWeightedAverageByStudentAndAcademicPeriod(

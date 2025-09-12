@@ -18,13 +18,16 @@ public interface SemesterRepository extends JpaRepository<Semester, Long> {
 
     List<Semester> findByAcademicYear(String academicYear);
 
-    List<Semester> findByAcademicYearOrderBySemesterNumber(String academicYear);
+    @Query("SELECT s FROM Semester s WHERE s.academicYear = :academicYear ORDER BY s.semesterName")
+    List<Semester> findByAcademicYearOrderBySemesterNumber(@Param("academicYear") String academicYear);
 
-    List<Semester> findBySemesterNumber(Integer semesterNumber);
+    @Query("SELECT s FROM Semester s WHERE s.semesterName LIKE CONCAT('%', :semesterNumber, '%')")
+    List<Semester> findBySemesterNumber(@Param("semesterNumber") Integer semesterNumber);
 
     List<Semester> findByStatus(SemesterStatus status);
 
-    Optional<Semester> findByAcademicYearAndSemesterNumber(String academicYear, Integer semesterNumber);
+    @Query("SELECT s FROM Semester s WHERE s.academicYear = :academicYear AND s.semesterName LIKE CONCAT('%', :semesterNumber, '%')")
+    Optional<Semester> findByAcademicYearAndSemesterNumber(@Param("academicYear") String academicYear, @Param("semesterNumber") Integer semesterNumber);
 
     List<Semester> findByStartDateBetween(LocalDate startDate, LocalDate endDate);
 
@@ -48,7 +51,7 @@ public interface SemesterRepository extends JpaRepository<Semester, Long> {
     @Query("SELECT DISTINCT s.academicYear FROM Semester s ORDER BY s.academicYear DESC")
     List<String> findDistinctAcademicYears();
 
-    @Query("SELECT s FROM Semester s WHERE s.academicYear = :academicYear AND s.semesterNumber = :semesterNumber")
+    @Query("SELECT s FROM Semester s WHERE s.academicYear = :academicYear AND s.semesterName LIKE CONCAT('%', :semesterNumber, '%')")
     Optional<Semester> findByAcademicYearAndSemester(@Param("academicYear") String academicYear,
                                                      @Param("semesterNumber") Integer semesterNumber);
 
@@ -61,7 +64,7 @@ public interface SemesterRepository extends JpaRepository<Semester, Long> {
 
     @Query("SELECT s FROM Semester s WHERE " +
            "(:academicYear IS NULL OR s.academicYear = :academicYear) AND " +
-           "(:semesterNumber IS NULL OR s.semesterNumber = :semesterNumber) AND " +
+           "(:semesterNumber IS NULL OR s.semesterName LIKE CONCAT('%', :semesterNumber, '%')) AND " +
            "(:status IS NULL OR s.status = :status) AND " +
            "(:startDate IS NULL OR s.startDate >= :startDate) AND " +
            "(:endDate IS NULL OR s.endDate <= :endDate)")
@@ -85,13 +88,13 @@ public interface SemesterRepository extends JpaRepository<Semester, Long> {
     @Query("SELECT s.academicYear as academicYear, COUNT(s) as count FROM Semester s GROUP BY s.academicYear ORDER BY s.academicYear DESC")
     List<Object[]> getSemesterStatisticsByAcademicYear();
 
-    @Query("SELECT s.semesterNumber as semesterNumber, COUNT(s) as count FROM Semester s GROUP BY s.semesterNumber ORDER BY s.semesterNumber")
+    @Query("SELECT s.semesterName as semesterName, COUNT(s) as count FROM Semester s GROUP BY s.semesterName ORDER BY s.semesterName")
     List<Object[]> getSemesterStatisticsBySemesterNumber();
 
     @Query("SELECT s FROM Semester s WHERE s.status = 'ACTIVE' ORDER BY s.startDate DESC")
     List<Semester> findActiveSemestersOrderByStartDateDesc();
 
-    @Query("SELECT s FROM Semester s WHERE s.academicYear = :academicYear ORDER BY s.semesterNumber")
+    @Query("SELECT s FROM Semester s WHERE s.academicYear = :academicYear ORDER BY s.semesterName")
     List<Semester> findByAcademicYearOrderedBySemesterNumber(@Param("academicYear") String academicYear);
 
     @Query("SELECT s FROM Semester s WHERE s.startDate <= :date AND s.endDate >= :date")

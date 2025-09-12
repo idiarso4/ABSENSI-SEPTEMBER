@@ -17,11 +17,14 @@ import java.util.Optional;
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
-    List<Payment> findByStudentId(Long studentId);
+    @Query("SELECT p FROM Payment p WHERE p.student.id = :studentId")
+    List<Payment> findByStudentId(@Param("studentId") Long studentId);
 
-    Optional<Payment> findByStudentIdAndPaymentType(Long studentId, String paymentType);
+    @Query("SELECT p FROM Payment p WHERE p.student.id = :studentId AND p.paymentType = :paymentType")
+    Optional<Payment> findByStudentIdAndPaymentType(@Param("studentId") Long studentId, @Param("paymentType") String paymentType);
 
-    Page<Payment> findByStudentId(Long studentId, Pageable pageable);
+    @Query("SELECT p FROM Payment p WHERE p.student.id = :studentId")
+    Page<Payment> findByStudentId(@Param("studentId") Long studentId, Pageable pageable);
 
     @Query("SELECT p FROM Payment p WHERE p.status = :status AND p.dueDate BETWEEN :startDate AND :endDate")
     List<Payment> findOverduePayments(@Param("status") PaymentStatus status,

@@ -21,10 +21,11 @@ public interface AttendanceHistoryRepository extends JpaRepository<AttendanceHis
      * Get change counts grouped by teacher (updatedBy).
      * Returns a page of AttendanceHistoryStatResponse containing teacherId, teacherName and changeCount.
      */
-    @Query("SELECT new com.simsekolah.dto.response.AttendanceHistoryStatResponse(" +
+    @Query(value = "SELECT new com.simsekolah.dto.response.AttendanceHistoryStatResponse(" +
         "u.id, CONCAT(COALESCE(u.firstName, ''), ' ', COALESCE(u.lastName, '')), COUNT(h)) " +
         "FROM AttendanceHistory h JOIN h.updatedBy u " +
-        "GROUP BY u.id, u.firstName, u.lastName")
+        "GROUP BY u.id, u.firstName, u.lastName",
+        countQuery = "SELECT COUNT(DISTINCT u.id) FROM AttendanceHistory h JOIN h.updatedBy u")
     Page<AttendanceHistoryStatResponse> getChangeCountPerTeacher(Pageable pageable);
 
 }

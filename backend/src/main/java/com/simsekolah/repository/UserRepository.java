@@ -43,10 +43,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Page<User> findByUserType(UserType userType, Pageable pageable);
     Page<User> findByUserTypeAndIsActive(UserType userType, boolean isActive, Pageable pageable);
 
-    @Query("SELECT u FROM User u WHERE u.userType = :userType AND (" +
-           "LOWER(CONCAT(COALESCE(u.firstName,''),' ',COALESCE(u.lastName,''))) LIKE LOWER(CONCAT('%',:query,'%')) OR " +
-           "LOWER(u.username) LIKE LOWER(CONCAT('%',:query,'%')) OR " +
-           "LOWER(u.email) LIKE LOWER(CONCAT('%',:query,'%')))")
+    @Query(value = "SELECT u FROM User u WHERE u.userType = :userType AND (" +
+                 "LOWER(CONCAT(COALESCE(u.firstName,''),' ',COALESCE(u.lastName,''))) LIKE LOWER(CONCAT('%',:query,'%')) OR " +
+                 "LOWER(u.username) LIKE LOWER(CONCAT('%',:query,'%')) OR " +
+                 "LOWER(u.email) LIKE LOWER(CONCAT('%',:query,'%')))",
+           countQuery = "SELECT COUNT(u) FROM User u WHERE u.userType = :userType AND (" +
+                       "LOWER(CONCAT(COALESCE(u.firstName,''),' ',COALESCE(u.lastName,''))) LIKE LOWER(CONCAT('%',:query,'%')) OR " +
+                       "LOWER(u.username) LIKE LOWER(CONCAT('%',:query,'%')) OR " +
+                       "LOWER(u.email) LIKE LOWER(CONCAT('%',:query,'%')))")
     Page<User> findByUserTypeAndQuery(@Param("userType") UserType userType,
                                       @Param("query") String query,
                                       Pageable pageable);
