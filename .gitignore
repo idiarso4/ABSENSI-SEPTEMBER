@@ -1,5 +1,5 @@
 # === Java / Spring Boot ===
-/target/
+**/target/
 !.mvn/wrapper/maven-wrapper.jar
 .mvn/
 **/logs/
@@ -42,10 +42,12 @@ mobile/android/app/build/
 mobile/ios/Pods/
 
 # === OS / Editor ===
+.vscode/
+backend/.vscode/
 .DS_Store
 Thumbs.db
-.vscode/launch.json
-.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/tasks.json
 *.swp
 *.swo
 *~
