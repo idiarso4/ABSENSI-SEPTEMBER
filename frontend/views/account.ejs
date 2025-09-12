@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profil Saya - Sistem HRM</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <%- include('partials/navbar') %>
+
+  <div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2><i class="bi bi-person-circle"></i> Profil Saya</h2>
+      <div class="d-flex gap-2">
+        <button class="btn btn-success" id="saveProfileBtn">
+          <i class="bi bi-check-circle"></i> Simpan Perubahan
+        </button>
+        <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#profileSettingsModal">
+          <i class="bi bi-gear"></i> Pengaturan
+        </button>
+      </div>
+    </div>
+
+    <!-- Profile Status Overview -->
+    <div class="row mb-4">
+      <div class="col-md-3">
+        <div class="card text-white bg-primary">
+          <div class="card-body">
+            <h6 class="card-title">Status Profil</h6>
+            <h4 id="profileCompleteness">85%</h4>
+            <small>Lengkap</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-white bg-success">
+          <div class="card-body">
+            <h6 class="card-title">Bergabung Sejak</h6>
+            <h4 id="memberSince">-</h4>
+            <small>Tahun</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-white bg-info">
+          <div class="card-body">
+            <h6 class="card-title">Aktivitas Terakhir</h6>
+            <h4 id="lastActivity">-</h4>
+            <small>Hari lalu</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-white bg-warning">
+          <div class="card-body">
+            <h6 class="card-title">Dokumen</h6>
+            <h4 id="documentsCount">-</h4>
+            <small>Diunggah</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="personal-tab" data-bs-toggle="tab" data-bs-target="#personal" type="button" role="tab">Informasi Pribadi</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="employment-tab" data-bs-toggle="tab" data-bs-target="#employment" type="button" role="tab">Informasi Karyawan</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="preferences-tab" data-bs-toggle="tab" data-bs-target="#preferences" type="button" role="tab">Preferensi</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="documents-tab" data-bs-toggle="tab" data-bs-target="#documents" type="button" role="tab">Dokumen</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="activity-tab" data-bs-toggle="tab" data-bs-target="#activity" type="button" role="tab">Aktivitas</button>
+      </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="profileTabContent">
+      <!-- Personal Information Tab -->
+      <div class="tab-pane fade show active" id="personal" role="tabpanel">
+        <div class="row">
+          <div class="col-md-4">
+            <div class="card">
+              <div class="card-header">
+                <h6>Foto Profil</h6>
+              </div>
+              <div class="card-body text-center">
+                <div class="mb-3">
+                  <img id="profilePicture" src="/images/default-avatar.png" alt="Profile Picture" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #dee2e6;">
+                </div>
+                <div class="mb-3">
+                  <input type="file" class="form-control" id="profilePictureInput" accept="image/*" style="display: none;">
+                  <button class="btn btn-outline-primary btn-sm" id="changePictureBtn">
+                    <i class="bi bi-camera"></i> Ubah Foto
+                  </button>
+                  <button class="btn btn-outline-danger btn-sm" id="removePictureBtn">
+                    <i class="bi bi-trash"></i> Hapus
+                  </button>
+                </div>
+                <div class="small text-muted">
+                  Format: JPG, PNG, GIF<br>
+                  Maksimal: 2MB
+                </div>
+              </div>
+            </div>
+
+            <div class="card mt-3">
+              <div class="card-header">
+                <h6>Status Akun</h6>
+              </div>
+              <div class="card-body">
+                <div class="mb-2">
+                  <strong>Status:</strong> <span class="badge bg-success" id="accountStatus">Aktif</span>
+                </div>
+                <div class="mb-2">
+                  <strong>Role:</strong> <span id="userRole">Employee</span>
+                </div>
+                <div class="mb-2">
+                  <strong>Terakhir Login:</strong> <span id="lastLoginTime">-</span>
+                </div>
+                <div class="mb-2">
+                  <strong>Dari IP:</strong> <span id="lastLoginIP">-</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-8">
+            <div class="card">
+              <div class="card-header">
+                <h6>Informasi Pribadi</h6>
+              </div>
+              <div class="card-body">
+                <form id="personalInfoForm">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label for="firstName" class="form-label">Nama Depan *</label>
+                        <input type="text" class="form-control" id="firstName" required>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label for="lastName" class="form-label">Nama Belakang *</label>
+                        <input type="text" class="form-control" id="lastName" required>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label for="email" class="form-label">Email *</label>
+                        <input type="email" class="form-control" id="email" required>
+                        <div class="form-text">Email ini digunakan untuk login dan notifikasi</div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label for="phone" class="form-label">Nomor Telepon</label>
+                        <input type="tel" class="form-control" id="phone">
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label for="dateOfBirth" class="form-label">Tanggal Lahir</label>
+                        <input type="date" class="form-control" id="dateOfBirth">
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label for="gender" class="form-label">Jenis Kelamin</label>
+                        <select class="form-select" id="gender">
+                          <option value="">Pilih</option>
+                          <option value="male">Laki-laki</option>
+                          <option value="female">Perempuan</option>
+                          <option value="other">Lainnya</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="address" class="form-label">Alamat</label>
+                    <textarea class="form-control" id="address" rows="3"></textarea>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-md-4">
+                      <div class="mb-3">
+                        <label for="city" class="form-label">Kota</label>
+                        <input type="text" class="form-control" id="city">
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="mb-3">
+                        <label for="state" class="form-label">Provinsi</label>
+                        <input type="text" class="form-control" id="state">
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="mb-3">
+                        <label for="zipCode" class="form-label">Kode Pos</label>
+                        <input type="text" class="form-control" id="zipCode">
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label for="emergencyContactName" class="form-label">Kontak Darurat - Nama</label>
+                        <input type="text" class="form-control" id="emergencyContactName">
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label for="emergencyContactPhone" class="form-label">Kontak Darurat - Telepon</label>
+                        <input type="tel" class="form-control" id="emergencyContactPhone">
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="bio" class="form-label">Bio/Tentang Saya</label>
+                    <textarea class="form-control" id="bio" rows="3" placeholder="Ceritakan sedikit tentang diri Anda..."></textarea>
+                    <div class="form-text">Maksimal 500 karakter</div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Employment Information Tab -->
+      <div class="tab-pane fade" id="employment" role="tabpanel">
+        <div class="card">
+          <div class="card-header">
+            <h6>Informasi Karyawan</h6>
+          </div>
+          <div class="card-body">
+            <form id="employmentInfoForm">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="employeeId" class="form-label">ID Karyawan</label>
+                    <input type="text" class="form-control" id="employeeId" readonly>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="department" class="form-label">Departemen</label>
+                    <input type="text" class="form-control" id="department" readonly>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="designation" class="form-label">Jabatan</label>
+                    <input type="text" class="form-control" id="designation" readonly>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="joiningDate" class="form-label">Tanggal Bergabung</label>
+                    <input type="date" class="form-control" id="joiningDate" readonly>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="employmentType" class="form-label">Tipe Karyawan</label>
+                    <input type="text" class="form-control" id="employmentType" readonly>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="workLocation" class="form-label">Lokasi Kerja</label>
+                    <input type="text" class="form-control" id="workLocation" readonly>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="manager" class="form-label">Manager</label>
+                    <input type="text" class="form-control" id="manager" readonly>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="workSchedule" class="form-label">Jadwal Kerja</label>
+                    <input type="text" class="form-control" id="workSchedule" readonly>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="basicSalary" class="form-label">Gaji Pokok</label>
+                    <div class="input-group">
+                      <span class="input-group-text">Rp</span>
+                      <input type="text" class="form-control" id="basicSalary" readonly>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="contractEndDate" class="form-label">Akhir Kontrak</label>
+                    <input type="date" class="form-control" id="contractEndDate" readonly>
+                  </div>
+                </div>
+              </div>
+
+              <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i>
+                <strong>Informasi Karyawan:</strong> Data ini dikelola oleh HR Department. Jika ada perubahan yang diperlukan, silakan hubungi HR Manager.
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preferences Tab -->
+      <div class="tab-pane fade" id="preferences" role="tabpanel">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-header">
+                <h6>Notifikasi & Komunikasi</h6>
+              </div>
+              <div class="card-body">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                  <label class="form-check-label" for="emailNotifications">
+                    Notifikasi via Email
+                  </label>
+                </div>
+
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="smsNotifications">
+                  <label class="form-check-label" for="smsNotifications">
+                    Notifikasi via SMS
+                  </label>
+                </div>
+
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="pushNotifications" checked>
+                  <label class="form-check-label" for="pushNotifications">
+                    Push Notifications
+                  </label>
+                </div>
+
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="weeklyReports" checked>
+                  <label class="form-check-label" for="weeklyReports">
+                    Laporan Mingguan
+                  </label>
+                </div>
+
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="marketingEmails">
+                  <label class="form-check-label" for="marketingEmails">
+                    Email Promosi
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="card mt-3">
+              <div class="card-header">
+                <h6>Privasi & Keamanan</h6>
+              </div>
+              <div class="card-body">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="profileVisibility" checked>
+                  <label class="form-check-label" for="profileVisibility">
+                    Profil terlihat oleh rekan kerja
+                  </label>
+                </div>
+
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="showOnlineStatus" checked>
+                  <label class="form-check-label" for="showOnlineStatus">
+                    Tampilkan status online
+                  </label>
+                </div>
+
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="allowTagging" checked>
+                  <label class="form-check-label" for="allowTagging">
+                    Izinkan tagging di postingan
+                  </label>
+                </div>
+
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="twoFactorRequired">
+                  <label class="form-check-label" for="twoFactorRequired">
+                    Wajibkan 2FA untuk login
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-header">
+                <h6>Tampilan & Bahasa</h6>
+              </div>
+              <div class="card-body">
+                <div class="mb-3">
+                  <label for="themePreference" class="form-label">Tema</label>
+                  <select class="form-select" id="themePreference">
+                    <option value="light">Terang</option>
+                    <option value="dark">Gelap</option>
+                    <option value="auto">Otomatis</option>
+                  </select>
+                </div>
+
+                <div class="mb-3">
+                  <label for="languagePreference" class="form-label">Bahasa</label>
+                  <select class="form-select" id="languagePreference">
+                    <option value="id">Bahasa Indonesia</option>
+                    <option value="en">English</option>
+                    <option value="ar">العربية</option>
+                  </select>
+                </div>
+
+                <div class="mb-3">
+                  <label for="timezonePreference" class="form-label">Timezone</label>
+                  <select class="form-select" id="timezonePreference">
+                    <option value="Asia/Jakarta">Asia/Jakarta (WIB)</option>
+                    <option value="Asia/Makassar">Asia/Makassar (WITA)</option>
+                    <option value="Asia/Jayapura">Asia/Jayapura (WIT)</option>
+                    <option value="UTC">UTC</option>
+                  </select>
+                </div>
+
+                <div class="mb-3">
+                  <label for="dateFormatPreference" class="form-label">Format Tanggal</label>
+                  <select class="form-select" id="dateFormatPreference">
+                    <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                    <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                    <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                  </select>
+                </div>
+
+                <div class="mb-3">
+                  <label for="itemsPerPage" class="form-label">Item per Halaman</label>
+                  <select class="form-select" id="itemsPerPage">
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="card mt-3">
+              <div class="card-header">
+                <h6>Dashboard & Layout</h6>
+              </div>
+              <div class="card-body">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="compactView">
+                  <label class="form-check-label" for="compactView">
+                    Tampilan kompak
+                  </label>
+                </div>
+
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="showQuickActions" checked>
+                  <label class="form-check-label" for="showQuickActions">
+                    Tampilkan quick actions
+                  </label>
+                </div>
+
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="autoSave" checked>
+                  <label class="form-check-label" for="autoSave">
+                    Auto-save form
+                  </label>
+                </div>
+
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="showTooltips" checked>
+                  <label class="form-check-label" for="showTooltips">
+                    Tampilkan tooltips
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-3">
+          <button class="btn btn-primary" id="savePreferencesBtn">
+            <i class="bi bi-check-circle"></i> Simpan Preferensi
+          </button>
+          <button class="btn btn-outline-secondary" id="resetPreferencesBtn">
+            <i class="bi bi-arrow-counterclockwise"></i> Reset ke Default
+          </button>
+        </div>
+      </div>
+
+      <!-- Documents Tab -->
+      <div class="tab-pane fade" id="documents" role="tabpanel">
+        <div class="card">
+          <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+              <h6>Dokumen Saya</h6>
+              <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#uploadDocumentModal">
+                <i class="bi bi-plus-circle"></i> Unggah Dokumen
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="row" id="documentsGrid">
+              <!-- Sample documents -->
+              <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="bi bi-file-earmark-pdf text-danger me-2" style="font-size: 24px;"></i>
+                      <div>
+                        <h6 class="mb-0">CV_2025.pdf</h6>
+                        <small class="text-muted">2.3 MB</small>
+                      </div>
+                    </div>
+                    <div class="mb-2">
+                      <span class="badge bg-primary">CV/Resume</span>
+                      <span class="badge bg-success">Disetujui</span>
+                    </div>
+                    <small class="text-muted">Diunggah: 15 Jan 2025</small>
+                    <div class="mt-2">
+                      <button class="btn btn-sm btn-outline-primary me-1">
+                        <i class="bi bi-download"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-info me-1">
+                        <i class="bi bi-eye"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="bi bi-file-earmark-word text-primary me-2" style="font-size: 24px;"></i>
+                      <div>
+                        <h6 class="mb-0">Kontrak_Kerja.docx</h6>
+                        <small class="text-muted">1.8 MB</small>
+                      </div>
+                    </div>
+                    <div class="mb-2">
+                      <span class="badge bg-warning">Kontrak</span>
+                      <span class="badge bg-info">Menunggu Review</span>
+                    </div>
+                    <small class="text-muted">Diunggah: 10 Jan 2025</small>
+                    <div class="mt-2">
+                      <button class="btn btn-sm btn-outline-primary me-1">
+                        <i class="bi bi-download"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-info me-1">
+                        <i class="bi bi-eye"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="bi bi-file-earmark-image text-success me-2" style="font-size: 24px;"></i>
+                      <div>
+                        <h6 class="mb-0">Foto_Profil.jpg</h6>
+                        <small class="text-muted">245 KB</small>
+                      </div>
+                    </div>
+                    <div class="mb-2">
+                      <span class="badge bg-success">Foto</span>
+                      <span class="badge bg-success">Aktif</span>
+                    </div>
+                    <small class="text-muted">Diunggah: 5 Jan 2025</small>
+                    <div class="mt-2">
+                      <button class="btn btn-sm btn-outline-primary me-1">
+                        <i class="bi bi-download"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-info me-1">
+                        <i class="bi bi-eye"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Activity Tab -->
+      <div class="tab-pane fade" id="activity" role="tabpanel">
+        <div class="card">
+          <div class="card-header">
+            <h6>Riwayat Aktivitas Akun</h6>
+          </div>
+          <div class="card-body">
+            <div class="timeline" id="activityTimeline">
+              <div class="timeline-item">
+                <div class="timeline-marker bg-success"></div>
+                <div class="timeline-content">
+                  <h6 class="mb-0">Login berhasil</h6>
+                  <small class="text-muted">2 jam lalu • Chrome di Windows • Jakarta, Indonesia</small>
+                </div>
+              </div>
+
+              <div class="timeline-item">
+                <div class="timeline-marker bg-primary"></div>
+                <div class="timeline-content">
+                  <h6 class="mb-0">Password diubah</h6>
+                  <small class="text-muted">1 hari lalu • Sistem HRM</small>
+                </div>
+              </div>
+
+              <div class="timeline-item">
+                <div class="timeline-marker bg-info"></div>
+                <div class="timeline-content">
+                  <h6 class="mb-0">Profil diperbarui</h6>
+                  <small class="text-muted">3 hari lalu • Informasi kontak</small>
+                </div>
+              </div>
+
+              <div class="timeline-item">
+                <div class="timeline-marker bg-warning"></div>
+                <div class="timeline-content">
+                  <h6 class="mb-0">Dokumen diunggah</h6>
+                  <small class="text-muted">5 hari lalu • CV_2025.pdf</small>
+                </div>
+              </div>
+
+              <div class="timeline-item">
+                <div class="timeline-marker bg-success"></div>
+                <div class="timeline-content">
+                  <h6 class="mb-0">Login berhasil</h6>
+                  <small class="text-muted">1 minggu lalu • Safari di iPhone • Jakarta, Indonesia</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Settings Modal -->
+  <div class="modal fade" id="profileSettingsModal" tabindex="-1" aria-labelledby="profileSettingsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="profileSettingsModalLabel">Pengaturan Profil</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6">
+              <h6>Visibilitas Profil</h6>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="publicProfile" checked>
+                <label class="form-check-label" for="publicProfile">
+                  Profil publik
+                </label>
+              </div>
+
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="showEmail" checked>
+                <label class="form-check-label" for="showEmail">
+                  Tampilkan email
+                </label>
+              </div>
+
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="showPhone">
+                <label class="form-check-label" for="showPhone">
+                  Tampilkan nomor telepon
+                </label>
+              </div>
+
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="showAddress">
+                <label class="form-check-label" for="showAddress">
+                  Tampilkan alamat
+                </label>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <h6>Privasi Data</h6>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="allowDataCollection" checked>
+                <label class="form-check-label" for="allowDataCollection">
+                  Izinkan pengumpulan data untuk analisis
+                </label>
+              </div>
+
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="allowPersonalization" checked>
+                <label class="form-check-label" for="allowPersonalization">
+                  Izinkan personalisasi konten
+                </label>
+              </div>
+
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="allowThirdParty">
+                <label class="form-check-label" for="allowThirdParty">
+                  Bagikan data dengan third party
+                </label>
+              </div>
+
+              <div class="mt-3">
+                <button class="btn btn-outline-danger btn-sm" id="requestDataDeletion">
+                  <i class="bi bi-trash"></i> Minta Penghapusan Data
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mt-3">
+            <div class="col-12">
+              <h6>Ekspor Data</h6>
+              <p class="small text-muted">Unduh semua data pribadi Anda dalam format JSON atau CSV.</p>
+              <div class="d-flex gap-2">
+                <button class="btn btn-outline-primary btn-sm" id="exportProfileData">
+                  <i class="bi bi-download"></i> Ekspor Data Profil
+                </button>
+                <button class="btn btn-outline-primary btn-sm" id="exportActivityData">
+                  <i class="bi bi-download"></i> Ekspor Riwayat Aktivitas
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="button" class="btn btn-primary" id="saveProfileSettingsBtn">Simpan Pengaturan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload Document Modal -->
+  <div class="modal fade" id="uploadDocumentModal" tabindex="-1" aria-labelledby="uploadDocumentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="uploadDocumentModalLabel">Unggah Dokumen</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+        </div>
+        <div class="modal-body">
+          <form id="uploadDocumentForm">
+            <div class="mb-3">
+              <label for="documentFile" class="form-label">Pilih File *</label>
+              <input type="file" class="form-control" id="documentFile" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required>
+              <div class="form-text">Format yang didukung: PDF, DOC, DOCX, JPG, PNG. Maksimal 10MB.</div>
+            </div>
+
+            <div class="mb-3">
+              <label for="documentName" class="form-label">Nama Dokumen *</label>
+              <input type="text" class="form-control" id="documentName" required placeholder="Contoh: CV_2025.pdf">
+            </div>
+
+            <div class="mb-3">
+              <label for="documentCategory" class="form-label">Kategori *</label>
+              <select class="form-select" id="documentCategory" required>
+                <option value="">Pilih Kategori</option>
+                <option value="cv">CV/Resume</option>
+                <option value="contract">Kontrak Kerja</option>
+                <option value="certificate">Sertifikat</option>
+                <option value="photo">Foto</option>
+                <option value="license">Lisensi/SIM</option>
+                <option value="education">Dokumen Pendidikan</option>
+                <option value="other">Lainnya</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label for="documentDescription" class="form-label">Deskripsi</label>
+              <textarea class="form-control" id="documentDescription" rows="2" placeholder="Deskripsi dokumen (opsional)..."></textarea>
+            </div>
+
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="documentPrivate">
+              <label class="form-check-label" for="documentPrivate">
+                Dokumen pribadi (hanya bisa dilihat oleh Anda dan HR)
+              </label>
+            </div>
+          </form>
+
+          <div id="uploadProgressContainer" style="display: none;">
+            <div class="mb-3">
+              <div class="progress">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" id="uploadProgressBar" role="progressbar" style="width: 0%"></div>
+              </div>
+              <small class="text-muted mt-1" id="uploadProgressText">Mengunggah dokumen...</small>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="button" class="btn btn-primary" id="uploadDocumentBtn">
+            <i class="bi bi-upload"></i> Unggah Dokumen
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function getToken() { return localStorage.getItem('token') || ''; }
+
+    let profileData = {};
+    let preferences = {};
+    let documents = [];
+
+    // Logout functionality
+    document.getElementById('logoutBtn')?.addEventListener('click', function(e) {
+      e.preventDefault();
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    });
+
+    async function loadProfileData() {
+      try {
+        const response = await fetch('/api/profile', {
+          headers: { 'Authorization': 'Bearer ' + getToken() }
+        });
+        if (response.ok) {
+          profileData = await response.json();
+          populateProfileForm(profileData);
+          updateProfileOverview(profileData);
+        }
+      } catch (error) {
+        console.error('Error loading profile data:', error);
+      }
+    }
+
+    async function loadPreferences() {
+      try {
+        const response = await fetch('/api/preferences', {
+          headers: { 'Authorization': 'Bearer ' + getToken() }
+        });
+        if (response.ok) {
+          preferences = await response.json();
+          populatePreferencesForm(preferences);
+        }
+      } catch (error) {
+        console.error('Error loading preferences:', error);
+      }
+    }
+
+    function populateProfileForm(data) {
+      document.getElementById('firstName').value = data.firstName || '';
+      document.getElementById('lastName').value = data.lastName || '';
+      document.getElementById('email').value = data.email || '';
+      document.getElementById('phone').value = data.phone || '';
+      document.getElementById('dateOfBirth').value = data.dateOfBirth || '';
+      document.getElementById('gender').value = data.gender || '';
+      document.getElementById('address').value = data.address || '';
+      document.getElementById('city').value = data.city || '';
+      document.getElementById('state').value = data.state || '';
+      document.getElementById('zipCode').value = data.zipCode || '';
+      document.getElementById('emergencyContactName').value = data.emergencyContactName || '';
+      document.getElementById('emergencyContactPhone').value = data.emergencyContactPhone || '';
+      document.getElementById('bio').value = data.bio || '';
+
+      // Employment info
+      document.getElementById('employeeId').value = data.employeeId || '';
+      document.getElementById('department').value = data.department || '';
+      document.getElementById('designation').value = data.designation || '';
+      document.getElementById('joiningDate').value = data.joiningDate || '';
+      document.getElementById('employmentType').value = data.employmentType || '';
+      document.getElementById('workLocation').value = data.workLocation || '';
+      document.getElementById('manager').value = data.manager || '';
+      document.getElementById('workSchedule').value = data.workSchedule || '';
+      document.getElementById('basicSalary').value = data.basicSalary ? new Intl.NumberFormat('id-ID').format(data.basicSalary) : '';
+      document.getElementById('contractEndDate').value = data.contractEndDate || '';
+
+      // Profile picture
+      if (data.profilePicture) {
+        document.getElementById('profilePicture').src = data.profilePicture;
+      }
+
+      // Account status
+      document.getElementById('accountStatus').textContent = data.accountStatus || 'Aktif';
+      document.getElementById('userRole').textContent = data.role || 'Employee';
+      document.getElementById('lastLoginTime').textContent = data.lastLoginTime || '-';
+      document.getElementById('lastLoginIP').textContent = data.lastLoginIP || '-';
+    }
+
+    function populatePreferencesForm(data) {
+      // Notification preferences
+      document.getElementById('emailNotifications').checked = data.emailNotifications !== false;
+      document.getElementById('smsNotifications').checked = data.smsNotifications || false;
+      document.getElementById('pushNotifications').checked = data.pushNotifications !== false;
+      document.getElementById('weeklyReports').checked = data.weeklyReports !== false;
+      document.getElementById('marketingEmails').checked = data.marketingEmails || false;
+
+      // Privacy settings
+      document.getElementById('profileVisibility').checked = data.profileVisibility !== false;
+      document.getElementById('showOnlineStatus').checked = data.showOnlineStatus !== false;
+      document.getElementById('allowTagging').checked = data.allowTagging !== false;
+      document.getElementById('twoFactorRequired').checked = data.twoFactorRequired || false;
+
+      // Display preferences
+      document.getElementById('themePreference').value = data.theme || 'light';
+      document.getElementById('languagePreference').value = data.language || 'id';
+      document.getElementById('timezonePreference').value = data.timezone || 'Asia/Jakarta';
+      document.getElementById('dateFormatPreference').value = data.dateFormat || 'DD/MM/YYYY';
+      document.getElementById('itemsPerPage').value = data.itemsPerPage || '25';
+
+      // Layout preferences
+      document.getElementById('compactView').checked = data.compactView || false;
+      document.getElementById('showQuickActions').checked = data.showQuickActions !== false;
+      document.getElementById('autoSave').checked = data.autoSave !== false;
+      document.getElementById('showTooltips').checked = data.showTooltips !== false;
+    }
+
+    function updateProfileOverview(data) {
+      document.getElementById('profileCompleteness').textContent = data.completeness || '85%';
+      document.getElementById('memberSince').textContent = data.memberSince || '2024';
+      document.getElementById('lastActivity').textContent = data.lastActivity || '1';
+      document.getElementById('documentsCount').textContent = data.documentsCount || '3';
+    }
+
+    // Profile picture management
+    document.getElementById('changePictureBtn').addEventListener('click', function() {
+      document.getElementById('profilePictureInput').click();
+    });
+
+    document.getElementById('profilePictureInput').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('profilePicture').src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    document.getElementById('removePictureBtn').addEventListener('click', function() {
+      if (confirm('Apakah Anda yakin ingin menghapus foto profil?')) {
+        document.getElementById('profilePicture').src = '/images/default-avatar.png';
+        document.getElementById('profilePictureInput').value = '';
+      }
+    });
+
+    // Save profile functionality
+    document.getElementById('saveProfileBtn').addEventListener('click', async function() {
+      const formData = new FormData();
+
+      // Personal information
+      const personalData = {
+        firstName: document.getElementById('firstName').value,
+        lastName: document.getElementById('lastName').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value,
+        dateOfBirth: document.getElementById('dateOfBirth').value,
+        gender: document.getElementById('gender').value,
+        address: document.getElementById('address').value,
+        city: document.getElementById('city').value,
+        state: document.getElementById('state').value,
+        zipCode: document.getElementById('zipCode').value,
+        emergencyContactName: document.getElementById('emergencyContactName').value,
+        emergencyContactPhone: document.getElementById('emergencyContactPhone').value,
+        bio: document.getElementById('bio').value
+      };
+
+      formData.append('personalData', JSON.stringify(personalData));
+
+      // Profile picture
+      const pictureInput = document.getElementById('profilePictureInput');
+      if (pictureInput.files[0]) {
+        formData.append('profilePicture', pictureInput.files[0]);
+      }
+
+      try {
+        const response = await fetch('/api/profile', {
+          method: 'PUT',
+          headers: { 'Authorization': 'Bearer ' + getToken() },
+          body: formData
+        });
+
+        if (response.ok) {
+          alert('Profil berhasil diperbarui!');
+          await loadProfileData();
+        } else {
+          alert('Gagal memperbarui profil');
+        }
+      } catch (error) {
+        alert(`Error: ${error.message}`);
+      }
+    });
+
+    // Save preferences functionality
+    document.getElementById('savePreferencesBtn').addEventListener('click', async function() {
+      const preferencesData = {
+        // Notification preferences
+        emailNotifications: document.getElementById('emailNotifications').checked,
+        smsNotifications: document.getElementById('smsNotifications').checked,
+        pushNotifications: document.getElementById('pushNotifications').checked,
+        weeklyReports: document.getElementById('weeklyReports').checked,
+        marketingEmails: document.getElementById('marketingEmails').checked,
+
+        // Privacy settings
+        profileVisibility: document.getElementById('profileVisibility').checked,
+        showOnlineStatus: document.getElementById('showOnlineStatus').checked,
+        allowTagging: document.getElementById('allowTagging').checked,
+        twoFactorRequired: document.getElementById('twoFactorRequired').checked,
+
+        // Display preferences
+        theme: document.getElementById('themePreference').value,
+        language: document.getElementById('languagePreference').value,
+        timezone: document.getElementById('timezonePreference').value,
+        dateFormat: document.getElementById('dateFormatPreference').value,
+        itemsPerPage: parseInt(document.getElementById('itemsPerPage').value),
+
+        // Layout preferences
+        compactView: document.getElementById('compactView').checked,
+        showQuickActions: document.getElementById('showQuickActions').checked,
+        autoSave: document.getElementById('autoSave').checked,
+        showTooltips: document.getElementById('showTooltips').checked
+      };
+
+      try {
+        const response = await fetch('/api/preferences', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + getToken()
+          },
+          body: JSON.stringify(preferencesData)
+        });
+
+        if (response.ok) {
+          alert('Preferensi berhasil disimpan!');
+          await loadPreferences();
+        } else {
+          alert('Gagal menyimpan preferensi');
+        }
+      } catch (error) {
+        alert(`Error: ${error.message}`);
+      }
+    });
+
+    document.getElementById('resetPreferencesBtn').addEventListener('click', function() {
+      if (confirm('Apakah Anda yakin ingin mereset semua preferensi ke default?')) {
+        // Reset to default values
+        document.getElementById('emailNotifications').checked = true;
+        document.getElementById('smsNotifications').checked = false;
+        document.getElementById('pushNotifications').checked = true;
+        document.getElementById('weeklyReports').checked = true;
+        document.getElementById('marketingEmails').checked = false;
+
+        document.getElementById('profileVisibility').checked = true;
+        document.getElementById('showOnlineStatus').checked = true;
+        document.getElementById('allowTagging').checked = true;
+        document.getElementById('twoFactorRequired').checked = false;
+
+        document.getElementById('themePreference').value = 'light';
+        document.getElementById('languagePreference').value = 'id';
+        document.getElementById('timezonePreference').value = 'Asia/Jakarta';
+        document.getElementById('dateFormatPreference').value = 'DD/MM/YYYY';
+        document.getElementById('itemsPerPage').value = '25';
+
+        document.getElementById('compactView').checked = false;
+        document.getElementById('showQuickActions').checked = true;
+        document.getElementById('autoSave').checked = true;
+        document.getElementById('showTooltips').checked = true;
+      }
+    });
+
+    // Document upload functionality
+    document.getElementById('uploadDocumentBtn').addEventListener('click', async function() {
+      const fileInput = document.getElementById('documentFile');
+      const file = fileInput.files[0];
+
+      if (!file) {
+        alert('Pilih file terlebih dahulu');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('name', document.getElementById('documentName').value);
+      formData.append('category', document.getElementById('documentCategory').value);
+      formData.append('description', document.getElementById('documentDescription').value);
+      formData.append('isPrivate', document.getElementById('documentPrivate').checked);
+
+      // Show progress
+      document.getElementById('uploadProgressContainer').style.display = 'block';
+      const progressBar = document.getElementById('uploadProgressBar');
+      const progressText = document.getElementById('uploadProgressText');
+
+      try {
+        // Simulate upload progress
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+          progress += Math.random() * 20;
+          if (progress > 90) progress = 90;
+
+          progressBar.style.width = progress + '%';
+          progressText.textContent = `Mengunggah... ${Math.round(progress)}%`;
+        }, 300);
+
+        const response = await fetch('/api/documents/upload', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + getToken() },
+          body: formData
+        });
+
+        clearInterval(progressInterval);
+
+        if (response.ok) {
+          progressBar.style.width = '100%';
+          progressText.textContent = 'Upload selesai!';
+          setTimeout(() => {
+            bootstrap.Modal.getInstance(document.getElementById('uploadDocumentModal')).hide();
+            document.getElementById('uploadDocumentForm').reset();
+            document.getElementById('uploadProgressContainer').style.display = 'none';
+            alert('Dokumen berhasil diunggah!');
+            // Reload documents
+          }, 1000);
+        } else {
+          throw new Error('Upload failed');
+        }
+      } catch (error) {
+        progressText.textContent = 'Upload gagal: ' + error.message;
+        progressBar.className = 'progress-bar bg-danger';
+        alert('Gagal mengunggah dokumen: ' + error.message);
+      }
+    });
+
+    // Profile settings functionality
+    document.getElementById('saveProfileSettingsBtn').addEventListener('click', async function() {
+      const settings = {
+        publicProfile: document.getElementById('publicProfile').checked,
+        showEmail: document.getElementById('showEmail').checked,
+        showPhone: document.getElementById('showPhone').checked,
+        showAddress: document.getElementById('showAddress').checked,
+        allowDataCollection: document.getElementById('allowDataCollection').checked,
+        allowPersonalization: document.getElementById('allowPersonalization').checked,
+        allowThirdParty: document.getElementById('allowThirdParty').checked
+      };
+
+      try {
+        const response = await fetch('/api/profile/settings', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + getToken()
+          },
+          body: JSON.stringify(settings)
+        });
+
+        if (response.ok) {
+          bootstrap.Modal.getInstance(document.getElementById('profileSettingsModal')).hide();
+          alert('Pengaturan profil berhasil disimpan!');
+        } else {
+          alert('Gagal menyimpan pengaturan profil');
+        }
+      } catch (error) {
+        alert(`Error: ${error.message}`);
+      }
+    });
+
+    document.getElementById('requestDataDeletion').addEventListener('click', function() {
+      if (confirm('Apakah Anda yakin ingin meminta penghapusan semua data? Tindakan ini akan memerlukan persetujuan admin dan tidak dapat dibatalkan.')) {
+        alert('Permintaan penghapusan data telah dikirim ke admin. Anda akan menerima konfirmasi dalam 24-48 jam.');
+      }
+    });
+
+    document.getElementById('exportProfileData').addEventListener('click', function() {
+      // Trigger download of profile data
+      window.open('/api/profile/export', '_blank');
+    });
+
+    document.getElementById('exportActivityData').addEventListener('click', function() {
+      // Trigger download of activity data
+      window.open('/api/profile/export-activity', '_blank');
+    });
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', async function() {
+      await loadProfileData();
+      await loadPreferences();
+    });
+  </script>
+</body>
+</html>

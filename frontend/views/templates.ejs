@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Templat Pemberitahuan - Sistem HRM</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <%- include('partials/navbar') %>
+
+  <div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2><i class="bi bi-envelope-paper"></i> Template Management</h2>
+      <div class="d-flex gap-2">
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addTemplateModal">
+          <i class="bi bi-plus-circle"></i> Create Template
+        </button>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#templateCategoriesModal">
+          <i class="bi bi-tags"></i> Manage Categories
+        </button>
+        <button class="btn btn-outline-info" id="templateAnalyticsBtn">
+          <i class="bi bi-graph-up"></i> Analytics
+        </button>
+      </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+      <div class="col-md-3">
+        <div class="card bg-primary text-white">
+          <div class="card-body">
+            <h5 class="card-title">Total Templates</h5>
+            <h3 id="totalTemplates">-</h3>
+            <small>Active Templates</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card bg-success text-white">
+          <div class="card-body">
+            <h5 class="card-title">Email Templates</h5>
+            <h3 id="emailTemplates">-</h3>
+            <small>HTML & Text</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card bg-info text-white">
+          <div class="card-body">
+            <h5 class="card-title">SMS Templates</h5>
+            <h3 id="smsTemplates">-</h3>
+            <small>Short Messages</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card bg-warning text-white">
+          <div class="card-body">
+            <h5 class="card-title">Usage This Month</h5>
+            <h3 id="monthlyUsage">-</h3>
+            <small>Template Uses</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-tabs mb-4" id="templateTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="all-templates-tab" data-bs-toggle="tab" data-bs-target="#all-templates" type="button" role="tab">
+          <i class="bi bi-grid"></i> All Templates
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="email-templates-tab" data-bs-toggle="tab" data-bs-target="#email-templates" type="button" role="tab">
+          <i class="bi bi-envelope"></i> Email Templates
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="sms-templates-tab" data-bs-toggle="tab" data-bs-target="#sms-templates" type="button" role="tab">
+          <i class="bi bi-chat-dots"></i> SMS Templates
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="notification-templates-tab" data-bs-toggle="tab" data-bs-target="#notification-templates" type="button" role="tab">
+          <i class="bi bi-bell"></i> Notifications
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="template-variables-tab" data-bs-toggle="tab" data-bs-target="#template-variables" type="button" role="tab">
+          <i class="bi bi-code-slash"></i> Variables
+        </button>
+      </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="templateTabContent">
+      <!-- All Templates Tab -->
+      <div class="tab-pane fade show active" id="all-templates" role="tabpanel">
+        <div class="card">
+          <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5>All Communication Templates</h5>
+              <div class="d-flex gap-2">
+                <select class="form-select form-select-sm" id="templateCategoryFilter" style="width: auto;">
+                  <option value="">All Categories</option>
+                  <option value="welcome">Welcome</option>
+                  <option value="leave">Leave Management</option>
+                  <option value="payroll">Payroll</option>
+                  <option value="performance">Performance</option>
+                  <option value="reminder">Reminders</option>
+                  <option value="notification">Notifications</option>
+                </select>
+                <select class="form-select form-select-sm" id="templateTypeFilter" style="width: auto;">
+                  <option value="">All Types</option>
+                  <option value="email">Email</option>
+                  <option value="sms">SMS</option>
+                  <option value="push">Push Notification</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="row" id="templatesGrid">
+              <!-- Templates will be loaded here -->
+              <div class="col-12 text-center">
+                <div class="spinner-border" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+                <p>Loading templates...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Email Templates Tab -->
+      <div class="tab-pane fade" id="email-templates" role="tabpanel">
+        <div class="card">
+          <div class="card-header">
+            <h5>Email Templates</h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-striped table-hover">
+                <thead>
+                  <tr>
+                    <th>Template Name</th>
+                    <th>Subject</th>
+                    <th>Category</th>
+                    <th>Last Modified</th>
+                    <th>Usage Count</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="emailTemplatesTableBody">
+                  <tr>
+                    <td colspan="7" class="text-center">
+                      <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                      </div>
+                      Loading email templates...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SMS Templates Tab -->
+      <div class="tab-pane fade" id="sms-templates" role="tabpanel">
+        <div class="card">
+          <div class="card-header">
+            <h5>SMS Templates</h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-striped table-hover">
+                <thead>
+                  <tr>
+                    <th>Template Name</th>
+                    <th>Content</th>
+                    <th>Character Count</th>
+                    <th>Category</th>
+                    <th>Usage Count</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="smsTemplatesTableBody">
+                  <tr>
+                    <td colspan="7" class="text-center">
+                      <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                      </div>
+                      Loading SMS templates...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notification Templates Tab -->
+      <div class="tab-pane fade" id="notification-templates" role="tabpanel">
+        <div class="card">
+          <div class="card-header">
+            <h5>Push Notification Templates</h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-striped table-hover">
+                <thead>
+                  <tr>
+                    <th>Template Name</th>
+                    <th>Title</th>
+                    <th>Message</th>
+                    <th>Category</th>
+                    <th>Priority</th>
+                    <th>Usage Count</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="notificationTemplatesTableBody">
+                  <tr>
+                    <td colspan="7" class="text-center">
+                      <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                      </div>
+                      Loading notification templates...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Template Variables Tab -->
+      <div class="tab-pane fade" id="template-variables" role="tabpanel">
+        <div class="row">
+          <div class="col-md-8">
+            <div class="card">
+              <div class="card-header">
+                <h5>Available Template Variables</h5>
+              </div>
+              <div class="card-body">
+                <div class="accordion" id="variablesAccordion">
+                  <div class="accordion-item">
+                    <h2 class="accordion-header">
+                      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#employeeVars">
+                        Employee Variables
+                      </button>
+                    </h2>
+                    <div id="employeeVars" class="accordion-collapse collapse show" data-bs-parent="#variablesAccordion">
+                      <div class="accordion-body">
+                        <div class="row">
+                          <div class="col-md-6">
+                            <code>{{employee.firstName}}</code> - First name<br>
+                            <code>{{employee.lastName}}</code> - Last name<br>
+                            <code>{{employee.fullName}}</code> - Full name<br>
+                            <code>{{employee.email}}</code> - Email address<br>
+                            <code>{{employee.phone}}</code> - Phone number<br>
+                            <code>{{employee.employeeId}}</code> - Employee ID<br>
+                          </div>
+                          <div class="col-md-6">
+                            <code>{{employee.department}}</code> - Department<br>
+                            <code>{{employee.designation}}</code> - Job title<br>
+                            <code>{{employee.joiningDate}}</code> - Joining date<br>
+                            <code>{{employee.manager}}</code> - Manager name<br>
+                            <code>{{employee.basicSalary}}</code> - Basic salary<br>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="accordion-item">
+                    <h2 class="accordion-header">
+                      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#leaveVars">
+                        Leave Variables
+                      </button>
+                    </h2>
+                    <div id="leaveVars" class="accordion-collapse collapse" data-bs-parent="#variablesAccordion">
+                      <div class="accordion-body">
+                        <code>{{leave.type}}</code> - Leave type<br>
+                        <code>{{leave.startDate}}</code> - Start date<br>
+                        <code>{{leave.endDate}}</code> - End date<br>
+                        <code>{{leave.days}}</code> - Number of days<br>
+                        <code>{{leave.reason}}</code> - Leave reason<br>
+                        <code>{{leave.status}}</code> - Approval status<br>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="accordion-item">
+                    <h2 class="accordion-header">
+                      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#payrollVars">
+                        Payroll Variables
+                      </button>
+                    </h2>
+                    <div id="payrollVars" class="accordion-collapse collapse" data-bs-parent="#variablesAccordion">
+                      <div class="accordion-body">
+                        <code>{{payroll.month}}</code> - Payroll month<br>
+                        <code>{{payroll.year}}</code> - Payroll year<br>
+                        <code>{{payroll.basicSalary}}</code> - Basic salary<br>
+                        <code>{{payroll.allowances}}</code> - Total allowances<br>
+                        <code>{{payroll.deductions}}</code> - Total deductions<br>
+                        <code>{{payroll.netSalary}}</code> - Net salary<br>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="accordion-item">
+                    <h2 class="accordion-header">
+                      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#systemVars">
+                        System Variables
+                      </button>
+                    </h2>
+                    <div id="systemVars" class="accordion-collapse collapse" data-bs-parent="#variablesAccordion">
+                      <div class="accordion-body">
+                        <code>{{company.name}}</code> - Company name<br>
+                        <code>{{company.address}}</code> - Company address<br>
+                        <code>{{company.phone}}</code> - Company phone<br>
+                        <code>{{company.email}}</code> - Company email<br>
+                        <code>{{current.date}}</code> - Current date<br>
+                        <code>{{current.time}}</code> - Current time<br>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="card">
+              <div class="card-header">
+                <h5>Variable Usage Tips</h5>
+              </div>
+              <div class="card-body">
+                <h6>Formatting Variables:</h6>
+                <ul class="small">
+                  <li>Use <code>{{variable}}</code> syntax</li>
+                  <li>Variables are case-sensitive</li>
+                  <li>Nested variables: <code>{{employee.address.city}}</code></li>
+                  <li>Date formatting: <code>{{date|format:'DD/MM/YYYY'}}</code></li>
+                </ul>
+
+                <h6 class="mt-3">Best Practices:</h6>
+                <ul class="small">
+                  <li>Test templates with real data</li>
+                  <li>Use fallback values: <code>{{employee.phone|default:'N/A'}}</code></li>
+                  <li>Keep variable names descriptive</li>
+                  <li>Document custom variables</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Template Modal -->
+  <div class="modal fade" id="addTemplateModal" tabindex="-1" aria-labelledby="addTemplateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addTemplateModalLabel">Create New Template</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="templateForm">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="templateName" class="form-label">Template Name *</label>
+                  <input type="text" class="form-control" id="templateName" required placeholder="e.g., Welcome Email">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="templateType" class="form-label">Template Type *</label>
+                  <select class="form-select" id="templateType" required>
+                    <option value="">Select Type</option>
+                    <option value="email">Email Template</option>
+                    <option value="sms">SMS Template</option>
+                    <option value="push">Push Notification</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="templateCategory" class="form-label">Category *</label>
+                  <select class="form-select" id="templateCategory" required>
+                    <option value="">Select Category</option>
+                    <option value="welcome">Welcome</option>
+                    <option value="leave">Leave Management</option>
+                    <option value="payroll">Payroll</option>
+                    <option value="performance">Performance</option>
+                    <option value="reminder">Reminders</option>
+                    <option value="notification">Notifications</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="templateLanguage" class="form-label">Language</label>
+                  <select class="form-select" id="templateLanguage">
+                    <option value="id">Bahasa Indonesia</option>
+                    <option value="en">English</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Email Template Fields -->
+            <div id="emailFields" style="display: none;">
+              <div class="mb-3">
+                <label for="emailSubject" class="form-label">Email Subject *</label>
+                <input type="text" class="form-control" id="emailSubject" placeholder="Subject line for the email">
+              </div>
+
+              <div class="mb-3">
+                <label for="emailContent" class="form-label">Email Content *</label>
+                <div class="mb-2">
+                  <div class="btn-group btn-group-sm" role="group">
+                    <button type="button" class="btn btn-outline-secondary" id="boldBtn"><i class="bi bi-type-bold"></i></button>
+                    <button type="button" class="btn btn-outline-secondary" id="italicBtn"><i class="bi bi-type-italic"></i></button>
+                    <button type="button" class="btn btn-outline-secondary" id="underlineBtn"><i class="bi bi-type-underline"></i></button>
+                    <button type="button" class="btn btn-outline-secondary" id="insertVariableBtn">Insert Variable</button>
+                  </div>
+                </div>
+                <textarea class="form-control" id="emailContent" rows="10" placeholder="Compose your email template..."></textarea>
+              </div>
+
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="isHtmlEmail">
+                <label class="form-check-label" for="isHtmlEmail">
+                  Use HTML formatting
+                </label>
+              </div>
+            </div>
+
+            <!-- SMS Template Fields -->
+            <div id="smsFields" style="display: none;">
+              <div class="mb-3">
+                <label for="smsContent" class="form-label">SMS Content *</label>
+                <textarea class="form-control" id="smsContent" rows="3" maxlength="160" placeholder="Compose your SMS message..."></textarea>
+                <div class="form-text">
+                  <span id="charCount">0</span>/160 characters
+                  <span class="float-end" id="smsCount">1 SMS</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Push Notification Fields -->
+            <div id="pushFields" style="display: none;">
+              <div class="mb-3">
+                <label for="pushTitle" class="form-label">Notification Title *</label>
+                <input type="text" class="form-control" id="pushTitle" maxlength="50" placeholder="Brief title for the notification">
+              </div>
+
+              <div class="mb-3">
+                <label for="pushMessage" class="form-label">Notification Message *</label>
+                <textarea class="form-control" id="pushMessage" rows="3" maxlength="150" placeholder="Notification message..."></textarea>
+                <div class="form-text">
+                  <span id="pushCharCount">0</span>/150 characters
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="pushPriority" class="form-label">Priority</label>
+                <select class="form-select" id="pushPriority">
+                  <option value="normal">Normal</option>
+                  <option value="high">High</option>
+                  <option value="low">Low</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="templateDescription" class="form-label">Description</label>
+              <textarea class="form-control" id="templateDescription" rows="2" placeholder="Brief description of this template..."></textarea>
+            </div>
+
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="isActive" checked>
+              <label class="form-check-label" for="isActive">
+                Template is active and available for use
+              </label>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" id="previewTemplateBtn">
+            <i class="bi bi-eye"></i> Preview
+          </button>
+          <button type="button" class="btn btn-success" id="saveTemplateBtn">
+            <i class="bi bi-check-circle"></i> Save Template
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Template Categories Modal -->
+  <div class="modal fade" id="templateCategoriesModal" tabindex="-1" aria-labelledby="templateCategoriesModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="templateCategoriesModalLabel">Manage Template Categories</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <button class="btn btn-success btn-sm" id="addCategoryBtn">
+              <i class="bi bi-plus-circle"></i> Add Category
+            </button>
+          </div>
+
+          <div class="list-group" id="categoriesList">
+            <!-- Categories will be loaded here -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Template Preview Modal -->
+  <div class="modal fade" id="templatePreviewModal" tabindex="-1" aria-labelledby="templatePreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="templatePreviewModalLabel">Template Preview</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div id="previewContent">
+            <!-- Preview content will be loaded here -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="sendTestBtn">
+            <i class="bi bi-send"></i> Send Test
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function getToken() { return localStorage.getItem('token') || ''; }
+
+    let templates = [];
+    let categories = [];
+    let templateVariables = {
+      employee: ['firstName', 'lastName', 'fullName', 'email', 'phone', 'employeeId', 'department', 'designation', 'joiningDate', 'manager', 'basicSalary'],
+      leave: ['type', 'startDate', 'endDate', 'days', 'reason', 'status'],
+      payroll: ['month', 'year', 'basicSalary', 'allowances', 'deductions', 'netSalary'],
+      company: ['name', 'address', 'phone', 'email'],
+      current: ['date', 'time']
+    };
+
+    // Logout functionality
+    document.getElementById('logoutBtn')?.addEventListener('click', function(e) {
+      e.preventDefault();
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    });
+
+    // Template type change handler
+    document.getElementById('templateType').addEventListener('change', function() {
+      const type = this.value;
+      document.getElementById('emailFields').style.display = type === 'email' ? 'block' : 'none';
+      document.getElementById('smsFields').style.display = type === 'sms' ? 'block' : 'none';
+      document.getElementById('pushFields').style.display = type === 'push' ? 'block' : 'none';
+    });
+
+    // SMS character counter
+    document.getElementById('smsContent').addEventListener('input', function() {
+      const count = this.value.length;
+      document.getElementById('charCount').textContent = count;
+      document.getElementById('smsCount').textContent = count > 160 ? '2 SMS' : '1 SMS';
+    });
+
+    // Push notification character counter
+    document.getElementById('pushMessage').addEventListener('input', function() {
+      const count = this.value.length;
+      document.getElementById('pushCharCount').textContent = count;
+    });
+
+    // Rich text editor buttons
+    document.getElementById('boldBtn').addEventListener('click', function() {
+      document.execCommand('bold');
+    });
+
+    document.getElementById('italicBtn').addEventListener('click', function() {
+      document.execCommand('italic');
+    });
+
+    document.getElementById('underlineBtn').addEventListener('click', function() {
+      document.execCommand('underline');
+    });
+
+    // Insert variable button
+    document.getElementById('insertVariableBtn').addEventListener('click', function() {
+      showVariableSelector();
+    });
+
+    function showVariableSelector() {
+      let variableHtml = '<div class="mb-3"><select class="form-select" id="variableCategory">';
+      variableHtml += '<option value="">Select Variable Category</option>';
+
+      Object.keys(templateVariables).forEach(category => {
+        variableHtml += `<option value="${category}">${category.charAt(0).toUpperCase() + category.slice(1)}</option>`;
+      });
+
+      variableHtml += '</select></div>';
+      variableHtml += '<div class="mb-3"><select class="form-select" id="variableName">';
+      variableHtml += '<option value="">Select Variable</option></select></div>';
+      variableHtml += '<button type="button" class="btn btn-primary btn-sm" id="insertSelectedVariable">Insert Variable</button>';
+
+      // Create modal for variable selection
+      const variableModal = document.createElement('div');
+      variableModal.className = 'modal fade';
+      variableModal.innerHTML = `
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Insert Template Variable</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">${variableHtml}</div>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(variableModal);
+      const modal = new bootstrap.Modal(variableModal);
+      modal.show();
+
+      // Variable category change handler
+      document.getElementById('variableCategory').addEventListener('change', function() {
+        const category = this.value;
+        const variableSelect = document.getElementById('variableName');
+        variableSelect.innerHTML = '<option value="">Select Variable</option>';
+
+        if (category && templateVariables[category]) {
+          templateVariables[category].forEach(variable => {
+            variableSelect.innerHTML += `<option value="{{${category}.${variable}}}">{{${category}.${variable}}}</option>`;
+          });
+        }
+      });
+
+      // Insert selected variable
+      document.getElementById('insertSelectedVariable').addEventListener('click', function() {
+        const selectedVariable = document.getElementById('variableName').value;
+        if (selectedVariable) {
+          const emailContent = document.getElementById('emailContent');
+          const cursorPos = emailContent.selectionStart;
+          const textBefore = emailContent.value.substring(0, cursorPos);
+          const textAfter = emailContent.value.substring(cursorPos);
+          emailContent.value = textBefore + selectedVariable + textAfter;
+        }
+        modal.hide();
+        variableModal.remove();
+      });
+
+      variableModal.addEventListener('hidden.bs.modal', function() {
+        variableModal.remove();
+      });
+    }
+
+    async function loadTemplates() {
+      try {
+        const response = await fetch('/api/templates', {
+          headers: { 'Authorization': 'Bearer ' + getToken() }
+        });
+
+        if (response.ok) {
+          templates = await response.json();
+          renderTemplates();
+          updateSummary();
+        }
+      } catch (error) {
+        console.error('Error loading templates:', error);
+      }
+    }
+
+    function renderTemplates() {
+      const grid = document.getElementById('templatesGrid');
+      grid.innerHTML = '';
+
+      if (!templates || templates.length === 0) {
+        grid.innerHTML = '<div class="col-12 text-center text-muted">No templates found</div>';
+        return;
+      }
+
+      templates.forEach(template => {
+        const col = document.createElement('div');
+        col.className = 'col-md-4 mb-3';
+
+        const typeIcon = template.type === 'email' ? 'bi-envelope' :
+                        template.type === 'sms' ? 'bi-chat-dots' : 'bi-bell';
+
+        const typeColor = template.type === 'email' ? 'primary' :
+                         template.type === 'sms' ? 'info' : 'warning';
+
+        col.innerHTML = `
+          <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h6 class="mb-0">${template.name}</h6>
+              <span class="badge bg-${typeColor}"><i class="bi ${typeIcon}"></i> ${template.type.toUpperCase()}</span>
+            </div>
+            <div class="card-body">
+              <p class="card-text small text-muted">${template.description || 'No description'}</p>
+              <div class="mb-2">
+                <small class="text-muted">Category: ${template.category}</small>
+              </div>
+              <div class="mb-2">
+                <small class="text-muted">Usage: ${template.usageCount || 0} times</small>
+              </div>
+            </div>
+            <div class="card-footer">
+              <div class="btn-group w-100" role="group">
+                <button class="btn btn-outline-primary btn-sm" onclick="previewTemplate(${template.id})">
+                  <i class="bi bi-eye"></i>
+                </button>
+                <button class="btn btn-outline-warning btn-sm" onclick="editTemplate(${template.id})">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button class="btn btn-outline-danger btn-sm" onclick="deleteTemplate(${template.id})">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        grid.appendChild(col);
+      });
+    }
+
+    function updateSummary() {
+      const total = templates.length;
+      const emailCount = templates.filter(t => t.type === 'email').length;
+      const smsCount = templates.filter(t => t.type === 'sms').length;
+      const monthlyUsage = templates.reduce((sum, t) => sum + (t.usageCount || 0), 0);
+
+      document.getElementById('totalTemplates').textContent = total;
+      document.getElementById('emailTemplates').textContent = emailCount;
+      document.getElementById('smsTemplates').textContent = smsCount;
+      document.getElementById('monthlyUsage').textContent = monthlyUsage;
+    }
+
+    // Template actions
+    function previewTemplate(id) {
+      const template = templates.find(t => t.id === id);
+      if (template) {
+        const previewModal = new bootstrap.Modal(document.getElementById('templatePreviewModal'));
+        const previewContent = document.getElementById('previewContent');
+
+        if (template.type === 'email') {
+          previewContent.innerHTML = `
+            <div class="border p-3">
+              <h6>Subject: ${template.subject}</h6>
+              <hr>
+              <div>${template.content}</div>
+            </div>
+          `;
+        } else if (template.type === 'sms') {
+          previewContent.innerHTML = `
+            <div class="border p-3">
+              <h6>SMS Preview:</h6>
+              <div class="bg-light p-2 rounded">${template.content}</div>
+              <small class="text-muted">Characters: ${template.content.length}/160</small>
+            </div>
+          `;
+        } else {
+          previewContent.innerHTML = `
+            <div class="border p-3">
+              <h6>Push Notification:</h6>
+              <div class="bg-light p-2 rounded">
+                <strong>${template.title}</strong><br>
+                ${template.message}
+              </div>
+            </div>
+          `;
+        }
+
+        previewModal.show();
+      }
+    }
+
+    function editTemplate(id) {
+      const template = templates.find(t => t.id === id);
+      if (template) {
+        // Populate form with template data
+        document.getElementById('templateName').value = template.name;
+        document.getElementById('templateType').value = template.type;
+        document.getElementById('templateCategory').value = template.category;
+        document.getElementById('templateDescription').value = template.description;
+
+        // Show relevant fields based on type
+        document.getElementById('templateType').dispatchEvent(new Event('change'));
+
+        if (template.type === 'email') {
+          document.getElementById('emailSubject').value = template.subject;
+          document.getElementById('emailContent').value = template.content;
+        } else if (template.type === 'sms') {
+          document.getElementById('smsContent').value = template.content;
+        } else {
+          document.getElementById('pushTitle').value = template.title;
+          document.getElementById('pushMessage').value = template.message;
+        }
+
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('addTemplateModal'));
+        modal.show();
+      }
+    }
+
+    function deleteTemplate(id) {
+      if (confirm('Are you sure you want to delete this template?')) {
+        // Delete template logic
+        alert('Delete functionality will be implemented');
+      }
+    }
+
+    // Save template
+    document.getElementById('saveTemplateBtn').addEventListener('click', async function() {
+      const templateData = {
+        name: document.getElementById('templateName').value,
+        type: document.getElementById('templateType').value,
+        category: document.getElementById('templateCategory').value,
+        language: document.getElementById('templateLanguage').value,
+        description: document.getElementById('templateDescription').value,
+        isActive: document.getElementById('isActive').checked
+      };
+
+      // Add type-specific data
+      if (templateData.type === 'email') {
+        templateData.subject = document.getElementById('emailSubject').value;
+        templateData.content = document.getElementById('emailContent').value;
+        templateData.isHtml = document.getElementById('isHtmlEmail').checked;
+      } else if (templateData.type === 'sms') {
+        templateData.content = document.getElementById('smsContent').value;
+      } else if (templateData.type === 'push') {
+        templateData.title = document.getElementById('pushTitle').value;
+        templateData.message = document.getElementById('pushMessage').value;
+        templateData.priority = document.getElementById('pushPriority').value;
+      }
+
+      try {
+        const response = await fetch('/api/templates', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + getToken()
+          },
+          body: JSON.stringify(templateData)
+        });
+
+        if (response.ok) {
+          bootstrap.Modal.getInstance(document.getElementById('addTemplateModal')).hide();
+          document.getElementById('templateForm').reset();
+          await loadTemplates();
+          alert('Template saved successfully!');
+        } else {
+          alert('Failed to save template');
+        }
+      } catch (error) {
+        alert('Error: ' + error.message);
+      }
+    });
+
+    // Template analytics
+    document.getElementById('templateAnalyticsBtn').addEventListener('click', function() {
+      // Show analytics modal or redirect to analytics page
+      alert('Template analytics will be implemented');
+    });
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', async function() {
+      await loadTemplates();
+    });
+  </script>
+</body>
+</html>
+

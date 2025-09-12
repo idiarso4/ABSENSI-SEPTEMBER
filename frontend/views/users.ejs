@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pengguna Sistem - HRM & Payroll System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <%- include('partials/navbar') %>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Pengguna Sistem</h2>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">Tambah Pengguna</button>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5>Daftar Pengguna Sistem</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped" id="usersTable">
+                        <thead>
+                            <tr>
+                                <th>Nama Lengkap</th>
+                                <th>Email</th>
+                                <th>Peran</th>
+                                <th>Status</th>
+                                <th>Tanggal Dibuat</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="6" class="text-center">Memuat data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add User Modal -->
+    <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addUserModalLabel">Tambah Pengguna Baru</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="userForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="userFirstName" class="form-label">Nama Depan *</label>
+                                    <input type="text" class="form-control" id="userFirstName" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="userLastName" class="form-label">Nama Belakang *</label>
+                                    <input type="text" class="form-control" id="userLastName" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="userEmail" class="form-label">Email *</label>
+                            <input type="email" class="form-control" id="userEmail" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="userPhone" class="form-label">Telepon</label>
+                                    <input type="tel" class="form-control" id="userPhone">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="userRole" class="form-label">Peran *</label>
+                                    <select class="form-select" id="userRole" required>
+                                        <option value="">Pilih Peran</option>
+                                        <option value="ADMIN">Administrator</option>
+                                        <option value="HR_MANAGER">HR Manager</option>
+                                        <option value="EMPLOYEE">Karyawan</option>
+                                        <option value="ACCOUNTANT">Akuntan</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="userDepartment" class="form-label">Departemen</label>
+                            <select class="form-select" id="userDepartment">
+                                <option value="">Pilih Departemen</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="userPassword" class="form-label">Password *</label>
+                            <input type="password" class="form-control" id="userPassword" required minlength="6">
+                        </div>
+                        <div class="mb-3">
+                            <label for="userConfirmPassword" class="form-label">Konfirmasi Password *</label>
+                            <input type="password" class="form-control" id="userConfirmPassword" required minlength="6">
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="sendWelcomeEmail" checked>
+                            <label class="form-check-label" for="sendWelcomeEmail">
+                                Kirim email selamat datang
+                            </label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="saveUserBtn">Simpan Pengguna</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editUserModalLabel">Edit Pengguna</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editUserForm">
+                        <input type="hidden" id="editUserId">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editUserFirstName" class="form-label">Nama Depan *</label>
+                                    <input type="text" class="form-control" id="editUserFirstName" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editUserLastName" class="form-label">Nama Belakang *</label>
+                                    <input type="text" class="form-control" id="editUserLastName" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editUserEmail" class="form-label">Email *</label>
+                            <input type="email" class="form-control" id="editUserEmail" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editUserPhone" class="form-label">Telepon</label>
+                                    <input type="tel" class="form-control" id="editUserPhone">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editUserRole" class="form-label">Peran *</label>
+                                    <select class="form-select" id="editUserRole" required>
+                                        <option value="">Pilih Peran</option>
+                                        <option value="ADMIN">Administrator</option>
+                                        <option value="HR_MANAGER">HR Manager</option>
+                                        <option value="EMPLOYEE">Karyawan</option>
+                                        <option value="ACCOUNTANT">Akuntan</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editUserDepartment" class="form-label">Departemen</label>
+                            <select class="form-select" id="editUserDepartment">
+                                <option value="">Pilih Departemen</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editUserStatus" class="form-label">Status</label>
+                            <select class="form-select" id="editUserStatus">
+                                <option value="ACTIVE">Aktif</option>
+                                <option value="INACTIVE">Tidak Aktif</option>
+                                <option value="SUSPENDED">Ditangguhkan</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="updateUserBtn">Update Pengguna</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Roles & Permissions Modal -->
+    <div class="modal fade" id="rolesPermissionsModal" tabindex="-1" aria-labelledby="rolesPermissionsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="rolesPermissionsModalLabel">Peran & Izin</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6>Peran Sistem</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="list-group" id="rolesList">
+                                        <div class="text-center text-muted">
+                                            <div class="spinner-border" role="status">
+                                                <span class="visually-hidden">Memuat...</span>
+                                            </div>
+                                            Memuat peran...
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6>Izin untuk: <span id="selectedRoleName">-</span></h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="permissionsContainer">
+                                        <div class="text-center text-muted">Pilih peran untuk melihat izin</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-primary" id="savePermissionsBtn">Simpan Perubahan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function getToken() { return localStorage.getItem('token') || ''; }
+
+        let users = [];
+        let departments = [];
+        let roles = [];
+        let permissions = [];
+        let selectedRoleId = null;
+
+        // Logout functionality
+        document.getElementById('logoutBtn')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.removeItem('token');
+            window.location.href = '/login';
+        });
+
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/users', {
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+                if (response.ok) {
+                    users = await response.json();
+                    renderUsersTable();
+                    updateUserStats();
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+            }
+        }
+
+        async function loadDepartments() {
+            try {
+                const response = await fetch('/api/departments', {
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+                if (response.ok) {
+                    departments = await response.json();
+                    populateDepartmentDropdowns();
+                }
+            } catch (error) {
+                console.error('Error loading departments:', error);
+            }
+        }
+
+        async function loadRoles() {
+            try {
+                const response = await fetch('/api/roles', {
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+                if (response.ok) {
+                    roles = await response.json();
+                    renderRolesList();
+                }
+            } catch (error) {
+                console.error('Error loading roles:', error);
+            }
+        }
+
+        function populateDepartmentDropdowns() {
+            const departmentSelects = ['userDepartment', 'editUserDepartment'];
+            departmentSelects.forEach(id => {
+                const select = document.getElementById(id);
+                if (select) {
+                    select.innerHTML = '<option value="">Pilih Departemen</option>';
+                    departments.forEach(dept => {
+                        select.add(new Option(dept.name, dept.id));
+                    });
+                }
+            });
+        }
+
+        function renderUsersTable() {
+            const tableBody = document.getElementById('usersTable').querySelector('tbody');
+            tableBody.innerHTML = '';
+
+            if (!users || users.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Tidak ada data pengguna</td></tr>';
+                return;
+            }
+
+            users.forEach(user => {
+                const statusClass = user.status === 'ACTIVE' ? 'success' : user.status === 'INACTIVE' ? 'warning' : 'danger';
+                const statusText = user.status === 'ACTIVE' ? 'Aktif' : user.status === 'INACTIVE' ? 'Tidak Aktif' : 'Ditangguhkan';
+                const roleText = user.role === 'ADMIN' ? 'Administrator' : user.role === 'HR_MANAGER' ? 'HR Manager' : user.role === 'EMPLOYEE' ? 'Karyawan' : 'Akuntan';
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${user.firstName} ${user.lastName}</td>
+                    <td>${user.email}</td>
+                    <td><span class="badge bg-primary">${roleText}</span></td>
+                    <td><span class="badge bg-${statusClass}">${statusText}</span></td>
+                    <td>${new Date(user.createdAt).toLocaleDateString('id-ID')}</td>
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-primary edit-user" data-id="${user.id}" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-info reset-password" data-id="${user.id}" title="Reset Password">
+                                <i class="bi bi-key"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-warning toggle-status" data-id="${user.id}" title="Toggle Status">
+                                <i class="bi bi-toggle-on"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger delete-user" data-id="${user.id}" title="Hapus">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            addUserActionListeners();
+        }
+
+        function renderRolesList() {
+            const rolesList = document.getElementById('rolesList');
+            rolesList.innerHTML = '';
+
+            if (!roles || roles.length === 0) {
+                rolesList.innerHTML = '<div class="text-center text-muted">Tidak ada data peran</div>';
+                return;
+            }
+
+            roles.forEach(role => {
+                const roleItem = document.createElement('button');
+                roleItem.className = 'list-group-item list-group-item-action';
+                roleItem.textContent = role.name;
+                roleItem.dataset.roleId = role.id;
+                roleItem.addEventListener('click', () => selectRole(role.id, role.name));
+                rolesList.appendChild(roleItem);
+            });
+        }
+
+        function updateUserStats() {
+            const totalUsers = users.length;
+            const activeUsers = users.filter(u => u.status === 'ACTIVE').length;
+            const adminUsers = users.filter(u => u.role === 'ADMIN').length;
+            const hrUsers = users.filter(u => u.role === 'HR_MANAGER').length;
+
+            // Update stats if elements exist
+            const statsElements = ['totalUsers', 'activeUsers', 'adminUsers', 'hrUsers'];
+            const statsValues = [totalUsers, activeUsers, adminUsers, hrUsers];
+
+            statsElements.forEach((id, index) => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = statsValues[index];
+                }
+            });
+        }
+
+        function addUserActionListeners() {
+            document.querySelectorAll('.edit-user').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const userId = e.target.closest('button').dataset.id;
+                    editUser(userId);
+                });
+            });
+
+            document.querySelectorAll('.reset-password').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const userId = e.target.closest('button').dataset.id;
+                    resetUserPassword(userId);
+                });
+            });
+
+            document.querySelectorAll('.toggle-status').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const userId = e.target.closest('button').dataset.id;
+                    toggleUserStatus(userId);
+                });
+            });
+
+            document.querySelectorAll('.delete-user').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const userId = e.target.closest('button').dataset.id;
+                    deleteUser(userId);
+                });
+            });
+        }
+
+        async function selectRole(roleId, roleName) {
+            selectedRoleId = roleId;
+            document.getElementById('selectedRoleName').textContent = roleName;
+
+            try {
+                const response = await fetch(`/api/roles/${roleId}/permissions`, {
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+                if (response.ok) {
+                    permissions = await response.json();
+                    renderPermissions();
+                }
+            } catch (error) {
+                console.error('Error loading permissions:', error);
+            }
+        }
+
+        function renderPermissions() {
+            const container = document.getElementById('permissionsContainer');
+            container.innerHTML = '';
+
+            if (!permissions || permissions.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted">Tidak ada izin untuk peran ini</div>';
+                return;
+            }
+
+            const permissionGroups = {
+                'User Management': ['CREATE_USER', 'READ_USER', 'UPDATE_USER', 'DELETE_USER'],
+                'Employee Management': ['CREATE_EMPLOYEE', 'READ_EMPLOYEE', 'UPDATE_EMPLOYEE', 'DELETE_EMPLOYEE'],
+                'Payroll': ['CREATE_PAYROLL', 'READ_PAYROLL', 'UPDATE_PAYROLL', 'DELETE_PAYROLL'],
+                'Reports': ['GENERATE_REPORTS', 'VIEW_REPORTS', 'EXPORT_REPORTS'],
+                'System': ['SYSTEM_ADMIN', 'BACKUP_DATA', 'RESTORE_DATA']
+            };
+
+            Object.keys(permissionGroups).forEach(groupName => {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'mb-3';
+                groupDiv.innerHTML = `<h6>${groupName}</h6>`;
+
+                permissionGroups[groupName].forEach(permission => {
+                    const perm = permissions.find(p => p.name === permission);
+                    if (perm) {
+                        const checkboxDiv = document.createElement('div');
+                        checkboxDiv.className = 'form-check';
+                        checkboxDiv.innerHTML = `
+                            <input class="form-check-input" type="checkbox" id="perm_${perm.id}" ${perm.enabled ? 'checked' : ''}>
+                            <label class="form-check-label" for="perm_${perm.id}">
+                                ${perm.displayName || perm.name}
+                            </label>
+                        `;
+                        groupDiv.appendChild(checkboxDiv);
+                    }
+                });
+
+                container.appendChild(groupDiv);
+            });
+        }
+
+        // Form handlers
+        document.getElementById('saveUserBtn').addEventListener('click', async function() {
+            const password = document.getElementById('userPassword').value;
+            const confirmPassword = document.getElementById('userConfirmPassword').value;
+
+            if (password !== confirmPassword) {
+                alert('Password dan konfirmasi password tidak cocok');
+                return;
+            }
+
+            const userData = {
+                firstName: document.getElementById('userFirstName').value,
+                lastName: document.getElementById('userLastName').value,
+                email: document.getElementById('userEmail').value,
+                phone: document.getElementById('userPhone').value,
+                role: document.getElementById('userRole').value,
+                departmentId: document.getElementById('userDepartment').value,
+                password: password,
+                sendWelcomeEmail: document.getElementById('sendWelcomeEmail').checked
+            };
+
+            if (!userData.firstName || !userData.lastName || !userData.email || !userData.role || !userData.password) {
+                alert('Mohon lengkapi semua field yang diperlukan');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify(userData)
+                });
+
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
+                    document.getElementById('userForm').reset();
+                    await loadUsers();
+                    alert('Pengguna berhasil ditambahkan!');
+                } else {
+                    const error = await response.text();
+                    alert(`Gagal menambah pengguna: ${error}`);
+                }
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        });
+
+        document.getElementById('updateUserBtn').addEventListener('click', async function() {
+            const userId = document.getElementById('editUserId').value;
+            const userData = {
+                firstName: document.getElementById('editUserFirstName').value,
+                lastName: document.getElementById('editUserLastName').value,
+                email: document.getElementById('editUserEmail').value,
+                phone: document.getElementById('editUserPhone').value,
+                role: document.getElementById('editUserRole').value,
+                departmentId: document.getElementById('editUserDepartment').value,
+                status: document.getElementById('editUserStatus').value
+            };
+
+            try {
+                const response = await fetch(`/api/users/${userId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify(userData)
+                });
+
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('editUserModal')).hide();
+                    await loadUsers();
+                    alert('Pengguna berhasil diupdate!');
+                } else {
+                    alert('Gagal mengupdate pengguna');
+                }
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        });
+
+        document.getElementById('savePermissionsBtn').addEventListener('click', async function() {
+            if (!selectedRoleId) {
+                alert('Pilih peran terlebih dahulu');
+                return;
+            }
+
+            const updatedPermissions = permissions.map(perm => ({
+                id: perm.id,
+                enabled: document.getElementById(`perm_${perm.id}`).checked
+            }));
+
+            try {
+                const response = await fetch(`/api/roles/${selectedRoleId}/permissions`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify(updatedPermissions)
+                });
+
+                if (response.ok) {
+                    alert('Izin berhasil disimpan!');
+                } else {
+                    alert('Gagal menyimpan izin');
+                }
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        });
+
+        // User action functions
+        async function editUser(userId) {
+            const user = users.find(u => u.id == userId);
+            if (!user) return;
+
+            document.getElementById('editUserId').value = user.id;
+            document.getElementById('editUserFirstName').value = user.firstName;
+            document.getElementById('editUserLastName').value = user.lastName;
+            document.getElementById('editUserEmail').value = user.email;
+            document.getElementById('editUserPhone').value = user.phone || '';
+            document.getElementById('editUserRole').value = user.role;
+            document.getElementById('editUserDepartment').value = user.departmentId || '';
+            document.getElementById('editUserStatus').value = user.status;
+
+            new bootstrap.Modal(document.getElementById('editUserModal')).show();
+        }
+
+        async function resetUserPassword(userId) {
+            if (!confirm('Apakah Anda yakin ingin mereset password pengguna ini?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/users/${userId}/reset-password`, {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+
+                if (response.ok) {
+                    alert('Password berhasil direset. Email reset password telah dikirim.');
+                } else {
+                    alert('Gagal mereset password');
+                }
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        }
+
+        async function toggleUserStatus(userId) {
+            const user = users.find(u => u.id == userId);
+            if (!user) return;
+
+            const newStatus = user.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+
+            try {
+                const response = await fetch(`/api/users/${userId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                if (response.ok) {
+                    await loadUsers();
+                    alert(`Status pengguna berhasil diubah menjadi ${newStatus}`);
+                } else {
+                    alert('Gagal mengubah status pengguna');
+                }
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        }
+
+        async function deleteUser(userId) {
+            if (!confirm('Apakah Anda yakin ingin menghapus pengguna ini? Tindakan ini tidak dapat dibatalkan.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/users/${userId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+
+                if (response.ok) {
+                    await loadUsers();
+                    alert('Pengguna berhasil dihapus');
+                } else {
+                    alert('Gagal menghapus pengguna');
+                }
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadUsers();
+            await loadDepartments();
+            await loadRoles();
+        });
+    </script>
+</body>
+</html>

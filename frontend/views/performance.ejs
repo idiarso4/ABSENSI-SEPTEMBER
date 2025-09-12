@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance Analytics - HRM & Payroll System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <%- include('partials/navbar') %>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="bi bi-graph-up"></i> Analitik Kinerja</h2>
+            <button class="btn btn-primary" onclick="loadAnalyticsData()">
+                <i class="bi bi-arrow-clockwise"></i> Segarkan Data
+            </button>
+        </div>
+
+        <!-- Performance Overview Cards -->
+        <div class="row mb-4" id="overviewCards">
+            <div class="col-md-3">
+                <div class="card text-white bg-primary">
+                    <div class="card-body">
+                        <h6 class="card-title">Total Ulasan</h6>
+                        <h4 id="totalReviews">-</h4>
+                        <small>Bulanan</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-success">
+                    <div class="card-body">
+                        <h6 class="card-title">Rating Rata-rata</h6>
+                        <h4 id="averageRating">-</h4>
+                        <small>Dari 5.0</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-warning">
+                    <div class="card-body">
+                        <h6 class="card-title">Pencapaian Tinggi</h6>
+                        <h4 id="highPerformers">-</h4>
+                        <small>Rating ≥ 4.5</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-info">
+                    <div class="card-body">
+                        <h6 class="card-title">Tingkat Penyelesaian</h6>
+                        <h4 id="completionRate">-</h4>
+                        <small>Goal tercapai</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex gap-2 flex-wrap">
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addReviewModal">
+                        <i class="bi bi-plus-circle"></i> Tambah Ulasan
+                    </button>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#setGoalsModal">
+                        <i class="bi bi-bullseye"></i> Tetapkan Goal
+                    </button>
+                    <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#performanceSettingsModal">
+                        <i class="bi bi-gear"></i> Pengaturan
+                    </button>
+                    <button class="btn btn-warning" onclick="generatePerformanceReport()">
+                        <i class="bi bi-file-earmark-bar-graph"></i> Laporan Kinerja
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs mb-4" id="performanceTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">Ringkasan</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab">Ulasan Kinerja</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="goals-tab" data-bs-toggle="tab" data-bs-target="#goals" type="button" role="tab">Goal & Target</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="analytics-tab" data-bs-toggle="tab" data-bs-target="#analytics" type="button" role="tab">Analitik Detail</button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="performanceTabContent">
+            <!-- Overview Tab -->
+            <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                <!-- Performance Charts -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Distribusi Kinerja</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="performanceChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Tren Kinerja (3 Tahun Terakhir)</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="trendsChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Performers & Department Analysis -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="bi bi-trophy"></i> Pencapai Terbaik</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="topPerformersList">
+                                    <p class="text-muted">Memuat pencapai terbaik...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="bi bi-building"></i> Kinerja Departemen</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="departmentAnalysisList">
+                                    <p class="text-muted">Memuat analisis departemen...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reviews Tab -->
+            <div class="tab-pane fade" id="reviews" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5>Ulasan Kinerja</h5>
+                            <div class="d-flex gap-2">
+                                <select class="form-select form-select-sm" id="reviewPeriodFilter" style="width: auto;">
+                                    <option value="">Semua Periode</option>
+                                    <option value="this-month">Bulan Ini</option>
+                                    <option value="this-quarter">Kuartal Ini</option>
+                                    <option value="this-year">Tahun Ini</option>
+                                </select>
+                                <select class="form-select form-select-sm" id="reviewStatusFilter" style="width: auto;">
+                                    <option value="">Semua Status</option>
+                                    <option value="draft">Draft</option>
+                                    <option value="pending">Menunggu Review</option>
+                                    <option value="completed">Selesai</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Tanggal</th>
+                                        <th>Karyawan</th>
+                                        <th>Reviewer</th>
+                                        <th>Rating</th>
+                                        <th>Status</th>
+                                        <th>Periode</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reviewsTableBody">
+                                    <tr>
+                                        <td colspan="7" class="text-center">
+                                            <div class="spinner-border" role="status">
+                                                <span class="visually-hidden">Memuat...</span>
+                                            </div>
+                                            Memuat ulasan kinerja...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Goals Tab -->
+            <div class="tab-pane fade" id="goals" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5>Goal & Target Karyawan</h5>
+                            <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#setGoalsModal">
+                                <i class="bi bi-plus-circle"></i> Tetapkan Goal Baru
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <select class="form-select" id="goalEmployeeFilter">
+                                    <option value="">Pilih Karyawan</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <select class="form-select" id="goalStatusFilter">
+                                    <option value="">Semua Status</option>
+                                    <option value="not-started">Belum Dimulai</option>
+                                    <option value="in-progress">Sedang Berjalan</option>
+                                    <option value="completed">Selesai</option>
+                                    <option value="overdue">Terlambat</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-primary" id="filterGoals">Filter</button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Karyawan</th>
+                                        <th>Goal</th>
+                                        <th>Target</th>
+                                        <th>Deadline</th>
+                                        <th>Progress</th>
+                                        <th>Status</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="goalsTableBody">
+                                    <tr>
+                                        <td colspan="7" class="text-center">
+                                            <div class="spinner-border" role="status">
+                                                <span class="visually-hidden">Memuat...</span>
+                                            </div>
+                                            Memuat data goal...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Tab -->
+            <div class="tab-pane fade" id="analytics" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Kinerja per Departemen</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="departmentChart" width="400" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Tren Peningkatan Kinerja</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="improvementChart" width="400" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Distribusi Rating Kinerja</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="ratingDistributionChart" width="400" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Goal Achievement Rate</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="goalAchievementChart" width="400" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Charts -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Distribusi Kinerja</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="performanceChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Tren Kinerja (3 Tahun Terakhir)</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="trendsChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Performers & Department Analysis -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="bi bi-trophy"></i> Pencapai Terbaik</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="topPerformersList">
+                            <p class="text-muted">Memuat pencapai terbaik...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="bi bi-building"></i> Kinerja Departemen</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="departmentAnalysisList">
+                            <p class="text-muted">Memuat analisis departemen...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Report Section -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="bi bi-file-earmark-bar-graph"></i> Laporan Kinerja Tahunan</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="reportYear" class="form-label">Tahun Laporan</label>
+                                <select class="form-select" id="reportYear">
+                                    <option value="2024">2024</option>
+                                    <option value="2023">2023</option>
+                                    <option value="2022">2022</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 d-flex align-items-end">
+                                <button class="btn btn-success me-2" onclick="generateReport()">
+                                    <i class="bi bi-download"></i> Buat Laporan
+                                </button>
+                                <button class="btn btn-outline-primary" onclick="exportData()">
+                                    <i class="bi bi-file-earmark-spreadsheet"></i> Ekspor Data
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="reportResults" class="mt-3" style="display: none;">
+                            <div class="alert alert-success">
+                                <h6>Laporan Berhasil Dibuat!</h6>
+                                <div id="reportSummary"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Performance Review Modal -->
+    <div class="modal fade" id="addReviewModal" tabindex="-1" aria-labelledby="addReviewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addReviewModalLabel">Tambah Ulasan Kinerja</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="reviewForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="reviewEmployee" class="form-label">Karyawan *</label>
+                                    <select class="form-select" id="reviewEmployee" required>
+                                        <option value="">Pilih Karyawan</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="reviewPeriod" class="form-label">Periode Review *</label>
+                                    <select class="form-select" id="reviewPeriod" required>
+                                        <option value="">Pilih Periode</option>
+                                        <option value="quarterly">Triwulanan</option>
+                                        <option value="semi-annual">Semesteran</option>
+                                        <option value="annual">Tahunan</option>
+                                        <option value="custom">Custom</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="reviewStartDate" class="form-label">Tanggal Mulai</label>
+                                    <input type="date" class="form-control" id="reviewStartDate">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="reviewEndDate" class="form-label">Tanggal Selesai</label>
+                                    <input type="date" class="form-control" id="reviewEndDate">
+                                </div>
+                            </div>
+                        </div>
+
+                        <h6>Kriteria Penilaian</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="productivityRating" class="form-label">Produktivitas (1-5)</label>
+                                    <select class="form-select" id="productivityRating">
+                                        <option value="">Pilih Rating</option>
+                                        <option value="1">1 - Sangat Buruk</option>
+                                        <option value="2">2 - Buruk</option>
+                                        <option value="3">3 - Cukup</option>
+                                        <option value="4">4 - Baik</option>
+                                        <option value="5">5 - Sangat Baik</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="qualityRating" class="form-label">Kualitas Pekerjaan (1-5)</label>
+                                    <select class="form-select" id="qualityRating">
+                                        <option value="">Pilih Rating</option>
+                                        <option value="1">1 - Sangat Buruk</option>
+                                        <option value="2">2 - Buruk</option>
+                                        <option value="3">3 - Cukup</option>
+                                        <option value="4">4 - Baik</option>
+                                        <option value="5">5 - Sangat Baik</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="communicationRating" class="form-label">Komunikasi (1-5)</label>
+                                    <select class="form-select" id="communicationRating">
+                                        <option value="">Pilih Rating</option>
+                                        <option value="1">1 - Sangat Buruk</option>
+                                        <option value="2">2 - Buruk</option>
+                                        <option value="3">3 - Cukup</option>
+                                        <option value="4">4 - Baik</option>
+                                        <option value="5">5 - Sangat Baik</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="teamworkRating" class="form-label">Kerja Tim (1-5)</label>
+                                    <select class="form-select" id="teamworkRating">
+                                        <option value="">Pilih Rating</option>
+                                        <option value="1">1 - Sangat Buruk</option>
+                                        <option value="2">2 - Buruk</option>
+                                        <option value="3">3 - Cukup</option>
+                                        <option value="4">4 - Baik</option>
+                                        <option value="5">5 - Sangat Baik</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="reviewComments" class="form-label">Komentar & Rekomendasi</label>
+                            <textarea class="form-control" id="reviewComments" rows="4" placeholder="Berikan komentar detail tentang kinerja karyawan dan rekomendasi untuk peningkatan..."></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="reviewStrengths" class="form-label">Kekuatan</label>
+                            <textarea class="form-control" id="reviewStrengths" rows="2" placeholder="Sebutkan kekuatan karyawan..."></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="reviewImprovements" class="form-label">Area Perbaikan</label>
+                            <textarea class="form-control" id="reviewImprovements" rows="2" placeholder="Sebutkan area yang perlu diperbaiki..."></textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="sendToEmployee">
+                                    <label class="form-check-label" for="sendToEmployee">
+                                        Kirim hasil review ke karyawan
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="saveAsDraft">
+                                    <label class="form-check-label" for="saveAsDraft">
+                                        Simpan sebagai draft
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-outline-primary" id="saveDraftReviewBtn">Simpan Draft</button>
+                    <button type="button" class="btn btn-primary" id="submitReviewBtn">Submit Review</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Set Goals Modal -->
+    <div class="modal fade" id="setGoalsModal" tabindex="-1" aria-labelledby="setGoalsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="setGoalsModalLabel">Tetapkan Goal & Target</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="goalsForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="goalEmployee" class="form-label">Karyawan *</label>
+                                    <select class="form-select" id="goalEmployee" required>
+                                        <option value="">Pilih Karyawan</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="goalType" class="form-label">Tipe Goal *</label>
+                                    <select class="form-select" id="goalType" required>
+                                        <option value="">Pilih Tipe</option>
+                                        <option value="individual">Individual</option>
+                                        <option value="team">Tim</option>
+                                        <option value="department">Departemen</option>
+                                        <option value="company">Perusahaan</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="goalTitle" class="form-label">Judul Goal *</label>
+                            <input type="text" class="form-control" id="goalTitle" required placeholder="Contoh: Tingkatkan penjualan sebesar 20%">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="goalDescription" class="form-label">Deskripsi Goal</label>
+                            <textarea class="form-control" id="goalDescription" rows="3" placeholder="Jelaskan goal secara detail..."></textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="goalTarget" class="form-label">Target *</label>
+                                    <input type="text" class="form-control" id="goalTarget" required placeholder="Contoh: 20%, 100 unit, dll">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="goalDeadline" class="form-label">Deadline *</label>
+                                    <input type="date" class="form-control" id="goalDeadline" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="goalCategory" class="form-label">Kategori</label>
+                            <select class="form-select" id="goalCategory">
+                                <option value="">Pilih Kategori</option>
+                                <option value="sales">Penjualan</option>
+                                <option value="productivity">Produktivitas</option>
+                                <option value="quality">Kualitas</option>
+                                <option value="customer-service">Layanan Pelanggan</option>
+                                <option value="innovation">Inovasi</option>
+                                <option value="leadership">Kepemimpinan</option>
+                                <option value="other">Lainnya</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="goalPriority" class="form-label">Prioritas</label>
+                            <select class="form-select" id="goalPriority">
+                                <option value="low">Rendah</option>
+                                <option value="medium">Sedang</option>
+                                <option value="high">Tinggi</option>
+                                <option value="critical">Kritis</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="goalMilestones" class="form-label">Milestone</label>
+                            <textarea class="form-control" id="goalMilestones" rows="3" placeholder="Sebutkan milestone atau langkah-langkah untuk mencapai goal..."></textarea>
+                        </div>
+
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="notifyEmployee">
+                            <label class="form-check-label" for="notifyEmployee">
+                                Kirim notifikasi goal ke karyawan
+                            </label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="saveGoalBtn">Simpan Goal</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Settings Modal -->
+    <div class="modal fade" id="performanceSettingsModal" tabindex="-1" aria-labelledby="performanceSettingsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="performanceSettingsModalLabel">Pengaturan Kinerja</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <h6>Jadwal Review</h6>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="autoQuarterlyReview" checked>
+                            <label class="form-check-label" for="autoQuarterlyReview">
+                                Review triwulanan otomatis
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="autoAnnualReview" checked>
+                            <label class="form-check-label" for="autoAnnualReview">
+                                Review tahunan otomatis
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6>Notifikasi</h6>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="notifyReviewDue" checked>
+                            <label class="form-check-label" for="notifyReviewDue">
+                                Notifikasi saat review jatuh tempo
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="notifyGoalDeadline" checked>
+                            <label class="form-check-label" for="notifyGoalDeadline">
+                                Notifikasi deadline goal
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="notifyPerformanceAlert" checked>
+                            <label class="form-check-label" for="notifyPerformanceAlert">
+                                Alert performa rendah
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6>Skala Rating</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="minRating" class="form-label">Rating Minimum</label>
+                                <input type="number" class="form-control" id="minRating" value="1" min="1" max="5">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="maxRating" class="form-label">Rating Maximum</label>
+                                <input type="number" class="form-control" id="maxRating" value="5" min="1" max="10">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6>Goal Settings</h6>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="autoCreateGoals" checked>
+                            <label class="form-check-label" for="autoCreateGoals">
+                                Buat goal otomatis untuk karyawan baru
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="requireGoalApproval">
+                            <label class="form-check-label" for="requireGoalApproval">
+                                Goal memerlukan approval manager
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6>Performance Thresholds</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="excellentThreshold" class="form-label">Threshold Excellent</label>
+                                <input type="number" class="form-control" id="excellentThreshold" value="4.5" step="0.1" min="0" max="5">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="warningThreshold" class="form-label">Threshold Warning</label>
+                                <input type="number" class="form-control" id="warningThreshold" value="2.5" step="0.1" min="0" max="5">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="savePerformanceSettingsBtn">Simpan Pengaturan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        function getToken() { return localStorage.getItem('token') || ''; }
+
+        let performanceData = {};
+        let reviews = [];
+        let goals = [];
+        let employees = [];
+        let currentUser = null;
+
+        // Logout functionality
+        document.getElementById('logoutBtn')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.removeItem('token');
+            window.location.href = '/login';
+        });
+
+        async function loadCurrentUser() {
+            try {
+                const response = await fetch('/api/auth/me', {
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+                if (response.ok) {
+                    currentUser = await response.json();
+                }
+            } catch (error) {
+                console.error('Error loading current user:', error);
+            }
+        }
+
+        async function loadEmployees() {
+            try {
+                const response = await fetch('/api/employees', {
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+                if (response.ok) {
+                    employees = await response.json();
+                    populateEmployeeDropdowns();
+                }
+            } catch (error) {
+                console.error('Error loading employees:', error);
+            }
+        }
+
+        function populateEmployeeDropdowns() {
+            const employeeSelects = ['reviewEmployee', 'goalEmployee', 'goalEmployeeFilter'];
+            employeeSelects.forEach(id => {
+                const select = document.getElementById(id);
+                if (select) {
+                    select.innerHTML = '<option value="">Pilih Karyawan</option>';
+                    employees.forEach(employee => {
+                        select.add(new Option(`${employee.firstName} ${employee.lastName}`, employee.id));
+                    });
+                }
+            });
+        }
+
+        async function loadPerformanceData() {
+            try {
+                const response = await fetch('/api/performance/overview', {
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+                if (response.ok) {
+                    performanceData = await response.json();
+                    updateOverviewCards();
+                    renderCharts();
+                    renderTopPerformers();
+                    renderDepartmentAnalysis();
+                }
+            } catch (error) {
+                console.error('Error loading performance data:', error);
+            }
+        }
+
+        async function loadReviews() {
+            try {
+                const response = await fetch('/api/performance/reviews', {
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+                if (response.ok) {
+                    reviews = await response.json();
+                    renderReviewsTable();
+                }
+            } catch (error) {
+                console.error('Error loading reviews:', error);
+            }
+        }
+
+        async function loadGoals() {
+            try {
+                const response = await fetch('/api/performance/goals', {
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+                if (response.ok) {
+                    goals = await response.json();
+                    renderGoalsTable();
+                }
+            } catch (error) {
+                console.error('Error loading goals:', error);
+            }
+        }
+
+        function updateOverviewCards() {
+            document.getElementById('totalReviews').textContent = performanceData.totalReviews || 0;
+            document.getElementById('averageRating').textContent = (performanceData.averageRating || 0).toFixed(1);
+            document.getElementById('highPerformers').textContent = performanceData.highPerformers || 0;
+            document.getElementById('completionRate').textContent = (performanceData.completionRate || 0) + '%';
+        }
+
+        function renderCharts() {
+            // Performance Distribution Chart
+            const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+            new Chart(performanceCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Excellent (4.5-5)', 'Good (3.5-4.4)', 'Average (2.5-3.4)', 'Below Average (<2.5)'],
+                    datasets: [{
+                        data: [
+                            performanceData.excellentCount || 0,
+                            performanceData.goodCount || 0,
+                            performanceData.averageCount || 0,
+                            performanceData.belowAverageCount || 0
+                        ],
+                        backgroundColor: ['#28a745', '#17a2b8', '#ffc107', '#dc3545']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            // Trends Chart
+            const trendsCtx = document.getElementById('trendsChart').getContext('2d');
+            new Chart(trendsCtx, {
+                type: 'line',
+                data: {
+                    labels: performanceData.trendLabels || ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Average Rating',
+                        data: performanceData.trendData || [4.2, 4.1, 4.3, 4.0, 4.4, 4.2],
+                        borderColor: '#007bff',
+                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true, max: 5 }
+                    }
+                }
+            });
+        }
+
+        function renderTopPerformers() {
+            const container = document.getElementById('topPerformersList');
+            container.innerHTML = '';
+
+            if (!performanceData.topPerformers || performanceData.topPerformers.length === 0) {
+                container.innerHTML = '<p class="text-muted">Belum ada data pencapai terbaik</p>';
+                return;
+            }
+
+            performanceData.topPerformers.forEach((performer, index) => {
+                const performerDiv = document.createElement('div');
+                performerDiv.className = 'd-flex align-items-center mb-2';
+                performerDiv.innerHTML = `
+                    <div class="me-3">
+                        <span class="badge bg-warning text-dark">${index + 1}</span>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold">${performer.name}</div>
+                        <small class="text-muted">${performer.department}</small>
+                    </div>
+                    <div class="text-end">
+                        <div class="fw-bold text-success">${performer.rating}</div>
+                        <small class="text-muted">Rating</small>
+                    </div>
+                `;
+                container.appendChild(performerDiv);
+            });
+        }
+
+        function renderDepartmentAnalysis() {
+            const container = document.getElementById('departmentAnalysisList');
+            container.innerHTML = '';
+
+            if (!performanceData.departmentAnalysis || performanceData.departmentAnalysis.length === 0) {
+                container.innerHTML = '<p class="text-muted">Belum ada data analisis departemen</p>';
+                return;
+            }
+
+            performanceData.departmentAnalysis.forEach(dept => {
+                const deptDiv = document.createElement('div');
+                deptDiv.className = 'd-flex align-items-center justify-content-between mb-2';
+                deptDiv.innerHTML = `
+                    <div>
+                        <div class="fw-bold">${dept.name}</div>
+                        <small class="text-muted">${dept.employeeCount} karyawan</small>
+                    </div>
+                    <div class="text-end">
+                        <div class="fw-bold">${dept.averageRating}</div>
+                        <small class="text-muted">Avg Rating</small>
+                    </div>
+                `;
+                container.appendChild(deptDiv);
+            });
+        }
+
+        function renderReviewsTable() {
+            const tableBody = document.getElementById('reviewsTableBody');
+            tableBody.innerHTML = '';
+
+            if (!reviews || reviews.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Tidak ada data ulasan kinerja</td></tr>';
+                return;
+            }
+
+            reviews.forEach(review => {
+                const statusClass = review.status === 'completed' ? 'success' : review.status === 'pending' ? 'warning' : 'secondary';
+                const statusText = review.status === 'completed' ? 'Selesai' : review.status === 'pending' ? 'Menunggu' : 'Draft';
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${new Date(review.reviewDate).toLocaleDateString('id-ID')}</td>
+                    <td>${review.employeeName}</td>
+                    <td>${review.reviewerName}</td>
+                    <td><span class="badge bg-primary">${review.overallRating}/5</span></td>
+                    <td><span class="badge bg-${statusClass}">${statusText}</span></td>
+                    <td>${review.period}</td>
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-primary view-review" data-id="${review.id}" title="Lihat Detail">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-warning edit-review" data-id="${review.id}" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger delete-review" data-id="${review.id}" title="Hapus">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            addReviewActionListeners();
+        }
+
+        function renderGoalsTable() {
+            const tableBody = document.getElementById('goalsTableBody');
+            tableBody.innerHTML = '';
+
+            if (!goals || goals.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Tidak ada data goal</td></tr>';
+                return;
+            }
+
+            goals.forEach(goal => {
+                const statusClass = goal.status === 'completed' ? 'success' : goal.status === 'in-progress' ? 'primary' : goal.status === 'overdue' ? 'danger' : 'secondary';
+                const statusText = goal.status === 'completed' ? 'Selesai' : goal.status === 'in-progress' ? 'Sedang Berjalan' : goal.status === 'overdue' ? 'Terlambat' : 'Belum Dimulai';
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${goal.employeeName}</td>
+                    <td>${goal.title}</td>
+                    <td>${goal.target}</td>
+                    <td>${new Date(goal.deadline).toLocaleDateString('id-ID')}</td>
+                    <td>
+                        <div class="progress" style="width: 80px;">
+                            <div class="progress-bar" role="progressbar" style="width: ${goal.progress}%">${goal.progress}%</div>
+                        </div>
+                    </td>
+                    <td><span class="badge bg-${statusClass}">${statusText}</span></td>
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-primary view-goal" data-id="${goal.id}" title="Lihat Detail">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-warning update-progress" data-id="${goal.id}" title="Update Progress">
+                                <i class="bi bi-graph-up"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger delete-goal" data-id="${goal.id}" title="Hapus">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            addGoalActionListeners();
+        }
+
+        function addReviewActionListeners() {
+            document.querySelectorAll('.view-review').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const reviewId = e.target.closest('button').dataset.id;
+                    viewReview(reviewId);
+                });
+            });
+
+            document.querySelectorAll('.edit-review').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const reviewId = e.target.closest('button').dataset.id;
+                    editReview(reviewId);
+                });
+            });
+
+            document.querySelectorAll('.delete-review').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const reviewId = e.target.closest('button').dataset.id;
+                    deleteReview(reviewId);
+                });
+            });
+        }
+
+        function addGoalActionListeners() {
+            document.querySelectorAll('.view-goal').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const goalId = e.target.closest('button').dataset.id;
+                    viewGoal(goalId);
+                });
+            });
+
+            document.querySelectorAll('.update-progress').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const goalId = e.target.closest('button').dataset.id;
+                    updateGoalProgress(goalId);
+                });
+            });
+
+            document.querySelectorAll('.delete-goal').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const goalId = e.target.closest('button').dataset.id;
+                    deleteGoal(goalId);
+                });
+            });
+        }
+
+        // Form handlers
+        document.getElementById('submitReviewBtn').addEventListener('click', async function() {
+            const reviewData = {
+                employeeId: document.getElementById('reviewEmployee').value,
+                period: document.getElementById('reviewPeriod').value,
+                startDate: document.getElementById('reviewStartDate').value,
+                endDate: document.getElementById('reviewEndDate').value,
+                productivityRating: parseInt(document.getElementById('productivityRating').value) || null,
+                qualityRating: parseInt(document.getElementById('qualityRating').value) || null,
+                communicationRating: parseInt(document.getElementById('communicationRating').value) || null,
+                teamworkRating: parseInt(document.getElementById('teamworkRating').value) || null,
+                comments: document.getElementById('reviewComments').value,
+                strengths: document.getElementById('reviewStrengths').value,
+                improvements: document.getElementById('reviewImprovements').value,
+                sendToEmployee: document.getElementById('sendToEmployee').checked,
+                status: document.getElementById('saveAsDraft').checked ? 'draft' : 'completed'
+            };
+
+            if (!reviewData.employeeId || !reviewData.period) {
+                alert('Mohon lengkapi field yang diperlukan');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/performance/reviews', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify(reviewData)
+                });
+
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('addReviewModal')).hide();
+                    document.getElementById('reviewForm').reset();
+                    await loadReviews();
+                    await loadPerformanceData();
+                    alert('Ulasan kinerja berhasil disimpan!');
+                } else {
+                    const error = await response.text();
+                    alert(`Gagal menyimpan ulasan: ${error}`);
+                }
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        });
+
+        document.getElementById('saveGoalBtn').addEventListener('click', async function() {
+            const goalData = {
+                employeeId: document.getElementById('goalEmployee').value,
+                type: document.getElementById('goalType').value,
+                title: document.getElementById('goalTitle').value,
+                description: document.getElementById('goalDescription').value,
+                target: document.getElementById('goalTarget').value,
+                deadline: document.getElementById('goalDeadline').value,
+                category: document.getElementById('goalCategory').value,
+                priority: document.getElementById('goalPriority').value,
+                milestones: document.getElementById('goalMilestones').value,
+                notifyEmployee: document.getElementById('notifyEmployee').checked
+            };
+
+            if (!goalData.employeeId || !goalData.title || !goalData.target || !goalData.deadline) {
+                alert('Mohon lengkapi field yang diperlukan');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/performance/goals', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify(goalData)
+                });
+
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('setGoalsModal')).hide();
+                    document.getElementById('goalsForm').reset();
+                    await loadGoals();
+                    alert('Goal berhasil ditetapkan!');
+                } else {
+                    const error = await response.text();
+                    alert(`Gagal menetapkan goal: ${error}`);
+                }
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        });
+
+        document.getElementById('savePerformanceSettingsBtn').addEventListener('click', async function() {
+            const settings = {
+                autoQuarterlyReview: document.getElementById('autoQuarterlyReview').checked,
+                autoAnnualReview: document.getElementById('autoAnnualReview').checked,
+                notifyReviewDue: document.getElementById('notifyReviewDue').checked,
+                notifyGoalDeadline: document.getElementById('notifyGoalDeadline').checked,
+                notifyPerformanceAlert: document.getElementById('notifyPerformanceAlert').checked,
+                minRating: parseInt(document.getElementById('minRating').value),
+                maxRating: parseInt(document.getElementById('maxRating').value),
+                autoCreateGoals: document.getElementById('autoCreateGoals').checked,
+                requireGoalApproval: document.getElementById('requireGoalApproval').checked,
+                excellentThreshold: parseFloat(document.getElementById('excellentThreshold').value),
+                warningThreshold: parseFloat(document.getElementById('warningThreshold').value)
+            };
+
+            try {
+                const response = await fetch('/api/performance/settings', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify(settings)
+                });
+
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('performanceSettingsModal')).hide();
+                    alert('Pengaturan berhasil disimpan!');
+                } else {
+                    alert('Gagal menyimpan pengaturan');
+                }
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        });
+
+        // Filter handlers
+        document.getElementById('filterGoals').addEventListener('click', function() {
+            const employeeId = document.getElementById('goalEmployeeFilter').value;
+            const status = document.getElementById('goalStatusFilter').value;
+
+            if (!employeeId && !status) {
+                alert('Pilih filter karyawan atau status');
+                return;
+            }
+
+            filterGoals(employeeId, status);
+        });
+
+        function filterGoals(employeeId, status) {
+            // Implementation for filtering goals
+            console.log('Filtering goals by employee:', employeeId, 'status:', status);
+        }
+
+        // Placeholder functions for future implementation
+        function viewReview(id) { alert('Fitur lihat detail ulasan akan segera hadir'); }
+        function editReview(id) { alert('Fitur edit ulasan akan segera hadir'); }
+        function deleteReview(id) { alert('Fitur hapus ulasan akan segera hadir'); }
+        function viewGoal(id) { alert('Fitur lihat detail goal akan segera hadir'); }
+        function updateGoalProgress(id) { alert('Fitur update progress goal akan segera hadir'); }
+        function deleteGoal(id) { alert('Fitur hapus goal akan segera hadir'); }
+        function generatePerformanceReport() { alert('Fitur generate laporan kinerja akan segera hadir'); }
+
+        // Set default dates
+        document.getElementById('addReviewModal').addEventListener('show.bs.modal', function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('reviewEndDate').value = today;
+
+            // Set start date to 3 months ago
+            const threeMonthsAgo = new Date();
+            threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+            document.getElementById('reviewStartDate').value = threeMonthsAgo.toISOString().split('T')[0];
+        });
+
+        document.getElementById('setGoalsModal').addEventListener('show.bs.modal', function() {
+            // Set deadline to 6 months from now
+            const sixMonthsFromNow = new Date();
+            sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
+            document.getElementById('goalDeadline').value = sixMonthsFromNow.toISOString().split('T')[0];
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadCurrentUser();
+            await loadEmployees();
+            await loadPerformanceData();
+            await loadReviews();
+            await loadGoals();
+        });
+    </script>
+</body>
+</html>
+</body>
+</html>

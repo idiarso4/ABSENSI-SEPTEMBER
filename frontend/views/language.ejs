@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bahasa - HRM & Payroll System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <%- include('partials/navbar') %>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="bi bi-translate"></i> Pengaturan Bahasa & Localization</h2>
+            <div class="d-flex gap-2">
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addLanguageModal">
+                    <i class="bi bi-plus-circle"></i> Tambah Bahasa
+                </button>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#translationManagerModal">
+                    <i class="bi bi-file-earmark-text"></i> Kelola Terjemahan
+                </button>
+                <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#regionalSettingsModal">
+                    <i class="bi bi-gear"></i> Pengaturan Regional
+                </button>
+            </div>
+        </div>
+
+        <!-- Current Language Status -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-white bg-primary">
+                    <div class="card-body">
+                        <h6 class="card-title">Bahasa Default</h6>
+                        <h4 id="defaultLanguage">Bahasa Indonesia</h4>
+                        <small>System Default</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-success">
+                    <div class="card-body">
+                        <h6 class="card-title">Bahasa Aktif</h6>
+                        <h4 id="activeLanguages">-</h4>
+                        <small>Total Bahasa</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-warning">
+                    <div class="card-body">
+                        <h6 class="card-title">Terjemahan</h6>
+                        <h4 id="totalTranslations">-</h4>
+                        <small>String Terjemahan</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-info">
+                    <div class="card-body">
+                        <h6 class="card-title">Cakupan</h6>
+                        <h4 id="translationCoverage">-</h4>
+                        <small>% Lengkap</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs mb-4" id="languageTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="languages-tab" data-bs-toggle="tab" data-bs-target="#languages" type="button" role="tab">Bahasa Sistem</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="translations-tab" data-bs-toggle="tab" data-bs-target="#translations" type="button" role="tab">Terjemahan</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="regional-tab" data-bs-toggle="tab" data-bs-target="#regional" type="button" role="tab">Pengaturan Regional</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="formatting-tab" data-bs-toggle="tab" data-bs-target="#formatting" type="button" role="tab">Format Data</button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="languageTabContent">
+            <!-- Languages Tab -->
+            <div class="tab-pane fade show active" id="languages" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Daftar Bahasa Sistem</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row" id="languagesGrid">
+                            <!-- Indonesian -->
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100 border-primary">
+                                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">Bahasa Indonesia</h6>
+                                        <div>
+                                            <span class="badge bg-light text-primary">Default</span>
+                                            <span class="badge bg-success">Aktif</span>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-2">
+                                            <strong>Kode:</strong> id-ID
+                                        </div>
+                                        <div class="mb-2">
+                                            <strong>Arah:</strong> Kiri ke Kanan (LTR)
+                                        </div>
+                                        <div class="mb-2">
+                                            <strong>Cakupan:</strong> 95%
+                                        </div>
+                                        <div class="mb-3">
+                                            <strong>Terakhir Update:</strong> 2025-01-15
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <button class="btn btn-sm btn-outline-primary edit-language" data-lang="id">
+                                                <i class="bi bi-pencil"></i> Edit
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-success export-language" data-lang="id">
+                                                <i class="bi bi-download"></i> Export
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-warning set-default" data-lang="id">
+                                                <i class="bi bi-star"></i> Jadikan Default
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- English -->
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">English</h6>
+                                        <div>
+                                            <span class="badge bg-success">Aktif</span>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-2">
+                                            <strong>Kode:</strong> en-US
+                                        </div>
+                                        <div class="mb-2">
+                                            <strong>Arah:</strong> Kiri ke Kanan (LTR)
+                                        </div>
+                                        <div class="mb-2">
+                                            <strong>Cakupan:</strong> 100%
+                                        </div>
+                                        <div class="mb-3">
+                                            <strong>Terakhir Update:</strong> 2025-01-10
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <button class="btn btn-sm btn-outline-primary edit-language" data-lang="en">
+                                                <i class="bi bi-pencil"></i> Edit
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-success export-language" data-lang="en">
+                                                <i class="bi bi-download"></i> Export
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-warning set-default" data-lang="en">
+                                                <i class="bi bi-star"></i> Jadikan Default
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Arabic (RTL Example) -->
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">العربية</h6>
+                                        <div>
+                                            <span class="badge bg-secondary">Tidak Aktif</span>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-2">
+                                            <strong>Kode:</strong> ar-SA
+                                        </div>
+                                        <div class="mb-2">
+                                            <strong>Arah:</strong> Kanan ke Kiri (RTL)
+                                        </div>
+                                        <div class="mb-2">
+                                            <strong>Cakupan:</strong> 45%
+                                        </div>
+                                        <div class="mb-3">
+                                            <strong>Terakhir Update:</strong> 2024-12-01
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <button class="btn btn-sm btn-outline-primary edit-language" data-lang="ar">
+                                                <i class="bi bi-pencil"></i> Edit
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-success export-language" data-lang="ar">
+                                                <i class="bi bi-download"></i> Export
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-info activate-language" data-lang="ar">
+                                                <i class="bi bi-play-circle"></i> Aktifkan
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Translations Tab -->
+            <div class="tab-pane fade" id="translations" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5>Kelola Terjemahan</h5>
+                            <div class="d-flex gap-2">
+                                <select class="form-select form-select-sm" id="translationLanguage" style="width: auto;">
+                                    <option value="en">English</option>
+                                    <option value="ar">العربية</option>
+                                    <option value="zh">中文</option>
+                                </select>
+                                <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addTranslationModal">
+                                    <i class="bi bi-plus-circle"></i> Tambah Terjemahan
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" id="translationSearch" placeholder="Cari terjemahan...">
+                            </div>
+                            <div class="col-md-6">
+                                <select class="form-select" id="translationCategory">
+                                    <option value="">Semua Kategori</option>
+                                    <option value="ui">UI Elements</option>
+                                    <option value="messages">Messages</option>
+                                    <option value="errors">Error Messages</option>
+                                    <option value="reports">Reports</option>
+                                    <option value="help">Help Text</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Key</th>
+                                        <th>Bahasa Indonesia</th>
+                                        <th id="targetLanguageHeader">English</th>
+                                        <th>Status</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="translationsTableBody">
+                                    <tr>
+                                        <td>nav.dashboard</td>
+                                        <td>Dashboard</td>
+                                        <td>Dashboard</td>
+                                        <td><span class="badge bg-success">Lengkap</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary edit-translation">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>nav.employees</td>
+                                        <td>Karyawan</td>
+                                        <td>Employees</td>
+                                        <td><span class="badge bg-success">Lengkap</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary edit-translation">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>nav.payroll</td>
+                                        <td>Penggajian</td>
+                                        <td>Payroll</td>
+                                        <td><span class="badge bg-success">Lengkap</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary edit-translation">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>error.required_field</td>
+                                        <td>Field ini wajib diisi</td>
+                                        <td>This field is required</td>
+                                        <td><span class="badge bg-success">Lengkap</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary edit-translation">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>button.save</td>
+                                        <td>Simpan</td>
+                                        <td>Save</td>
+                                        <td><span class="badge bg-success">Lengkap</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary edit-translation">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Regional Settings Tab -->
+            <div class="tab-pane fade" id="regional" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Pengaturan Regional</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="defaultTimezone" class="form-label">Timezone Default</label>
+                                    <select class="form-select" id="defaultTimezone">
+                                        <option value="Asia/Jakarta">Asia/Jakarta (WIB)</option>
+                                        <option value="Asia/Makassar">Asia/Makassar (WITA)</option>
+                                        <option value="Asia/Jayapura">Asia/Jayapura (WIT)</option>
+                                        <option value="UTC">UTC</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="defaultCurrency" class="form-label">Mata Uang Default</label>
+                                    <select class="form-select" id="defaultCurrency">
+                                        <option value="IDR">Rupiah (IDR)</option>
+                                        <option value="USD">US Dollar (USD)</option>
+                                        <option value="EUR">Euro (EUR)</option>
+                                        <option value="SGD">Singapore Dollar (SGD)</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="dateFormat" class="form-label">Format Tanggal</label>
+                                    <select class="form-select" id="dateFormat">
+                                        <option value="DD/MM/YYYY">DD/MM/YYYY (31/12/2025)</option>
+                                        <option value="MM/DD/YYYY">MM/DD/YYYY (12/31/2025)</option>
+                                        <option value="YYYY-MM-DD">YYYY-MM-DD (2025-12-31)</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="timeFormat" class="form-label">Format Waktu</label>
+                                    <select class="form-select" id="timeFormat">
+                                        <option value="24h">24 Jam (14:30)</option>
+                                        <option value="12h">12 Jam (2:30 PM)</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="numberFormat" class="form-label">Format Angka</label>
+                                    <select class="form-select" id="numberFormat">
+                                        <option value="id-ID">Indonesia (1.234.567,89)</option>
+                                        <option value="en-US">English (1,234,567.89)</option>
+                                        <option value="de-DE">German (1.234.567,89)</option>
+                                    </select>
+                                </div>
+
+                                <button class="btn btn-primary" id="saveRegionalSettings">
+                                    <i class="bi bi-check-circle"></i> Simpan Pengaturan Regional
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Pratinjau Format</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <strong>Tanggal:</strong> <span id="datePreview">31/12/2025</span>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Waktu:</strong> <span id="timePreview">14:30</span>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Angka:</strong> <span id="numberPreview">1.234.567,89</span>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Mata Uang:</strong> <span id="currencyPreview">Rp 1.234.567,89</span>
+                                </div>
+                                <hr>
+                                <div class="mb-3">
+                                    <strong>Contoh Pesan:</strong>
+                                    <div id="messagePreview" class="alert alert-info">
+                                        Selamat datang di sistem HRM! Hari ini tanggal 31/12/2025.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h6>Preferensi Pengguna</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="autoDetectLanguage" checked>
+                                    <label class="form-check-label" for="autoDetectLanguage">
+                                        Deteksi bahasa browser otomatis
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="rememberLanguage" checked>
+                                    <label class="form-check-label" for="rememberLanguage">
+                                        Ingat pilihan bahasa
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="showTranslations" checked>
+                                    <label class="form-check-label" for="showTranslations">
+                                        Tampilkan kunci terjemahan (untuk developer)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formatting Tab -->
+            <div class="tab-pane fade" id="formatting" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Format Data Khusus</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Format Nama</label>
+                                    <select class="form-select" id="nameFormat">
+                                        <option value="first_last">Nama Depan + Nama Belakang</option>
+                                        <option value="last_first">Nama Belakang, Nama Depan</option>
+                                        <option value="full">Nama Lengkap</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Format Alamat</label>
+                                    <select class="form-select" id="addressFormat">
+                                        <option value="street_city">Jalan, Kota</option>
+                                        <option value="city_street">Kota, Jalan</option>
+                                        <option value="postal_street">Kode Pos - Jalan</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Format Telepon</label>
+                                    <select class="form-select" id="phoneFormat">
+                                        <option value="id">Indonesia (+62 xxx-xxxx-xxxx)</option>
+                                        <option value="us">US ((xxx) xxx-xxxx)</option>
+                                        <option value="international">Internasional</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Pemisah Ribuan</label>
+                                    <select class="form-select" id="thousandSeparator">
+                                        <option value=".">Titik (1.234.567)</option>
+                                        <option value=",">Koma (1,234,567)</option>
+                                        <option value=" ">Spasi (1 234 567)</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Pemisah Desimal</label>
+                                    <select class="form-select" id="decimalSeparator">
+                                        <option value=",">Koma (123,45)</option>
+                                        <option value=".">Titik (123.45)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Contoh Format</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <strong>Nama:</strong> <span id="nameFormatPreview">John Doe</span>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Alamat:</strong> <span id="addressFormatPreview">Jl. Sudirman No. 123, Jakarta</span>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Telepon:</strong> <span id="phoneFormatPreview">+62 812-3456-7890</span>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Angka:</strong> <span id="numberFormatExample">1.234.567,89</span>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Mata Uang:</strong> <span id="currencyFormatExample">Rp 1.234.567,89</span>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Tanggal:</strong> <span id="dateFormatExample">31 Desember 2025</span>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Waktu:</strong> <span id="timeFormatExample">14:30 WIB</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h6>Validasi Format</h6>
+                            </div>
+                            <div class="card-body">
+                                <button class="btn btn-outline-primary mb-2" id="testFormats">
+                                    <i class="bi bi-check-circle"></i> Test Semua Format
+                                </button>
+                                <div id="formatValidationResults">
+                                    <div class="text-success">
+                                        <i class="bi bi-check-circle"></i> Semua format valid
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Language Modal -->
+    <div class="modal fade" id="addLanguageModal" tabindex="-1" aria-labelledby="addLanguageModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addLanguageModalLabel">Tambah Bahasa Baru</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="languageForm">
+                        <div class="mb-3">
+                            <label for="languageName" class="form-label">Nama Bahasa *</label>
+                            <input type="text" class="form-control" id="languageName" required placeholder="Contoh: Bahasa Indonesia">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="languageCode" class="form-label">Kode Bahasa *</label>
+                            <input type="text" class="form-control" id="languageCode" required placeholder="Contoh: id-ID" pattern="[a-z]{2}-[A-Z]{2}">
+                            <div class="form-text">Format: xx-XX (contoh: en-US, id-ID, ar-SA)</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="languageDirection" class="form-label">Arah Teks *</label>
+                            <select class="form-select" id="languageDirection" required>
+                                <option value="">Pilih Arah Teks</option>
+                                <option value="ltr">Kiri ke Kanan (LTR)</option>
+                                <option value="rtl">Kanan ke Kiri (RTL)</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="languageFlag" class="form-label">Flag/Icon</label>
+                            <input type="text" class="form-control" id="languageFlag" placeholder="Contoh: 🇮🇩 atau bi-flag">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="languageDescription" class="form-label">Deskripsi</label>
+                            <textarea class="form-control" id="languageDescription" rows="2" placeholder="Deskripsi bahasa..."></textarea>
+                        </div>
+
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="languageActive" checked>
+                            <label class="form-check-label" for="languageActive">
+                                Aktifkan bahasa ini
+                            </label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="saveLanguageBtn">Simpan Bahasa</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Translation Manager Modal -->
+    <div class="modal fade" id="translationManagerModal" tabindex="-1" aria-labelledby="translationManagerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="translationManagerModalLabel">Kelola Terjemahan Massal</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <select class="form-select" id="bulkLanguageSelect">
+                                <option value="">Pilih Bahasa Target</option>
+                                <option value="en">English</option>
+                                <option value="ar">العربية</option>
+                                <option value="zh">中文</option>
+                                <option value="ja">日本語</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-outline-primary" id="importTranslations">
+                                <i class="bi bi-upload"></i> Import dari File
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-outline-success" id="exportTranslations">
+                                <i class="bi bi-download"></i> Export Terjemahan
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Petunjuk:</strong> Klik pada sel terjemahan untuk mengedit. Gunakan tombol Import/Export untuk mengelola terjemahan dalam jumlah besar.
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Key</th>
+                                    <th>Bahasa Indonesia</th>
+                                    <th id="bulkTargetLanguage">Bahasa Target</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bulkTranslationsTable">
+                                <tr>
+                                    <td>nav.dashboard</td>
+                                    <td>Dashboard</td>
+                                    <td contenteditable="true" class="editable-cell">Dashboard</td>
+                                    <td><span class="badge bg-success">Lengkap</span></td>
+                                </tr>
+                                <tr>
+                                    <td>nav.employees</td>
+                                    <td>Karyawan</td>
+                                    <td contenteditable="true" class="editable-cell">Employees</td>
+                                    <td><span class="badge bg-success">Lengkap</span></td>
+                                </tr>
+                                <tr>
+                                    <td>button.save</td>
+                                    <td>Simpan</td>
+                                    <td contenteditable="true" class="editable-cell">Save</td>
+                                    <td><span class="badge bg-success">Lengkap</span></td>
+                                </tr>
+                                <tr>
+                                    <td>error.required</td>
+                                    <td>Field ini wajib diisi</td>
+                                    <td contenteditable="true" class="editable-cell">This field is required</td>
+                                    <td><span class="badge bg-success">Lengkap</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="saveBulkTranslations">Simpan Semua Perubahan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Translation Modal -->
+    <div class="modal fade" id="addTranslationModal" tabindex="-1" aria-labelledby="addTranslationModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addTranslationModalLabel">Tambah Terjemahan Baru</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="translationForm">
+                        <div class="mb-3">
+                            <label for="translationKey" class="form-label">Translation Key *</label>
+                            <input type="text" class="form-control" id="translationKey" required placeholder="Contoh: nav.dashboard">
+                            <div class="form-text">Gunakan format: category.key (contoh: nav.dashboard, button.save)</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="translationCategory" class="form-label">Kategori</label>
+                            <select class="form-select" id="translationCategory">
+                                <option value="ui">UI Elements</option>
+                                <option value="messages">Messages</option>
+                                <option value="errors">Error Messages</option>
+                                <option value="reports">Reports</option>
+                                <option value="help">Help Text</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="sourceText" class="form-label">Teks Sumber (Bahasa Indonesia) *</label>
+                            <textarea class="form-control" id="sourceText" rows="2" required></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="targetText" class="form-label">Teks Target *</label>
+                            <textarea class="form-control" id="targetText" rows="2" required></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="translationContext" class="form-label">Konteks</label>
+                            <textarea class="form-control" id="translationContext" rows="2" placeholder="Konteks penggunaan teks ini..."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="saveTranslationBtn">Simpan Terjemahan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Regional Settings Modal -->
+    <div class="modal fade" id="regionalSettingsModal" tabindex="-1" aria-labelledby="regionalSettingsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="regionalSettingsModalLabel">Pengaturan Regional Lanjutan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Pengaturan Sistem</h6>
+                            <div class="mb-3">
+                                <label for="systemLanguage" class="form-label">Bahasa Sistem Default</label>
+                                <select class="form-select" id="systemLanguage">
+                                    <option value="id">Bahasa Indonesia</option>
+                                    <option value="en">English</option>
+                                    <option value="ar">العربية</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="fallbackLanguage" class="form-label">Bahasa Fallback</label>
+                                <select class="form-select" id="fallbackLanguage">
+                                    <option value="en">English</option>
+                                    <option value="id">Bahasa Indonesia</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="autoTranslation" class="form-label">Terjemahan Otomatis</label>
+                                <select class="form-select" id="autoTranslation">
+                                    <option value="none">Tidak ada</option>
+                                    <option value="google">Google Translate</option>
+                                    <option value="microsoft">Microsoft Translator</option>
+                                    <option value="deepl">DeepL</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h6>Notifikasi & Alert</h6>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="notifyMissingTranslations" checked>
+                                <label class="form-check-label" for="notifyMissingTranslations">
+                                    Notifikasi terjemahan yang hilang
+                                </label>
+                            </div>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="notifyIncompleteLanguages" checked>
+                                <label class="form-check-label" for="notifyIncompleteLanguages">
+                                    Notifikasi bahasa yang tidak lengkap
+                                </label>
+                            </div>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="autoUpdateTranslations">
+                                <label class="form-check-label" for="autoUpdateTranslations">
+                                    Update terjemahan otomatis
+                                </label>
+                            </div>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="cacheTranslations" checked>
+                                <label class="form-check-label" for="cacheTranslations">
+                                    Cache terjemahan untuk performa
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Testing & Validation</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <button class="btn btn-outline-primary mb-2" id="testAllLanguages">
+                                        <i class="bi bi-flag"></i> Test Semua Bahasa
+                                    </button>
+                                    <div id="languageTestResults" class="small text-muted"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <button class="btn btn-outline-success mb-2" id="validateTranslations">
+                                        <i class="bi bi-check-circle"></i> Validasi Terjemahan
+                                    </button>
+                                    <div id="validationResults" class="small text-muted"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="saveRegionalSettingsBtn">Simpan Pengaturan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function getToken() { return localStorage.getItem('token') || ''; }
+
+        let languages = [];
+        let translations = [];
+        let currentLanguage = 'id';
+        let regionalSettings = {};
+
+        // Logout functionality
+        document.getElementById('logoutBtn')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.removeItem('token');
+            window.location.href = '/login';
+        });
+
+        async function loadLanguageOverview() {
+            try {
+                const response = await fetch('/api/languages/overview', {
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    updateLanguageOverview(data);
+                }
+            } catch (error) {
+                console.error('Error loading language overview:', error);
+            }
+        }
+
+        function updateLanguageOverview(data) {
+            document.getElementById('defaultLanguage').textContent = data.defaultLanguage || 'Bahasa Indonesia';
+            document.getElementById('activeLanguages').textContent = data.activeLanguages || 2;
+            document.getElementById('totalTranslations').textContent = data.totalTranslations || 150;
+            document.getElementById('translationCoverage').textContent = (data.translationCoverage || 95) + '%';
+        }
+
+        async function loadLanguages() {
+            try {
+                const response = await fetch('/api/languages', {
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+                if (response.ok) {
+                    languages = await response.json();
+                    renderLanguagesGrid();
+                }
+            } catch (error) {
+                console.error('Error loading languages:', error);
+            }
+        }
+
+        async function loadTranslations(language = 'en') {
+            try {
+                const response = await fetch(`/api/translations/${language}`, {
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+                if (response.ok) {
+                    translations = await response.json();
+                    renderTranslationsTable();
+                }
+            } catch (error) {
+                console.error('Error loading translations:', error);
+            }
+        }
+
+        function renderLanguagesGrid() {
+            const grid = document.getElementById('languagesGrid');
+            grid.innerHTML = '';
+
+            if (!languages || languages.length === 0) {
+                grid.innerHTML = '<div class="col-12"><div class="alert alert-info">Tidak ada bahasa yang tersedia</div></div>';
+                return;
+            }
+
+            languages.forEach(language => {
+                const col = document.createElement('div');
+                col.className = 'col-md-4 mb-3';
+
+                const statusClass = language.isDefault ? 'border-primary' : '';
+                const statusBadge = language.isDefault ? '<span class="badge bg-light text-primary">Default</span>' :
+                                   language.isActive ? '<span class="badge bg-success">Aktif</span>' :
+                                   '<span class="badge bg-secondary">Tidak Aktif</span>';
+
+                col.innerHTML = `
+                    <div class="card h-100 ${statusClass}">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">${language.name}</h6>
+                            <div>${statusBadge}</div>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <strong>Kode:</strong> ${language.code}
+                            </div>
+                            <div class="mb-2">
+                                <strong>Arah:</strong> ${language.direction === 'rtl' ? 'Kanan ke Kiri (RTL)' : 'Kiri ke Kanan (LTR)'}
+                            </div>
+                            <div class="mb-2">
+                                <strong>Cakupan:</strong> ${language.coverage}%
+                            </div>
+                            <div class="mb-3">
+                                <strong>Terakhir Update:</strong> ${new Date(language.lastUpdated).toLocaleDateString('id-ID')}
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-outline-primary edit-language" data-lang="${language.code}">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </button>
+                                <button class="btn btn-sm btn-outline-success export-language" data-lang="${language.code}">
+                                    <i class="bi bi-download"></i> Export
+                                </button>
+                                <button class="btn btn-sm btn-outline-warning set-default" data-lang="${language.code}">
+                                    <i class="bi bi-star"></i> Jadikan Default
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(col);
+            });
+
+            addLanguageActionListeners();
+        }
+
+        function renderTranslationsTable() {
+            const tableBody = document.getElementById('translationsTableBody');
+            tableBody.innerHTML = '';
+
+            if (!translations || translations.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Tidak ada data terjemahan</td></tr>';
+                return;
+            }
+
+            translations.forEach(translation => {
+                const statusClass = translation.isComplete ? 'success' : 'warning';
+                const statusText = translation.isComplete ? 'Lengkap' : 'Belum Lengkap';
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${translation.key}</td>
+                    <td>${translation.sourceText}</td>
+                    <td>${translation.targetText}</td>
+                    <td><span class="badge bg-${statusClass}">${statusText}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary edit-translation" data-key="${translation.key}">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            addTranslationActionListeners();
+        }
+
+        function addLanguageActionListeners() {
+            document.querySelectorAll('.edit-language').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const langCode = e.target.closest('button').dataset.lang;
+                    editLanguage(langCode);
+                });
+            });
+
+            document.querySelectorAll('.export-language').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const langCode = e.target.closest('button').dataset.lang;
+                    exportLanguage(langCode);
+                });
+            });
+
+            document.querySelectorAll('.set-default').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const langCode = e.target.closest('button').dataset.lang;
+                    setDefaultLanguage(langCode);
+                });
+            });
+        }
+
+        function addTranslationActionListeners() {
+            document.querySelectorAll('.edit-translation').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const key = e.target.closest('button').dataset.key;
+                    editTranslation(key);
+                });
+            });
+        }
+
+        // Form handlers
+        document.getElementById('saveLanguageBtn').addEventListener('click', async function() {
+            const languageData = {
+                name: document.getElementById('languageName').value,
+                code: document.getElementById('languageCode').value,
+                direction: document.getElementById('languageDirection').value,
+                flag: document.getElementById('languageFlag').value,
+                description: document.getElementById('languageDescription').value,
+                isActive: document.getElementById('languageActive').checked
+            };
+
+            if (!languageData.name || !languageData.code || !languageData.direction) {
+                alert('Mohon lengkapi field yang diperlukan');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/languages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify(languageData)
+                });
+
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('addLanguageModal')).hide();
+                    document.getElementById('languageForm').reset();
+                    await loadLanguages();
+                    alert('Bahasa berhasil ditambahkan!');
+                } else {
+                    alert('Gagal menambah bahasa');
+                }
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        });
+
+        document.getElementById('saveTranslationBtn').addEventListener('click', async function() {
+            const translationData = {
+                key: document.getElementById('translationKey').value,
+                category: document.getElementById('translationCategory').value,
+                sourceText: document.getElementById('sourceText').value,
+                targetText: document.getElementById('targetText').value,
+                context: document.getElementById('translationContext').value,
+                language: document.getElementById('translationLanguage').value
+            };
+
+            if (!translationData.key || !translationData.sourceText || !translationData.targetText) {
+                alert('Mohon lengkapi field yang diperlukan');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/translations', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify(translationData)
+                });
+
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('addTranslationModal')).hide();
+                    document.getElementById('translationForm').reset();
+                    await loadTranslations();
+                    alert('Terjemahan berhasil ditambahkan!');
+                } else {
+                    alert('Gagal menambah terjemahan');
+                }
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        });
+
+        document.getElementById('saveRegionalSettings').addEventListener('click', async function() {
+            const settings = {
+                timezone: document.getElementById('defaultTimezone').value,
+                currency: document.getElementById('defaultCurrency').value,
+                dateFormat: document.getElementById('dateFormat').value,
+                timeFormat: document.getElementById('timeFormat').value,
+                numberFormat: document.getElementById('numberFormat').value,
+                autoDetectLanguage: document.getElementById('autoDetectLanguage').checked,
+                rememberLanguage: document.getElementById('rememberLanguage').checked,
+                showTranslations: document.getElementById('showTranslations').checked
+            };
+
+            try {
+                const response = await fetch('/api/regional-settings', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify(settings)
+                });
+
+                if (response.ok) {
+                    alert('Pengaturan regional berhasil disimpan!');
+                    updateFormatPreviews();
+                } else {
+                    alert('Gagal menyimpan pengaturan regional');
+                }
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        });
+
+        document.getElementById('saveRegionalSettingsBtn').addEventListener('click', async function() {
+            const settings = {
+                systemLanguage: document.getElementById('systemLanguage').value,
+                fallbackLanguage: document.getElementById('fallbackLanguage').value,
+                autoTranslation: document.getElementById('autoTranslation').value,
+                notifyMissingTranslations: document.getElementById('notifyMissingTranslations').checked,
+                notifyIncompleteLanguages: document.getElementById('notifyIncompleteLanguages').checked,
+                autoUpdateTranslations: document.getElementById('autoUpdateTranslations').checked,
+                cacheTranslations: document.getElementById('cacheTranslations').checked
+            };
+
+            try {
+                const response = await fetch('/api/regional-settings/advanced', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify(settings)
+                });
+
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('regionalSettingsModal')).hide();
+                    alert('Pengaturan regional lanjutan berhasil disimpan!');
+                } else {
+                    alert('Gagal menyimpan pengaturan regional lanjutan');
+                }
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        });
+
+        // Format preview updates
+        function updateFormatPreviews() {
+            const dateFormat = document.getElementById('dateFormat').value;
+            const timeFormat = document.getElementById('timeFormat').value;
+            const numberFormat = document.getElementById('numberFormat').value;
+            const currency = document.getElementById('defaultCurrency').value;
+
+            // Update previews based on selected formats
+            const now = new Date();
+            let datePreview = '';
+            let timePreview = '';
+            let numberPreview = '';
+            let currencyPreview = '';
+
+            switch (dateFormat) {
+                case 'DD/MM/YYYY': datePreview = '31/12/2025'; break;
+                case 'MM/DD/YYYY': datePreview = '12/31/2025'; break;
+                case 'YYYY-MM-DD': datePreview = '2025-12-31'; break;
+            }
+
+            switch (timeFormat) {
+                case '24h': timePreview = '14:30'; break;
+                case '12h': timePreview = '2:30 PM'; break;
+            }
+
+            switch (numberFormat) {
+                case 'id-ID': numberPreview = '1.234.567,89'; break;
+                case 'en-US': numberPreview = '1,234,567.89'; break;
+                case 'de-DE': numberPreview = '1.234.567,89'; break;
+            }
+
+            switch (currency) {
+                case 'IDR': currencyPreview = 'Rp 1.234.567,89'; break;
+                case 'USD': currencyPreview = '$1,234,567.89'; break;
+                case 'EUR': currencyPreview = '€1.234.567,89'; break;
+                case 'SGD': currencyPreview = 'S$1,234,567.89'; break;
+            }
+
+            document.getElementById('datePreview').textContent = datePreview;
+            document.getElementById('timePreview').textContent = timePreview;
+            document.getElementById('numberPreview').textContent = numberPreview;
+            document.getElementById('currencyPreview').textContent = currencyPreview;
+        }
+
+        // Event listeners for format changes
+        ['dateFormat', 'timeFormat', 'numberFormat', 'defaultCurrency'].forEach(id => {
+            document.getElementById(id).addEventListener('change', updateFormatPreviews);
+        });
+
+        // Translation language change
+        document.getElementById('translationLanguage').addEventListener('change', function() {
+            const selectedLang = this.value;
+            document.getElementById('targetLanguageHeader').textContent = this.options[this.selectedIndex].text;
+            loadTranslations(selectedLang);
+        });
+
+        // Bulk translation language change
+        document.getElementById('bulkLanguageSelect').addEventListener('change', function() {
+            const selectedLang = this.value;
+            const langName = this.options[this.selectedIndex].text;
+            document.getElementById('bulkTargetLanguage').textContent = langName;
+        });
+
+        // Search functionality
+        document.getElementById('translationSearch').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#translationsTableBody tr');
+
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+
+        // Placeholder functions for future implementation
+        function editLanguage(code) { alert('Fitur edit bahasa akan segera hadir'); }
+        function exportLanguage(code) { alert('Fitur export bahasa akan segera hadir'); }
+        function setDefaultLanguage(code) { alert('Fitur set default bahasa akan segera hadir'); }
+        function editTranslation(key) { alert('Fitur edit terjemahan akan segera hadir'); }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadLanguageOverview();
+            await loadLanguages();
+            await loadTranslations();
+            updateFormatPreviews();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Guru - SIM Sekolah</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <%- include('partials/navbar') %>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2>Manajemen Guru</h2>
+                <p class="text-muted">Kelola data guru dan tenaga pendidik</p>
+            </div>
+            <div class="d-flex gap-2">
+                <!-- Excel Import/Export Buttons -->
+                <div class="dropdown">
+                    <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-file-excel"></i> Excel
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" id="downloadTeacherTemplateBtn">
+                            <i class="fas fa-download"></i> Download Template
+                        </a></li>
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#importTeacherExcelModal">
+                            <i class="fas fa-upload"></i> Import Excel
+                        </a></li>
+                        <li><a class="dropdown-item" href="#" id="exportTeacherExcelBtn">
+                            <i class="fas fa-file-export"></i> Export Excel
+                        </a></li>
+                    </ul>
+                </div>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTeacherModal">
+                    <i class="fas fa-plus"></i> Tambah Guru
+                </button>
+            </div>
+        </div>
+
+        <!-- Search and Filter -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <input type="text" class="form-control" id="searchInput" placeholder="Cari guru...">
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="subjectFilter">
+                            <option value="">Semua Mata Pelajaran</option>
+                            <!-- Subjects will be loaded dynamically -->
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="statusFilter">
+                            <option value="">Semua Status</option>
+                            <option value="active">Aktif</option>
+                            <option value="inactive">Tidak Aktif</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn btn-outline-secondary w-100" id="resetFilters">
+                            Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Teachers Table -->
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped" id="teachersTable">
+                        <thead>
+                            <tr>
+                                <th>NIP</th>
+                                <th>Nama Lengkap</th>
+                                <th>Mata Pelajaran</th>
+                                <th>Email</th>
+                                <th>No. HP</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teachersTableBody">
+                            <tr>
+                                <td colspan="7" class="text-center">
+                                    <div class="spinner-border spinner-border-sm" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    Memuat data guru...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Teacher Modal -->
+    <div class="modal fade" id="addTeacherModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Tambah Guru Baru</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addTeacherForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="nip" class="form-label">NIP</label>
+                                    <input type="text" class="form-control" id="nip" name="nip" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="fullName" class="form-label">Nama Lengkap</label>
+                                    <input type="text" class="form-control" id="fullName" name="fullName" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="email" name="email" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">No. HP</label>
+                                    <input type="tel" class="form-control" id="phone" name="phone">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Alamat</label>
+                            <textarea class="form-control" id="address" name="address" rows="3"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="subjects" class="form-label">Mata Pelajaran</label>
+                                    <select class="form-select" id="subjects" name="subjects" multiple>
+                                        <!-- Subjects will be loaded dynamically -->
+                                    </select>
+                                    <div class="form-text">Tekan Ctrl untuk memilih multiple mata pelajaran</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="status" class="form-label">Status</label>
+                                    <select class="form-select" id="status" name="status" required>
+                                        <option value="ACTIVE">Aktif</option>
+                                        <option value="INACTIVE">Tidak Aktif</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="saveTeacherBtn">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Excel Modal -->
+    <div class="modal fade" id="importTeacherExcelModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Import Data Guru dari Excel</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        Pastikan file Excel sesuai dengan template yang telah diunduh.
+                        Data yang diimport akan ditambahkan ke database.
+                    </div>
+                    <form id="importTeacherExcelForm" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="teacherExcelFile" class="form-label">Pilih File Excel</label>
+                            <input type="file" class="form-control" id="teacherExcelFile" name="file" accept=".xlsx,.xls" required>
+                            <div class="form-text">Format: .xlsx atau .xls</div>
+                        </div>
+                    </form>
+                    <div id="teacherImportProgress" class="d-none">
+                        <div class="progress mb-2">
+                            <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <small class="text-muted">Memproses import...</small>
+                    </div>
+                    <div id="teacherImportResults" class="d-none">
+                        <div class="alert alert-success">
+                            <h6>Import Berhasil!</h6>
+                            <p id="teacherImportSuccessMessage"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="importTeacherExcelBtn">Import</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Teacher Modal -->
+    <div class="modal fade" id="viewTeacherModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Detail Guru</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="teacherDetails">
+                        <!-- Teacher details will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-primary" id="printTeacherBiodataBtn">
+                        <i class="fas fa-print"></i> Print Biodata
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Teacher Modal -->
+    <div class="modal fade" id="editTeacherModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Guru</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editTeacherForm">
+                        <input type="hidden" id="editTeacherId" name="id">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editNip" class="form-label">NIP</label>
+                                    <input type="text" class="form-control" id="editNip" name="nip" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editFullName" class="form-label">Nama Lengkap</label>
+                                    <input type="text" class="form-control" id="editFullName" name="fullName" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editEmail" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="editEmail" name="email" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editPhone" class="form-label">No. HP</label>
+                                    <input type="tel" class="form-control" id="editPhone" name="phone">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editAddress" class="form-label">Alamat</label>
+                            <textarea class="form-control" id="editAddress" name="address" rows="3"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editSubjects" class="form-label">Mata Pelajaran</label>
+                                    <select class="form-select" id="editSubjects" name="subjects" multiple>
+                                        <!-- Subjects will be loaded dynamically -->
+                                    </select>
+                                    <div class="form-text">Tekan Ctrl untuk memilih multiple mata pelajaran</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editStatus" class="form-label">Status</label>
+                                    <select class="form-select" id="editStatus" name="status" required>
+                                        <option value="ACTIVE">Aktif</option>
+                                        <option value="INACTIVE">Tidak Aktif</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="updateTeacherBtn">Update</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/teachers.js"></script>
+</body>
+</html>

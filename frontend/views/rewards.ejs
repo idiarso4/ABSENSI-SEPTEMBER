@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Penghargaan - HRM & Payroll System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <%- include('partials/navbar') %>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="bi bi-trophy"></i> Sistem Penghargaan</h2>
+            <div class="d-flex gap-2">
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addRewardModal">
+                    <i class="bi bi-plus-circle"></i> Berikan Penghargaan
+                </button>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#rewardSettingsModal">
+                    <i class="bi bi-gear"></i> Pengaturan
+                </button>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Penghargaan</h5>
+                        <h3 id="totalRewards">-</h3>
+                        <small>Bulanan</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Karyawan Berprestasi</h5>
+                        <h3 id="topPerformers">-</h3>
+                        <small>Bulanan</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Nilai Insentif</h5>
+                        <h3 id="totalIncentives">-</h3>
+                        <small>Rp</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Program Aktif</h5>
+                        <h3 id="activePrograms">-</h3>
+                        <small>Jenis</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs mb-4" id="rewardTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="all-rewards-tab" data-bs-toggle="tab" data-bs-target="#all-rewards" type="button" role="tab">Semua Penghargaan</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="employee-rewards-tab" data-bs-toggle="tab" data-bs-target="#employee-rewards" type="button" role="tab">Per Karyawan</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="reward-types-tab" data-bs-toggle="tab" data-bs-target="#reward-types" type="button" role="tab">Jenis Penghargaan</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="reward-programs-tab" data-bs-toggle="tab" data-bs-target="#reward-programs" type="button" role="tab">Program Reward</button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="rewardTabContent">
+            <!-- All Rewards Tab -->
+            <div class="tab-pane fade show active" id="all-rewards" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5>Daftar Penghargaan</h5>
+                            <div class="d-flex gap-2">
+                                <select class="form-select form-select-sm" id="rewardTypeFilter" style="width: auto;">
+                                    <option value="">Semua Tipe</option>
+                                    <option value="certificate">Sertifikat</option>
+                                    <option value="bonus">Bonus</option>
+                                    <option value="promotion">Promosi</option>
+                                    <option value="recognition">Pengakuan</option>
+                                    <option value="gift">Hadiah</option>
+                                </select>
+                                <select class="form-select form-select-sm" id="rewardPeriodFilter" style="width: auto;">
+                                    <option value="">Semua Periode</option>
+                                    <option value="this-month">Bulan Ini</option>
+                                    <option value="this-quarter">Kuartal Ini</option>
+                                    <option value="this-year">Tahun Ini</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Tanggal</th>
+                                        <th>Karyawan</th>
+                                        <th>Jenis Penghargaan</th>
+                                        <th>Judul</th>
+                                        <th>Nilai</th>
+                                        <th>Diberikan Oleh</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rewardsTableBody">
+                                    <tr>
+                                        <td colspan="7" class="text-center">
+                                            <div class="spinner-border" role="status">
+                                                <span class="visually-hidden">Memuat...</span>
+                                            </div>
+                                            Memuat data penghargaan...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Employee Rewards Tab -->
+            <div class="tab-pane fade" id="employee-rewards" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Penghargaan Per Karyawan</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <select class="form-select" id="employeeSelect">
+                                    <option value="">Pilih Karyawan</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <select class="form-select" id="departmentSelect">
+                                    <option value="">Pilih Departemen</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-primary" id="filterEmployeeRewards">Filter</button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Karyawan</th>
+                                        <th>Departemen</th>
+                                        <th>Total Penghargaan</th>
+                                        <th>Nilai Total</th>
+                                        <th>Terakhir Diberikan</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="employeeRewardsTableBody">
+                                    <tr>
+                                        <td colspan="6" class="text-center">
+                                            <div class="spinner-border" role="status">
+                                                <span class="visually-hidden">Memuat...</span>
+                                            </div>
+                                            Pilih karyawan untuk melihat penghargaan...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reward Types Tab -->
+            <div class="tab-pane fade" id="reward-types" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5>Jenis Penghargaan</h5>
+                            <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addRewardTypeModal">
+                                <i class="bi bi-plus-circle"></i> Tambah Jenis
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row" id="rewardTypesGrid">
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100 border-primary">
+                                    <div class="card-body text-center">
+                                        <div class="mb-2">
+                                            <i class="bi bi-award text-primary" style="font-size: 2rem;"></i>
+                                        </div>
+                                        <h6 class="card-title">Sertifikat</h6>
+                                        <p class="card-text">Penghargaan berupa sertifikat atau piagam</p>
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <button class="btn btn-sm btn-outline-primary edit-reward-type" data-type="certificate">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger delete-reward-type" data-type="certificate">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100 border-success">
+                                    <div class="card-body text-center">
+                                        <div class="mb-2">
+                                            <i class="bi bi-cash-coin text-success" style="font-size: 2rem;"></i>
+                                        </div>
+                                        <h6 class="card-title">Bonus</h6>
+                                        <p class="card-text">Insentif finansial untuk kinerja luar biasa</p>
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <button class="btn btn-sm btn-outline-success edit-reward-type" data-type="bonus">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger delete-reward-type" data-type="bonus">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100 border-info">
+                                    <div class="card-body text-center">
+                                        <div class="mb-2">
+                                            <i class="bi bi-arrow-up-circle text-info" style="font-size: 2rem;"></i>
+                                        </div>
+                                        <h6 class="card-title">Promosi</h6>
+                                        <p class="card-text">Kenaikan jabatan atau tanggung jawab</p>
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <button class="btn btn-sm btn-outline-info edit-reward-type" data-type="promotion">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger delete-reward-type" data-type="promotion">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reward Programs Tab -->
+            <div class="tab-pane fade" id="reward-programs" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5>Program Reward</h5>
+                            <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addProgramModal">
+                                <i class="bi bi-plus-circle"></i> Buat Program
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row" id="rewardProgramsGrid">
+                            <div class="col-md-6 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-header">
+                                        <h6>Program Karyawan Terbaik Bulanan</h6>
+                                        <span class="badge bg-success">Aktif</span>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="card-text">Penghargaan untuk karyawan dengan performa terbaik setiap bulan.</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">Hadiah: Rp 1.000.000</small>
+                                            <div>
+                                                <button class="btn btn-sm btn-outline-primary edit-program">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-danger delete-program">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-header">
+                                        <h6>Program Inovasi</h6>
+                                        <span class="badge bg-success">Aktif</span>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="card-text">Penghargaan untuk ide-ide inovatif yang meningkatkan produktivitas.</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">Hadiah: Sertifikat + Bonus</small>
+                                            <div>
+                                                <button class="btn btn-sm btn-outline-primary edit-program">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-danger delete-program">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Reward Modal -->
+    <div class="modal fade" id="addRewardModal" tabindex="-1" aria-labelledby="addRewardModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addRewardModalLabel">Berikan Penghargaan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="rewardForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="rewardEmployee" class="form-label">Karyawan *</label>
+                                    <select class="form-select" id="rewardEmployee" required>
+                                        <option value="">Pilih Karyawan</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="rewardType" class="form-label">Jenis Penghargaan *</label>
+                                    <select class="form-select" id="rewardType" required>
+                                        <option value="">Pilih Jenis</option>
+                                        <option value="certificate">Sertifikat</option>
+                                        <option value="bonus">Bonus</option>
+                                        <option value="promotion">Promosi</option>
+                                        <option value="recognition">Pengakuan</option>
+                                        <option value="gift">Hadiah</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="rewardTitle" class="form-label">Judul Penghargaan *</label>
+                            <input type="text" class="form-control" id="rewardTitle" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="rewardDescription" class="form-label">Deskripsi</label>
+                            <textarea class="form-control" id="rewardDescription" rows="3"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="rewardValue" class="form-label">Nilai (Rp)</label>
+                                    <input type="number" class="form-control" id="rewardValue" min="0">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="rewardDate" class="form-label">Tanggal Pemberian *</label>
+                                    <input type="date" class="form-control" id="rewardDate" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="rewardGivenBy" class="form-label">Diberikan Oleh</label>
+                            <input type="text" class="form-control" id="rewardGivenBy" readonly>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="sendNotification" checked>
+                            <label class="form-check-label" for="sendNotification">
+                                Kirim notifikasi ke karyawan
+                            </label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="saveRewardBtn">Berikan Penghargaan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Reward Type Modal -->
+    <div class="modal fade" id="addRewardTypeModal" tabindex="-1" aria-labelledby="addRewardTypeModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addRewardTypeModalLabel">Tambah Jenis Penghargaan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="rewardTypeForm">
+                        <div class="mb-3">
+                            <label for="rewardTypeName" class="form-label">Nama Jenis *</label>
+                            <input type="text" class="form-control" id="rewardTypeName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="rewardTypeDescription" class="form-label">Deskripsi</label>
+                            <textarea class="form-control" id="rewardTypeDescription" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="rewardTypeIcon" class="form-label">Ikon</label>
+                            <select class="form-select" id="rewardTypeIcon">
+                                <option value="bi-award">Award</option>
+                                <option value="bi-cash-coin">Cash</option>
+                                <option value="bi-arrow-up-circle">Promotion</option>
+                                <option value="bi-star">Star</option>
+                                <option value="bi-gift">Gift</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="rewardTypeColor" class="form-label">Warna</label>
+                            <select class="form-select" id="rewardTypeColor">
+                                <option value="primary">Biru</option>
+                                <option value="success">Hijau</option>
+                                <option value="info">Cyan</option>
+                                <option value="warning">Kuning</option>
+                                <option value="danger">Merah</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="saveRewardTypeBtn">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Program Modal -->
+    <div class="modal fade" id="addProgramModal" tabindex="-1" aria-labelledby="addProgramModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addProgramModalLabel">Buat Program Reward</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="programForm">
+                        <div class="mb-3">
+                            <label for="programName" class="form-label">Nama Program *</label>
+                            <input type="text" class="form-control" id="programName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="programDescription" class="form-label">Deskripsi *</label>
+                            <textarea class="form-control" id="programDescription" rows="3" required></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="programStartDate" class="form-label">Tanggal Mulai</label>
+                                    <input type="date" class="form-control" id="programStartDate">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="programEndDate" class="form-label">Tanggal Selesai</label>
+                                    <input type="date" class="form-control" id="programEndDate">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="programRewardType" class="form-label">Jenis Hadiah</label>
+                            <select class="form-select" id="programRewardType">
+                                <option value="certificate">Sertifikat</option>
+                                <option value="bonus">Bonus</option>
+                                <option value="gift">Hadiah</option>
+                                <option value="recognition">Pengakuan</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="programRewardValue" class="form-label">Nilai Hadiah</label>
+                            <input type="text" class="form-control" id="programRewardValue" placeholder="Rp 1.000.000 atau 'Sertifikat'">
+                        </div>
+                        <div class="mb-3">
+                            <label for="programCriteria" class="form-label">Kriteria</label>
+                            <textarea class="form-control" id="programCriteria" rows="3" placeholder="Kriteria untuk mendapatkan penghargaan..."></textarea>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="programActive" checked>
+                            <label class="form-check-label" for="programActive">
+                                Program aktif
+                            </label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="saveProgramBtn">Buat Program</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reward Settings Modal -->
+    <div class="modal fade" id="rewardSettingsModal" tabindex="-1" aria-labelledby="rewardSettingsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="rewardSettingsModalLabel">Pengaturan Penghargaan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <h6>Otomatisasi Penghargaan</h6>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="autoMonthlyReward" checked>
+                            <label class="form-check-label" for="autoMonthlyReward">
+                                Berikan penghargaan karyawan terbaik bulanan otomatis
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="autoBirthdayReward">
+                            <label class="form-check-label" for="autoBirthdayReward">
+                                Berikan penghargaan ulang tahun karyawan
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="autoAnniversaryReward">
+                            <label class="form-check-label" for="autoAnniversaryReward">
+                                Berikan penghargaan anniversary kerja
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <h6>Notifikasi</h6>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="notifyRewardGiven" checked>
+                            <label class="form-check-label" for="notifyRewardGiven">
+                                Kirim notifikasi saat penghargaan diberikan
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="notifyRewardReceived" checked>
+                            <label class="form-check-label" for="notifyRewardReceived">
+                                Kirim notifikasi ke penerima penghargaan
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <h6>Batasan</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="maxMonthlyRewards" class="form-label">Max penghargaan per bulan</label>
+                                <input type="number" class="form-control" id="maxMonthlyRewards" value="10" min="1">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="maxRewardValue" class="form-label">Max nilai bonus (Rp)</label>
+                                <input type="number" class="form-control" id="maxRewardValue" value="5000000" min="0">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="saveRewardSettingsBtn">Simpan Pengaturan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function getToken() { return localStorage.getItem('token') || ''; }
+
+        let rewards = [];
+        let employees = [];
+        let departments = [];
+        let rewardTypes = [];
+        let rewardPrograms = [];
+        let currentUser = null;
+
+        // Logout functionality
+        document.getElementById('logoutBtn')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.removeItem('token');
+            window.location.href = '/login';
+        });
+
+        async function loadCurrentUser() {
+            try {
+                const response = await fetch('/api/auth/me', {
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+                if (response.ok) {
+                    currentUser = await response.json();
+                    document.getElementById('rewardGivenBy').value = `${currentUser.firstName} ${currentUser.lastName}`;
+                }
+            } catch (error) {
+                console.error('Error loading current user:', error);
+            }
+        }
+
+        async function loadRewards() {
+            try {
+                const response = await fetch('/api/rewards', {
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+                if (response.ok) {
+                    rewards = await response.json();
+                    renderRewardsTable();
+                    updateSummary();
+                }
+            } catch (error) {
+                console.error('Error loading rewards:', error);
+            }
+        }
+
+        async function loadEmployees() {
+            try {
+                const response = await fetch('/api/employees', {
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+                if (response.ok) {
+                    employees = await response.json();
+                    populateEmployeeDropdowns();
+                }
+            } catch (error) {
+                console.error('Error loading employees:', error);
+            }
+        }
+
+        async function loadDepartments() {
+            try {
+                const response = await fetch('/api/departments', {
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+                if (response.ok) {
+                    departments = await response.json();
+                    populateDepartmentDropdowns();
+                }
+            } catch (error) {
+                console.error('Error loading departments:', error);
+            }
+        }
+
+        function populateEmployeeDropdowns() {
+            const employeeSelects = ['rewardEmployee', 'employeeSelect'];
+            employeeSelects.forEach(id => {
+                const select = document.getElementById(id);
+                if (select) {
+                    select.innerHTML = '<option value="">Pilih Karyawan</option>';
+                    employees.forEach(employee => {
+                        select.add(new Option(`${employee.firstName} ${employee.lastName}`, employee.id));
+                    });
+                }
+            });
+        }
+
+        function populateDepartmentDropdowns() {
+            const departmentSelects = ['departmentSelect'];
+            departmentSelects.forEach(id => {
+                const select = document.getElementById(id);
+                if (select) {
+                    select.innerHTML = '<option value="">Pilih Departemen</option>';
+                    departments.forEach(dept => {
+                        select.add(new Option(dept.name, dept.id));
+                    });
+                }
+            });
+        }
+
+        function renderRewardsTable() {
+            const tableBody = document.getElementById('rewardsTableBody');
+            tableBody.innerHTML = '';
+
+            if (!rewards || rewards.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Tidak ada data penghargaan</td></tr>';
+                return;
+            }
+
+            rewards.forEach(reward => {
+                const row = document.createElement('tr');
+                const rewardDate = new Date(reward.date).toLocaleDateString('id-ID');
+                const value = reward.value ? `Rp ${reward.value.toLocaleString('id-ID')}` : '-';
+
+                row.innerHTML = `
+                    <td>${rewardDate}</td>
+                    <td>${reward.employeeName}</td>
+                    <td><span class="badge bg-primary">${reward.type}</span></td>
+                    <td>${reward.title}</td>
+                    <td>${value}</td>
+                    <td>${reward.givenBy}</td>
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-primary view-reward" data-id="${reward.id}" title="Lihat Detail">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-warning edit-reward" data-id="${reward.id}" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger delete-reward" data-id="${reward.id}" title="Hapus">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            addRewardActionListeners();
+        }
+
+        function updateSummary() {
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+
+            const monthlyRewards = rewards.filter(r =>
+                new Date(r.date).getMonth() === currentMonth &&
+                new Date(r.date).getFullYear() === currentYear
+            );
+
+            const totalRewards = monthlyRewards.length;
+            const topPerformers = new Set(monthlyRewards.map(r => r.employeeId)).size;
+            const totalIncentives = monthlyRewards.reduce((sum, r) => sum + (r.value || 0), 0);
+            const activePrograms = rewardPrograms.filter(p => p.active).length;
+
+            document.getElementById('totalRewards').textContent = totalRewards;
+            document.getElementById('topPerformers').textContent = topPerformers;
+            document.getElementById('totalIncentives').textContent = totalIncentives.toLocaleString('id-ID');
+            document.getElementById('activePrograms').textContent = activePrograms;
+        }
+
+        function addRewardActionListeners() {
+            document.querySelectorAll('.view-reward').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const rewardId = e.target.closest('button').dataset.id;
+                    viewReward(rewardId);
+                });
+            });
+
+            document.querySelectorAll('.edit-reward').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const rewardId = e.target.closest('button').dataset.id;
+                    editReward(rewardId);
+                });
+            });
+
+            document.querySelectorAll('.delete-reward').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const rewardId = e.target.closest('button').dataset.id;
+                    deleteReward(rewardId);
+                });
+            });
+        }
+
+        // Form handlers
+        document.getElementById('saveRewardBtn').addEventListener('click', async function() {
+            const rewardData = {
+                employeeId: document.getElementById('rewardEmployee').value,
+                type: document.getElementById('rewardType').value,
+                title: document.getElementById('rewardTitle').value,
+                description: document.getElementById('rewardDescription').value,
+                value: parseInt(document.getElementById('rewardValue').value) || null,
+                date: document.getElementById('rewardDate').value,
+                givenBy: document.getElementById('rewardGivenBy').value,
+                sendNotification: document.getElementById('sendNotification').checked
+            };
+
+            if (!rewardData.employeeId || !rewardData.type || !rewardData.title || !rewardData.date) {
+                alert('Mohon lengkapi semua field yang diperlukan');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/rewards', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify(rewardData)
+                });
+
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('addRewardModal')).hide();
+                    document.getElementById('rewardForm').reset();
+                    await loadRewards();
+                    alert('Penghargaan berhasil diberikan!');
+                } else {
+                    const error = await response.text();
+                    alert(`Gagal memberikan penghargaan: ${error}`);
+                }
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        });
+
+        document.getElementById('saveRewardTypeBtn').addEventListener('click', async function() {
+            const typeData = {
+                name: document.getElementById('rewardTypeName').value,
+                description: document.getElementById('rewardTypeDescription').value,
+                icon: document.getElementById('rewardTypeIcon').value,
+                color: document.getElementById('rewardTypeColor').value
+            };
+
+            if (!typeData.name) {
+                alert('Mohon lengkapi nama jenis penghargaan');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/reward-types', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify(typeData)
+                });
+
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('addRewardTypeModal')).hide();
+                    document.getElementById('rewardTypeForm').reset();
+                    alert('Jenis penghargaan berhasil ditambahkan!');
+                } else {
+                    alert('Gagal menambah jenis penghargaan');
+                }
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        });
+
+        document.getElementById('saveProgramBtn').addEventListener('click', async function() {
+            const programData = {
+                name: document.getElementById('programName').value,
+                description: document.getElementById('programDescription').value,
+                startDate: document.getElementById('programStartDate').value,
+                endDate: document.getElementById('programEndDate').value,
+                rewardType: document.getElementById('programRewardType').value,
+                rewardValue: document.getElementById('programRewardValue').value,
+                criteria: document.getElementById('programCriteria').value,
+                active: document.getElementById('programActive').checked
+            };
+
+            if (!programData.name || !programData.description) {
+                alert('Mohon lengkapi nama dan deskripsi program');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/reward-programs', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify(programData)
+                });
+
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('addProgramModal')).hide();
+                    document.getElementById('programForm').reset();
+                    alert('Program reward berhasil dibuat!');
+                } else {
+                    alert('Gagal membuat program reward');
+                }
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        });
+
+        document.getElementById('saveRewardSettingsBtn').addEventListener('click', async function() {
+            const settings = {
+                autoMonthlyReward: document.getElementById('autoMonthlyReward').checked,
+                autoBirthdayReward: document.getElementById('autoBirthdayReward').checked,
+                autoAnniversaryReward: document.getElementById('autoAnniversaryReward').checked,
+                notifyRewardGiven: document.getElementById('notifyRewardGiven').checked,
+                notifyRewardReceived: document.getElementById('notifyRewardReceived').checked,
+                maxMonthlyRewards: parseInt(document.getElementById('maxMonthlyRewards').value),
+                maxRewardValue: parseInt(document.getElementById('maxRewardValue').value)
+            };
+
+            try {
+                const response = await fetch('/api/reward-settings', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify(settings)
+                });
+
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('rewardSettingsModal')).hide();
+                    alert('Pengaturan berhasil disimpan!');
+                } else {
+                    alert('Gagal menyimpan pengaturan');
+                }
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        });
+
+        // Filter functionality
+        document.getElementById('filterEmployeeRewards').addEventListener('click', function() {
+            const employeeId = document.getElementById('employeeSelect').value;
+            const departmentId = document.getElementById('departmentSelect').value;
+
+            if (!employeeId && !departmentId) {
+                alert('Pilih karyawan atau departemen untuk filter');
+                return;
+            }
+
+            filterEmployeeRewards(employeeId, departmentId);
+        });
+
+        function filterEmployeeRewards(employeeId, departmentId) {
+            // Implementation for filtering employee rewards
+            console.log('Filtering by employee:', employeeId, 'department:', departmentId);
+        }
+
+        // Placeholder functions for future implementation
+        function viewReward(id) { alert('Fitur lihat detail penghargaan akan segera hadir'); }
+        function editReward(id) { alert('Fitur edit penghargaan akan segera hadir'); }
+        function deleteReward(id) { alert('Fitur hapus penghargaan akan segera hadir'); }
+
+        // Set default date for reward
+        document.getElementById('addRewardModal').addEventListener('show.bs.modal', function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('rewardDate').value = today;
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadCurrentUser();
+            await loadEmployees();
+            await loadDepartments();
+            await loadRewards();
+        });
+    </script>
+</body>
+</html>

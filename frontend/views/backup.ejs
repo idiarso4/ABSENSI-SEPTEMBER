@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pencadangan Basis Data - HRM & Payroll System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <%- include('partials/navbar') %>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="bi bi-shield-check"></i> Sistem Pencadangan Data</h2>
+            <div class="d-flex gap-2">
+                <button class="btn btn-success" id="createBackupBtn">
+                    <i class="bi bi-plus-circle"></i> Buat Backup Manual
+                </button>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#backupSettingsModal">
+                    <i class="bi bi-gear"></i> Pengaturan
+                </button>
+            </div>
+        </div>
+
+        <!-- Backup Status Overview -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-white bg-success">
+                    <div class="card-body">
+                        <h6 class="card-title">Backup Terakhir</h6>
+                        <h4 id="lastBackupDate">-</h4>
+                        <small id="lastBackupStatus">Status: -</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-info">
+                    <div class="card-body">
+                        <h6 class="card-title">Total Backup</h6>
+                        <h4 id="totalBackups">-</h4>
+                        <small>File tersimpan</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-warning">
+                    <div class="card-body">
+                        <h6 class="card-title">Ukuran Total</h6>
+                        <h4 id="totalBackupSize">-</h4>
+                        <small>GB</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-danger">
+                    <div class="card-body">
+                        <h6 class="card-title">Auto Backup</h6>
+                        <h4 id="autoBackupStatus">-</h4>
+                        <small id="nextBackupTime">Berikutnya: -</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs mb-4" id="backupTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="manual-backup-tab" data-bs-toggle="tab" data-bs-target="#manual-backup" type="button" role="tab">Backup Manual</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="scheduled-backup-tab" data-bs-toggle="tab" data-bs-target="#scheduled-backup" type="button" role="tab">Jadwal Backup</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="backup-history-tab" data-bs-toggle="tab" data-bs-target="#backup-history" type="button" role="tab">Riwayat Backup</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="restore-tab" data-bs-toggle="tab" data-bs-target="#restore" type="button" role="tab">Restore Data</button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="backupTabContent">
+            <!-- Manual Backup Tab -->
+            <div class="tab-pane fade show active" id="manual-backup" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Buat Backup Manual</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="manualBackupForm">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="backupName" class="form-label">Nama Backup *</label>
+                                                <input type="text" class="form-control" id="backupName" required placeholder="Contoh: backup_bulanan_januari_2025">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="backupType" class="form-label">Tipe Backup *</label>
+                                                <select class="form-select" id="backupType" required>
+                                                    <option value="">Pilih Tipe</option>
+                                                    <option value="full">Full Database</option>
+                                                    <option value="incremental">Incremental</option>
+                                                    <option value="differential">Differential</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="backupDescription" class="form-label">Deskripsi</label>
+                                        <textarea class="form-control" id="backupDescription" rows="3" placeholder="Deskripsi backup (opsional)..."></textarea>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="includeAttachments" checked>
+                                                <label class="form-check-label" for="includeAttachments">
+                                                    Sertakan lampiran file
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="compressBackup" checked>
+                                                <label class="form-check-label" for="compressBackup">
+                                                    Kompresi file backup
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="encryptBackup">
+                                                <label class="form-check-label" for="encryptBackup">
+                                                    Enkripsi backup
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="uploadToCloud">
+                                                <label class="form-check-label" for="uploadToCloud">
+                                                    Upload ke cloud storage
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex gap-2 mt-3">
+                                        <button type="submit" class="btn btn-success" id="startBackupBtn">
+                                            <i class="bi bi-play-circle"></i> Mulai Backup
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary" id="scheduleBackupBtn">
+                                            <i class="bi bi-calendar-plus"></i> Jadwalkan Backup
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Status Backup</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="backupProgressContainer" style="display: none;">
+                                    <div class="mb-3">
+                                        <div class="progress">
+                                            <div class="progress-bar progress-bar-striped progress-bar-animated" id="backupProgressBar" role="progressbar" style="width: 0%"></div>
+                                        </div>
+                                        <small class="text-muted mt-1" id="backupProgressText">Memulai backup...</small>
+                                    </div>
+                                    <div class="text-center">
+                                        <button class="btn btn-sm btn-outline-danger" id="cancelBackupBtn">
+                                            <i class="bi bi-x-circle"></i> Batalkan
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div id="backupStatusContainer">
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle"></i> Siap untuk membuat backup
+                                    </div>
+                                    <div class="mt-3">
+                                        <h6>Informasi Sistem:</h6>
+                                        <ul class="list-unstyled small">
+                                            <li><strong>Database:</strong> PostgreSQL</li>
+                                            <li><strong>Versi:</strong> <span id="dbVersion">-</span></li>
+                                            <li><strong>Ukuran DB:</strong> <span id="dbSize">-</span></li>
+                                            <li><strong>Terakhir Backup:</strong> <span id="lastBackupInfo">-</span></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scheduled Backup Tab -->
+            <div class="tab-pane fade" id="scheduled-backup" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5>Jadwal Backup Otomatis</h5>
+                            <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addScheduleModal">
+                                <i class="bi bi-plus-circle"></i> Tambah Jadwal
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Nama Jadwal</th>
+                                        <th>Frekuensi</th>
+                                        <th>Waktu</th>
+                                        <th>Tipe Backup</th>
+                                        <th>Status</th>
+                                        <th>Terakhir Dijalankan</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="scheduleTableBody">
+                                    <tr>
+                                        <td>Backup Harian</td>
+                                        <td><span class="badge bg-primary">Harian</span></td>
+                                        <td>02:00 AM</td>
+                                        <td><span class="badge bg-success">Incremental</span></td>
+                                        <td><span class="badge bg-success">Aktif</span></td>
+                                        <td>2025-01-15 02:00</td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <button class="btn btn-sm btn-outline-primary edit-schedule">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-warning toggle-schedule">
+                                                    <i class="bi bi-pause-circle"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-danger delete-schedule">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Backup Mingguan</td>
+                                        <td><span class="badge bg-info">Mingguan</span></td>
+                                        <td>Senin 03:00 AM</td>
+                                        <td><span class="badge bg-warning">Full</span></td>
+                                        <td><span class="badge bg-success">Aktif</span></td>
+                                        <td>2025-01-13 03:00</td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <button class="btn btn-sm btn-outline-primary edit-schedule">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-warning toggle-schedule">
+                                                    <i class="bi bi-pause-circle"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-danger delete-schedule">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Backup History Tab -->
+            <div class="tab-pane fade" id="backup-history" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5>Riwayat Backup</h5>
+                            <div class="d-flex gap-2">
+                                <select class="form-select form-select-sm" id="historyFilter" style="width: auto;">
+                                    <option value="">Semua Status</option>
+                                    <option value="success">Berhasil</option>
+                                    <option value="failed">Gagal</option>
+                                    <option value="running">Sedang Berjalan</option>
+                                </select>
+                                <button class="btn btn-outline-primary btn-sm" id="refreshHistory">
+                                    <i class="bi bi-arrow-clockwise"></i> Refresh
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Tanggal</th>
+                                        <th>Nama Backup</th>
+                                        <th>Tipe</th>
+                                        <th>Ukuran</th>
+                                        <th>Status</th>
+                                        <th>Durasi</th>
+                                        <th>Lokasi</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historyTableBody">
+                                    <tr>
+                                        <td>2025-01-15 02:00</td>
+                                        <td>backup_harian_2025_01_15</td>
+                                        <td><span class="badge bg-success">Incremental</span></td>
+                                        <td>245 MB</td>
+                                        <td><span class="badge bg-success">Berhasil</span></td>
+                                        <td>3m 45s</td>
+                                        <td>Local + Cloud</td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <button class="btn btn-sm btn-outline-primary download-backup">
+                                                    <i class="bi bi-download"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-info view-backup-details">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-danger delete-backup">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>2025-01-14 02:00</td>
+                                        <td>backup_harian_2025_01_14</td>
+                                        <td><span class="badge bg-success">Incremental</span></td>
+                                        <td>238 MB</td>
+                                        <td><span class="badge bg-success">Berhasil</span></td>
+                                        <td>3m 22s</td>
+                                        <td>Local + Cloud</td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <button class="btn btn-sm btn-outline-primary download-backup">
+                                                    <i class="bi bi-download"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-info view-backup-details">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-danger delete-backup">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Restore Tab -->
+            <div class="tab-pane fade" id="restore" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Restore Database</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-warning">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                    <strong>Perhatian!</strong> Proses restore akan menimpa data yang ada. Pastikan Anda memiliki backup terbaru sebelum melanjutkan.
+                                </div>
+
+                                <form id="restoreForm">
+                                    <div class="mb-3">
+                                        <label for="restoreFile" class="form-label">File Backup *</label>
+                                        <input type="file" class="form-control" id="restoreFile" accept=".sql,.zip,.tar.gz" required>
+                                        <div class="form-text">Pilih file backup (.sql, .zip, atau .tar.gz)</div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="restoreType" class="form-label">Tipe Restore</label>
+                                        <select class="form-select" id="restoreType">
+                                            <option value="full">Full Restore</option>
+                                            <option value="partial">Partial Restore</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-3" id="tableSelectionContainer" style="display: none;">
+                                        <label class="form-label">Pilih Tabel untuk Restore</label>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="restoreEmployees" checked>
+                                                    <label class="form-check-label" for="restoreEmployees">Karyawan</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="restorePayroll" checked>
+                                                    <label class="form-check-label" for="restorePayroll">Penggajian</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="restoreAttendance" checked>
+                                                    <label class="form-check-label" for="restoreAttendance">Kehadiran</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="restoreLeaves" checked>
+                                                    <label class="form-check-label" for="restoreLeaves">Cuti</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="restoreUsers" checked>
+                                                    <label class="form-check-label" for="restoreUsers">Pengguna</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="restoreSettings">
+                                                    <label class="form-check-label" for="restoreSettings">Pengaturan Sistem</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="createPreRestoreBackup">
+                                        <label class="form-check-label" for="createPreRestoreBackup">
+                                            Buat backup sebelum restore
+                                        </label>
+                                    </div>
+
+                                    <div class="d-flex gap-2 mt-3">
+                                        <button type="button" class="btn btn-success" id="startRestoreBtn">
+                                            <i class="bi bi-upload"></i> Mulai Restore
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary" id="validateBackupBtn">
+                                            <i class="bi bi-check-circle"></i> Validasi File
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Status Restore</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="restoreProgressContainer" style="display: none;">
+                                    <div class="mb-3">
+                                        <div class="progress">
+                                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning" id="restoreProgressBar" role="progressbar" style="width: 0%"></div>
+                                        </div>
+                                        <small class="text-muted mt-1" id="restoreProgressText">Memvalidasi file...</small>
+                                    </div>
+                                    <div class="text-center">
+                                        <button class="btn btn-sm btn-outline-danger" id="cancelRestoreBtn">
+                                            <i class="bi bi-x-circle"></i> Batalkan
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div id="restoreStatusContainer">
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle"></i> Siap untuk restore data
+                                    </div>
+                                    <div class="mt-3">
+                                        <h6>Informasi Restore:</h6>
+                                        <ul class="list-unstyled small">
+                                            <li><strong>Database:</strong> PostgreSQL</li>
+                                            <li><strong>Mode:</strong> Full Restore</li>
+                                            <li><strong>Estimasi Waktu:</strong> 5-15 menit</li>
+                                            <li><strong>Rekomendasi:</strong> Lakukan di luar jam kerja</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h6>Riwayat Restore</h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="restoreHistoryList">
+                                    <div class="text-center text-muted">
+                                        <small>Belum ada riwayat restore</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Schedule Modal -->
+    <div class="modal fade" id="addScheduleModal" tabindex="-1" aria-labelledby="addScheduleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addScheduleModalLabel">Tambah Jadwal Backup</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="scheduleForm">
+                        <div class="mb-3">
+                            <label for="scheduleName" class="form-label">Nama Jadwal *</label>
+                            <input type="text" class="form-control" id="scheduleName" required placeholder="Contoh: Backup Harian Pagi">
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="scheduleFrequency" class="form-label">Frekuensi *</label>
+                                    <select class="form-select" id="scheduleFrequency" required>
+                                        <option value="">Pilih Frekuensi</option>
+                                        <option value="daily">Harian</option>
+                                        <option value="weekly">Mingguan</option>
+                                        <option value="monthly">Bulanan</option>
+                                        <option value="custom">Custom</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="scheduleTime" class="form-label">Waktu Eksekusi *</label>
+                                    <input type="time" class="form-control" id="scheduleTime" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3" id="daySelectionContainer" style="display: none;">
+                            <label class="form-label">Pilih Hari</label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="monday" value="1">
+                                        <label class="form-check-label" for="monday">Senin</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="tuesday" value="2">
+                                        <label class="form-check-label" for="tuesday">Selasa</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="wednesday" value="3">
+                                        <label class="form-check-label" for="wednesday">Rabu</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="thursday" value="4">
+                                        <label class="form-check-label" for="thursday">Kamis</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="friday" value="5">
+                                        <label class="form-check-label" for="friday">Jumat</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="saturday" value="6">
+                                        <label class="form-check-label" for="saturday">Sabtu</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="sunday" value="0">
+                                        <label class="form-check-label" for="sunday">Minggu</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="scheduleType" class="form-label">Tipe Backup</label>
+                                    <select class="form-select" id="scheduleType">
+                                        <option value="full">Full Database</option>
+                                        <option value="incremental">Incremental</option>
+                                        <option value="differential">Differential</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="retentionDays" class="form-label">Retensi (hari)</label>
+                                    <input type="number" class="form-control" id="retentionDays" value="30" min="1" max="365">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="scheduleCompress" checked>
+                                    <label class="form-check-label" for="scheduleCompress">Kompresi backup</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="scheduleEncrypt" checked>
+                                    <label class="form-check-label" for="scheduleEncrypt">Enkripsi backup</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="scheduleCloudUpload" checked>
+                            <label class="form-check-label" for="scheduleCloudUpload">Upload ke cloud storage</label>
+                        </div>
+
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="scheduleActive" checked>
+                            <label class="form-check-label" for="scheduleActive">Aktifkan jadwal ini</label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="saveScheduleBtn">Simpan Jadwal</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Backup Settings Modal -->
+    <div class="modal fade" id="backupSettingsModal" tabindex="-1" aria-labelledby="backupSettingsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="backupSettingsModalLabel">Pengaturan Backup</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Konfigurasi Umum</h6>
+                            <div class="mb-3">
+                                <label for="defaultBackupType" class="form-label">Tipe Backup Default</label>
+                                <select class="form-select" id="defaultBackupType">
+                                    <option value="full">Full Database</option>
+                                    <option value="incremental">Incremental</option>
+                                    <option value="differential">Differential</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="backupLocation" class="form-label">Lokasi Backup</label>
+                                <input type="text" class="form-control" id="backupLocation" value="/var/backups/hrm" placeholder="/path/to/backup/directory">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="maxBackupFiles" class="form-label">Max File Backup</label>
+                                <input type="number" class="form-control" id="maxBackupFiles" value="50" min="1" max="1000">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="backupRetention" class="form-label">Retensi Backup (hari)</label>
+                                <input type="number" class="form-control" id="backupRetention" value="30" min="1" max="365">
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h6>Cloud Storage</h6>
+                            <div class="mb-3">
+                                <label for="cloudProvider" class="form-label">Provider Cloud</label>
+                                <select class="form-select" id="cloudProvider">
+                                    <option value="">Tidak ada</option>
+                                    <option value="aws">Amazon S3</option>
+                                    <option value="gcp">Google Cloud Storage</option>
+                                    <option value="azure">Azure Blob Storage</option>
+                                    <option value="dropbox">Dropbox</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3" id="cloudConfigContainer" style="display: none;">
+                                <label for="cloudBucket" class="form-label">Bucket/Container Name</label>
+                                <input type="text" class="form-control" id="cloudBucket" placeholder="my-backup-bucket">
+
+                                <label for="cloudRegion" class="form-label">Region</label>
+                                <input type="text" class="form-control" id="cloudRegion" placeholder="us-east-1">
+
+                                <label for="cloudAccessKey" class="form-label">Access Key</label>
+                                <input type="password" class="form-control" id="cloudAccessKey" placeholder="Your access key">
+                            </div>
+
+                            <h6 class="mt-4">Notifikasi</h6>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="notifyBackupSuccess" checked>
+                                <label class="form-check-label" for="notifyBackupSuccess">Notifikasi backup berhasil</label>
+                            </div>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="notifyBackupFailure" checked>
+                                <label class="form-check-label" for="notifyBackupFailure">Notifikasi backup gagal</label>
+                            </div>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="notifyBackupWarning">
+                                <label class="form-check-label" for="notifyBackupWarning">Notifikasi peringatan backup</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Keamanan</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="encryptBackups" checked>
+                                        <label class="form-check-label" for="encryptBackups">Enkripsi semua backup</label>
+                                    </div>
+
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="verifyBackups" checked>
+                                        <label class="form-check-label" for="verifyBackups">Verifikasi integritas backup</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="autoCleanup" checked>
+                                        <label class="form-check-label" for="autoCleanup">Auto cleanup backup lama</label>
+                                    </div>
+
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="backupLogs">
+                                        <label class="form-check-label" for="backupLogs">Backup log sistem</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="saveBackupSettingsBtn">Simpan Pengaturan</button>
+                    <button type="button" class="btn btn-outline-primary" id="testBackupSettingsBtn">Test Koneksi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function getToken() { return localStorage.getItem('token') || ''; }
+
+        let backupStatus = 'idle';
+        let restoreStatus = 'idle';
+        let backupSchedules = [];
+        let backupHistory = [];
+        let systemInfo = {};
+
+        // Logout functionality
+        document.getElementById('logoutBtn')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.removeItem('token');
+            window.location.href = '/login';
+        });
+
+        async function loadBackupOverview() {
+            try {
+                const response = await fetch('/api/backup/overview', {
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    updateOverviewCards(data);
+                }
+            } catch (error) {
+                console.error('Error loading backup overview:', error);
+            }
+        }
+
+        async function loadSystemInfo() {
+            try {
+                const response = await fetch('/api/backup/system-info', {
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+                if (response.ok) {
+                    systemInfo = await response.json();
+                    document.getElementById('dbVersion').textContent = systemInfo.version || 'N/A';
+                    document.getElementById('dbSize').textContent = systemInfo.size || 'N/A';
+                    document.getElementById('lastBackupInfo').textContent = systemInfo.lastBackup || 'Belum ada';
+                }
+            } catch (error) {
+                console.error('Error loading system info:', error);
+            }
+        }
+
+        function updateOverviewCards(data) {
+            document.getElementById('lastBackupDate').textContent = data.lastBackupDate || 'Belum ada';
+            document.getElementById('lastBackupStatus').textContent = data.lastBackupStatus || 'N/A';
+            document.getElementById('totalBackups').textContent = data.totalBackups || 0;
+            document.getElementById('totalBackupSize').textContent = data.totalSize || '0';
+            document.getElementById('autoBackupStatus').textContent = data.autoBackupEnabled ? 'Aktif' : 'Non-aktif';
+            document.getElementById('nextBackupTime').textContent = data.nextBackupTime || 'N/A';
+        }
+
+        // Manual backup functionality
+        document.getElementById('createBackupBtn').addEventListener('click', function() {
+            document.getElementById('manualBackupForm').reset();
+            document.getElementById('backupProgressContainer').style.display = 'none';
+            document.getElementById('backupStatusContainer').style.display = 'block';
+        });
+
+        document.getElementById('manualBackupForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const backupData = {
+                name: document.getElementById('backupName').value,
+                type: document.getElementById('backupType').value,
+                description: document.getElementById('backupDescription').value,
+                includeAttachments: document.getElementById('includeAttachments').checked,
+                compress: document.getElementById('compressBackup').checked,
+                encrypt: document.getElementById('encryptBackup').checked,
+                uploadToCloud: document.getElementById('uploadToCloud').checked
+            };
+
+            if (!backupData.name || !backupData.type) {
+                alert('Mohon lengkapi nama dan tipe backup');
+                return;
+            }
+
+            startBackupProcess(backupData);
+        });
+
+        async function startBackupProcess(backupData) {
+            backupStatus = 'running';
+            document.getElementById('backupStatusContainer').style.display = 'none';
+            document.getElementById('backupProgressContainer').style.display = 'block';
+
+            const progressBar = document.getElementById('backupProgressBar');
+            const progressText = document.getElementById('backupProgressText');
+
+            try {
+                // Simulate backup progress
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    progress += Math.random() * 15;
+                    if (progress > 100) progress = 100;
+
+                    progressBar.style.width = progress + '%';
+                    progressText.textContent = `Membuat backup... ${Math.round(progress)}%`;
+
+                    if (progress >= 100) {
+                        clearInterval(progressInterval);
+                        progressText.textContent = 'Backup selesai!';
+                        setTimeout(() => {
+                            backupStatus = 'completed';
+                            alert('Backup berhasil dibuat!');
+                            document.getElementById('backupProgressContainer').style.display = 'none';
+                            document.getElementById('backupStatusContainer').style.display = 'block';
+                            loadBackupOverview();
+                        }, 1000);
+                    }
+                }, 500);
+
+                // Actual backup API call
+                const response = await fetch('/api/backup/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify(backupData)
+                });
+
+                if (!response.ok) {
+                    clearInterval(progressInterval);
+                    throw new Error('Backup failed');
+                }
+
+            } catch (error) {
+                backupStatus = 'failed';
+                progressText.textContent = 'Backup gagal: ' + error.message;
+                progressBar.className = 'progress-bar bg-danger';
+                alert('Backup gagal: ' + error.message);
+            }
+        }
+
+        document.getElementById('cancelBackupBtn').addEventListener('click', function() {
+            if (backupStatus === 'running') {
+                backupStatus = 'cancelled';
+                document.getElementById('backupProgressContainer').style.display = 'none';
+                document.getElementById('backupStatusContainer').style.display = 'block';
+                alert('Backup dibatalkan');
+            }
+        });
+
+        // Schedule functionality
+        document.getElementById('scheduleFrequency').addEventListener('change', function() {
+            const frequency = this.value;
+            const daySelection = document.getElementById('daySelectionContainer');
+
+            if (frequency === 'weekly') {
+                daySelection.style.display = 'block';
+            } else {
+                daySelection.style.display = 'none';
+            }
+        });
+
+        document.getElementById('saveScheduleBtn').addEventListener('click', async function() {
+            const scheduleData = {
+                name: document.getElementById('scheduleName').value,
+                frequency: document.getElementById('scheduleFrequency').value,
+                time: document.getElementById('scheduleTime').value,
+                type: document.getElementById('scheduleType').value,
+                retentionDays: parseInt(document.getElementById('retentionDays').value),
+                compress: document.getElementById('scheduleCompress').checked,
+                encrypt: document.getElementById('scheduleEncrypt').checked,
+                cloudUpload: document.getElementById('scheduleCloudUpload').checked,
+                active: document.getElementById('scheduleActive').checked
+            };
+
+            if (!scheduleData.name || !scheduleData.frequency || !scheduleData.time) {
+                alert('Mohon lengkapi field yang diperlukan');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/backup/schedules', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify(scheduleData)
+                });
+
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('addScheduleModal')).hide();
+                    document.getElementById('scheduleForm').reset();
+                    alert('Jadwal backup berhasil dibuat!');
+                    loadBackupSchedules();
+                } else {
+                    alert('Gagal membuat jadwal backup');
+                }
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        });
+
+        async function loadBackupSchedules() {
+            try {
+                const response = await fetch('/api/backup/schedules', {
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+                if (response.ok) {
+                    backupSchedules = await response.json();
+                    renderSchedulesTable();
+                }
+            } catch (error) {
+                console.error('Error loading backup schedules:', error);
+            }
+        }
+
+        function renderSchedulesTable() {
+            const tableBody = document.getElementById('scheduleTableBody');
+            tableBody.innerHTML = '';
+
+            if (!backupSchedules || backupSchedules.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Tidak ada jadwal backup</td></tr>';
+                return;
+            }
+
+            backupSchedules.forEach(schedule => {
+                const statusClass = schedule.active ? 'success' : 'secondary';
+                const statusText = schedule.active ? 'Aktif' : 'Non-aktif';
+                const frequencyText = schedule.frequency === 'daily' ? 'Harian' : schedule.frequency === 'weekly' ? 'Mingguan' : 'Bulanan';
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${schedule.name}</td>
+                    <td><span class="badge bg-primary">${frequencyText}</span></td>
+                    <td>${schedule.time}</td>
+                    <td><span class="badge bg-success">${schedule.type}</span></td>
+                    <td><span class="badge bg-${statusClass}">${statusText}</span></td>
+                    <td>${schedule.lastRun || 'Belum pernah'}</td>
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-primary edit-schedule" data-id="${schedule.id}">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-warning toggle-schedule" data-id="${schedule.id}">
+                                <i class="bi bi-${schedule.active ? 'pause' : 'play'}-circle"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger delete-schedule" data-id="${schedule.id}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            addScheduleActionListeners();
+        }
+
+        function addScheduleActionListeners() {
+            document.querySelectorAll('.edit-schedule').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const scheduleId = e.target.closest('button').dataset.id;
+                    editSchedule(scheduleId);
+                });
+            });
+
+            document.querySelectorAll('.toggle-schedule').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const scheduleId = e.target.closest('button').dataset.id;
+                    toggleSchedule(scheduleId);
+                });
+            });
+
+            document.querySelectorAll('.delete-schedule').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const scheduleId = e.target.closest('button').dataset.id;
+                    deleteSchedule(scheduleId);
+                });
+            });
+        }
+
+        // Backup settings functionality
+        document.getElementById('cloudProvider').addEventListener('change', function() {
+            const cloudConfig = document.getElementById('cloudConfigContainer');
+            cloudConfig.style.display = this.value ? 'block' : 'none';
+        });
+
+        document.getElementById('saveBackupSettingsBtn').addEventListener('click', async function() {
+            const settings = {
+                defaultBackupType: document.getElementById('defaultBackupType').value,
+                backupLocation: document.getElementById('backupLocation').value,
+                maxBackupFiles: parseInt(document.getElementById('maxBackupFiles').value),
+                backupRetention: parseInt(document.getElementById('backupRetention').value),
+                cloudProvider: document.getElementById('cloudProvider').value,
+                cloudBucket: document.getElementById('cloudBucket').value,
+                cloudRegion: document.getElementById('cloudRegion').value,
+                cloudAccessKey: document.getElementById('cloudAccessKey').value,
+                notifyBackupSuccess: document.getElementById('notifyBackupSuccess').checked,
+                notifyBackupFailure: document.getElementById('notifyBackupFailure').checked,
+                notifyBackupWarning: document.getElementById('notifyBackupWarning').checked,
+                encryptBackups: document.getElementById('encryptBackups').checked,
+                verifyBackups: document.getElementById('verifyBackups').checked,
+                autoCleanup: document.getElementById('autoCleanup').checked,
+                backupLogs: document.getElementById('backupLogs').checked
+            };
+
+            try {
+                const response = await fetch('/api/backup/settings', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify(settings)
+                });
+
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('backupSettingsModal')).hide();
+                    alert('Pengaturan backup berhasil disimpan!');
+                } else {
+                    alert('Gagal menyimpan pengaturan backup');
+                }
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        });
+
+        document.getElementById('testBackupSettingsBtn').addEventListener('click', async function() {
+            const cloudProvider = document.getElementById('cloudProvider').value;
+            if (!cloudProvider) {
+                alert('Pilih provider cloud terlebih dahulu');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/backup/test-cloud-connection', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify({
+                        provider: cloudProvider,
+                        bucket: document.getElementById('cloudBucket').value,
+                        region: document.getElementById('cloudRegion').value,
+                        accessKey: document.getElementById('cloudAccessKey').value
+                    })
+                });
+
+                if (response.ok) {
+                    alert('Koneksi cloud berhasil!');
+                } else {
+                    alert('Koneksi cloud gagal. Periksa konfigurasi Anda.');
+                }
+            } catch (error) {
+                alert(`Error testing connection: ${error.message}`);
+            }
+        });
+
+        // Restore functionality
+        document.getElementById('restoreType').addEventListener('change', function() {
+            const tableSelection = document.getElementById('tableSelectionContainer');
+            tableSelection.style.display = this.value === 'partial' ? 'block' : 'none';
+        });
+
+        document.getElementById('startRestoreBtn').addEventListener('click', async function() {
+            const fileInput = document.getElementById('restoreFile');
+            if (!fileInput.files[0]) {
+                alert('Pilih file backup terlebih dahulu');
+                return;
+            }
+
+            const confirmRestore = confirm('Apakah Anda yakin ingin melakukan restore? Data yang ada akan ditimpa.');
+            if (!confirmRestore) return;
+
+            const formData = new FormData();
+            formData.append('backupFile', fileInput.files[0]);
+            formData.append('restoreType', document.getElementById('restoreType').value);
+            formData.append('createPreRestoreBackup', document.getElementById('createPreRestoreBackup').checked);
+
+            // Add table selections if partial restore
+            if (document.getElementById('restoreType').value === 'partial') {
+                const tables = [];
+                if (document.getElementById('restoreEmployees').checked) tables.push('employees');
+                if (document.getElementById('restorePayroll').checked) tables.push('payroll');
+                if (document.getElementById('restoreAttendance').checked) tables.push('attendance');
+                if (document.getElementById('restoreLeaves').checked) tables.push('leaves');
+                if (document.getElementById('restoreUsers').checked) tables.push('users');
+                if (document.getElementById('restoreSettings').checked) tables.push('settings');
+
+                formData.append('tables', JSON.stringify(tables));
+            }
+
+            startRestoreProcess(formData);
+        });
+
+        async function startRestoreProcess(formData) {
+            restoreStatus = 'running';
+            document.getElementById('restoreStatusContainer').style.display = 'none';
+            document.getElementById('restoreProgressContainer').style.display = 'block';
+
+            const progressBar = document.getElementById('restoreProgressBar');
+            const progressText = document.getElementById('restoreProgressText');
+
+            try {
+                // Simulate restore progress
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    progress += Math.random() * 10;
+                    if (progress > 100) progress = 100;
+
+                    progressBar.style.width = progress + '%';
+                    progressText.textContent = `Memulihkan data... ${Math.round(progress)}%`;
+
+                    if (progress >= 100) {
+                        clearInterval(progressInterval);
+                        progressText.textContent = 'Restore selesai!';
+                        setTimeout(() => {
+                            restoreStatus = 'completed';
+                            alert('Restore berhasil! Sistem akan restart dalam beberapa detik.');
+                            document.getElementById('restoreProgressContainer').style.display = 'none';
+                            document.getElementById('restoreStatusContainer').style.display = 'block';
+                        }, 2000);
+                    }
+                }, 800);
+
+                // Actual restore API call
+                const response = await fetch('/api/backup/restore', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + getToken() },
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    clearInterval(progressInterval);
+                    throw new Error('Restore failed');
+                }
+
+            } catch (error) {
+                restoreStatus = 'failed';
+                progressText.textContent = 'Restore gagal: ' + error.message;
+                progressBar.className = 'progress-bar bg-danger';
+                alert('Restore gagal: ' + error.message);
+            }
+        }
+
+        document.getElementById('cancelRestoreBtn').addEventListener('click', function() {
+            if (restoreStatus === 'running') {
+                restoreStatus = 'cancelled';
+                document.getElementById('restoreProgressContainer').style.display = 'none';
+                document.getElementById('restoreStatusContainer').style.display = 'block';
+                alert('Restore dibatalkan');
+            }
+        });
+
+        // Placeholder functions for future implementation
+        function editSchedule(id) { alert('Fitur edit jadwal akan segera hadir'); }
+        function toggleSchedule(id) { alert('Fitur toggle jadwal akan segera hadir'); }
+        function deleteSchedule(id) { alert('Fitur hapus jadwal akan segera hadir'); }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadBackupOverview();
+            await loadSystemInfo();
+            await loadBackupSchedules();
+        });
+    </script>
+</body>
+</html>

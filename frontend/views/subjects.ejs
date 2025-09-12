@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mata Pelajaran - SIM Sekolah</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <%- include('partials/navbar') %>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2>Mata Pelajaran</h2>
+                <p class="text-muted">Kelola kurikulum dan mata pelajaran</p>
+            </div>
+            <div class="d-flex gap-2">
+                <!-- Excel Import/Export Buttons -->
+                <div class="dropdown">
+                    <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-file-excel"></i> Excel
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" id="downloadSubjectTemplateBtn">
+                            <i class="fas fa-download"></i> Download Template
+                        </a></li>
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#importSubjectExcelModal">
+                            <i class="fas fa-upload"></i> Import Excel
+                        </a></li>
+                        <li><a class="dropdown-item" href="#" id="exportSubjectExcelBtn">
+                            <i class="fas fa-file-export"></i> Export Excel
+                        </a></li>
+                    </ul>
+                </div>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSubjectModal">
+                    <i class="fas fa-plus"></i> Tambah Mata Pelajaran
+                </button>
+            </div>
+        </div>
+
+        <!-- Search and Filter -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <input type="text" class="form-control" id="searchInput" placeholder="Cari mata pelajaran...">
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="typeFilter">
+                            <option value="">Semua Jenis</option>
+                            <option value="THEORY">Teori</option>
+                            <option value="PRACTICE">Praktik</option>
+                            <option value="MIXED">Campuran</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="statusFilter">
+                            <option value="">Semua Status</option>
+                            <option value="true">Aktif</option>
+                            <option value="false">Tidak Aktif</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn btn-outline-secondary w-100" id="resetFilters">
+                            Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subjects Table -->
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped" id="subjectsTable">
+                        <thead>
+                            <tr>
+                                <th>Kode</th>
+                                <th>Nama Mata Pelajaran</th>
+                                <th>Jenis</th>
+                                <th>SKS</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="subjectsTableBody">
+                            <tr>
+                                <td colspan="6" class="text-center">
+                                    <div class="spinner-border spinner-border-sm" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    Memuat data mata pelajaran...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Subject Modal -->
+    <div class="modal fade" id="addSubjectModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Tambah Mata Pelajaran</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addSubjectForm">
+                        <div class="mb-3">
+                            <label for="subjectCode" class="form-label">Kode Mata Pelajaran</label>
+                            <input type="text" class="form-control" id="subjectCode" name="subjectCode" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="subjectName" class="form-label">Nama Mata Pelajaran</label>
+                            <input type="text" class="form-control" id="subjectName" name="subjectName" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="subjectType" class="form-label">Jenis</label>
+                                    <select class="form-select" id="subjectType" name="subjectType" required>
+                                        <option value="THEORY">Teori</option>
+                                        <option value="PRACTICE">Praktik</option>
+                                        <option value="MIXED">Campuran</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="sks" class="form-label">SKS</label>
+                                    <input type="number" class="form-control" id="sks" name="sks" min="1" max="6" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Deskripsi</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="saveSubjectBtn">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Excel Modal -->
+    <div class="modal fade" id="importSubjectExcelModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Import Data Mata Pelajaran dari Excel</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        Pastikan file Excel sesuai dengan template yang telah diunduh.
+                        Data yang diimport akan ditambahkan ke database.
+                    </div>
+                    <form id="importSubjectExcelForm" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="subjectExcelFile" class="form-label">Pilih File Excel</label>
+                            <input type="file" class="form-control" id="subjectExcelFile" name="file" accept=".xlsx,.xls" required>
+                            <div class="form-text">Format: .xlsx atau .xls</div>
+                        </div>
+                    </form>
+                    <div id="subjectImportProgress" class="d-none">
+                        <div class="progress mb-2">
+                            <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <small class="text-muted">Memproses import...</small>
+                    </div>
+                    <div id="subjectImportResults" class="d-none">
+                        <div class="alert alert-success">
+                            <h6>Import Berhasil!</h6>
+                            <p id="subjectImportSuccessMessage"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="importSubjectExcelBtn">Import</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Subject Modal -->
+    <div class="modal fade" id="viewSubjectModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Detail Mata Pelajaran</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="subjectDetails">
+                        <!-- Subject details will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-primary" id="printSubjectBtn">
+                        <i class="fas fa-print"></i> Print Detail
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Subject Modal -->
+    <div class="modal fade" id="editSubjectModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Mata Pelajaran</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editSubjectForm">
+                        <input type="hidden" id="editSubjectId" name="id">
+                        <div class="mb-3">
+                            <label for="editSubjectCode" class="form-label">Kode Mata Pelajaran</label>
+                            <input type="text" class="form-control" id="editSubjectCode" name="code" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editSubjectName" class="form-label">Nama Mata Pelajaran</label>
+                            <input type="text" class="form-control" id="editSubjectName" name="name" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editSubjectType" class="form-label">Jenis</label>
+                                    <select class="form-select" id="editSubjectType" name="subjectType" required>
+                                        <option value="THEORY">Teori</option>
+                                        <option value="PRACTICE">Praktik</option>
+                                        <option value="MIXED">Campuran</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editSks" class="form-label">SKS</label>
+                                    <input type="number" class="form-control" id="editSks" name="creditHours" min="1" max="6" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editDescription" class="form-label">Deskripsi</label>
+                            <textarea class="form-control" id="editDescription" name="description" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editStatus" class="form-label">Status</label>
+                            <select class="form-select" id="editStatus" name="isActive" required>
+                                <option value="true">Aktif</option>
+                                <option value="false">Tidak Aktif</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="updateSubjectBtn">Update</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/subjects.js"></script>
+</body>
+</html>

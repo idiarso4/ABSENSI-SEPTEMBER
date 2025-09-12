@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slip Gaji - Sistem HRM & Payroll</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <%- include('partials/navbar') %>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="bi bi-receipt"></i> Manajemen Slip Gaji</h2>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#generateSlipModal">
+                <i class="bi bi-plus-circle"></i> Generate Slip Gaji
+            </button>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5>Ringkasan Slip Gaji</h5>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="alert alert-info"><strong>Total Karyawan:</strong> <span id="totalEmployees">-</span></div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="alert alert-success"><strong>Slip Dibuat:</strong> <span id="slipsGenerated">-</span></div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="alert alert-primary"><strong>Email Terkirim:</strong> <span id="emailsSent">-</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5>Daftar Slip Gaji</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <select class="form-select" id="monthFilter">
+                            <option value="">Semua Bulan</option>
+                            <option value="1">Januari</option>
+                            <option value="2">Februari</option>
+                            <option value="3">Maret</option>
+                            <option value="4">April</option>
+                            <option value="5">Mei</option>
+                            <option value="6">Juni</option>
+                            <option value="7">Juli</option>
+                            <option value="8">Agustus</option>
+                            <option value="9">September</option>
+                            <option value="10">Oktober</option>
+                            <option value="11">November</option>
+                            <option value="12">Desember</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="yearFilter">
+                            <option value="">Semua Tahun</option>
+                            <option value="2025">2025</option>
+                            <option value="2024">2024</option>
+                            <option value="2023">2023</option>
+                            <option value="2022">2022</option>
+                            <option value="2021">2021</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="employeeFilter">
+                            <option value="">Semua Karyawan</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-primary" id="filterBtn">
+                            <i class="bi bi-funnel"></i> Filter
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Karyawan</th>
+                                <th>Bulan</th>
+                                <th>Tahun</th>
+                                <th>Gaji Pokok</th>
+                                <th>Tunjangan</th>
+                                <th>Potongan</th>
+                                <th>Gaji Bersih</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="slipsTableBody">
+                            <tr>
+                                <td colspan="9" class="text-center">
+                                    <div class="spinner-border" role="status">
+                                        <span class="visually-hidden">Memuat...</span>
+                                    </div>
+                                    Memuat data slip gaji...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generate Slip Modal -->
+    <div class="modal fade" id="generateSlipModal" tabindex="-1" aria-labelledby="generateSlipModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="generateSlipModalLabel">Generate Slip Gaji</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="generateSlipForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="slipEmployee" class="form-label">Karyawan</label>
+                                    <select class="form-select" id="slipEmployee" required>
+                                        <option value="">Pilih Karyawan</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="slipMonth" class="form-label">Bulan</label>
+                                    <select class="form-select" id="slipMonth" required>
+                                        <option value="">Bulan</option>
+                                        <option value="1">Januari</option>
+                                        <option value="2">Februari</option>
+                                        <option value="3">Maret</option>
+                                        <option value="4">April</option>
+                                        <option value="5">Mei</option>
+                                        <option value="6">Juni</option>
+                                        <option value="7">Juli</option>
+                                        <option value="8">Agustus</option>
+                                        <option value="9">September</option>
+                                        <option value="10">Oktober</option>
+                                        <option value="11">November</option>
+                                        <option value="12">Desember</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="slipYear" class="form-label">Tahun</label>
+                                    <select class="form-select" id="slipYear" required>
+                                        <option value="">Tahun</option>
+                                        <option value="2025">2025</option>
+                                        <option value="2024">2024</option>
+                                        <option value="2023">2023</option>
+                                        <option value="2022">2022</option>
+                                        <option value="2021">2021</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="slipBasicSalary" class="form-label">Gaji Pokok</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">Rp</span>
+                                        <input type="number" class="form-control" id="slipBasicSalary" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="slipAllowances" class="form-label">Tunjangan</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">Rp</span>
+                                        <input type="number" class="form-control" id="slipAllowances" value="0">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="slipDeductions" class="form-label">Potongan</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">Rp</span>
+                                        <input type="number" class="form-control" id="slipDeductions" value="0">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle-fill"></i>
+                            Periode penggajian akan digunakan sebagai periode pada slip gaji.
+                            Pastikan data gaji karyawan telah terupdate di profil karyawan.
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-primary" id="generateSlipBtn">
+                        <i class="bi bi-receipt"></i> Generate Slip Gaji
+                    </button>
+                    <button type="button" class="btn btn-success" id="sendEmailBtn">
+                        <i class="bi bi-envelope"></i> Kirim Email
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function getToken() { return localStorage.getItem('token') || ''; }
+        let employees = [];
+        let payrolls = [];
+
+        // Logout functionality
+        document.getElementById('logoutBtn')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.removeItem('token');
+            window.location.href = '/login';
+        });
+
+        function formatIDR(n) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0
+            }).format(n || 0);
+        }
+
+        async function loadEmployees() {
+            try {
+                const response = await fetch('/api/employees', {
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+                if (response.status === 401) {
+                    window.location.href = '/login';
+                    return;
+                }
+                employees = await response.json();
+
+                // Populate employee filter dropdown
+                const employeeFilter = document.getElementById('employeeFilter');
+                const slipEmployee = document.getElementById('slipEmployee');
+                [employeeFilter, slipEmployee].forEach(select => {
+                    select.innerHTML = '<option value="">Semua Karyawan</option>';
+                    employees.forEach(emp => {
+                        select.add(new Option(`${emp.firstName} ${emp.lastName} (${emp.employeeId})`, emp.id));
+                    });
+                });
+
+                updateSummary();
+            } catch (error) {
+                console.error('Error loading employees:', error);
+            }
+        }
+
+        async function loadPayrolls() {
+            try {
+                const response = await fetch('/api/payrolls', {
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+                if (response.status === 401) {
+                    window.location.href = '/login';
+                    return;
+                }
+                payrolls = await response.json();
+                renderSlipsTable(payrolls);
+            } catch (error) {
+                console.error('Error loading payrolls:', error);
+            }
+        }
+
+        function renderSlipsTable(records) {
+            const tableBody = document.getElementById('slipsTableBody');
+            tableBody.innerHTML = '';
+
+            if (!records || records.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">Tidak ada data slip gaji</td></tr>';
+                return;
+            }
+
+            records.forEach(p => {
+                const emp = employees.find(e => e.id === p.employee?.id);
+                const statusClass = p.status === 'paid' ? 'success' : 'warning';
+                const statusText = p.status === 'paid' ? 'Lunas' : 'Pending';
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${emp ? `${emp.firstName} ${emp.lastName}` : 'N/A'}</td>
+                    <td>${p.payrollMonth || '-'}</td>
+                    <td>${p.payrollYear || '-'}</td>
+                    <td>${formatIDR(p.basicSalary)}</td>
+                    <td>${formatIDR(p.allowances)}</td>
+                    <td>${formatIDR(p.deductions)}</td>
+                    <td><strong>${formatIDR(p.netSalary)}</strong></td>
+                    <td><span class="badge bg-${statusClass}">${statusText}</span></td>
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-primary view-slip" data-id="${p.id}" title="Lihat Slip">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-success download-slip" data-id="${p.id}" title="Download PDF">
+                                <i class="bi bi-download"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-info send-email" data-id="${p.id}" title="Kirim Email">
+                                <i class="bi bi-envelope"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            // Add event listeners for action buttons
+            addActionListeners();
+        }
+
+        function addActionListeners() {
+            // View Slip
+            document.querySelectorAll('.view-slip').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const payrollId = e.target.closest('button').dataset.id;
+                    viewSlip(payrollId);
+                });
+            });
+
+            // Download Slip
+            document.querySelectorAll('.download-slip').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const payrollId = e.target.closest('button').dataset.id;
+                    downloadSlip(payrollId);
+                });
+            });
+
+            // Send Email
+            document.querySelectorAll('.send-email').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const payrollId = e.target.closest('button').dataset.id;
+                    sendSlipEmail(payrollId);
+                });
+            });
+        }
+
+        async function viewSlip(payrollId) {
+            try {
+                window.open(`/api/reports/payslip/${payrollId}?token=${getToken()}`, '_blank');
+            } catch (error) {
+                alert('Error viewing slip: ' + error.message);
+            }
+        }
+
+        async function downloadSlip(payrollId) {
+            try {
+                const response = await fetch(`/api/reports/payslip/${payrollId}`, {
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `Slip_Gaji_${payrollId}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                } else {
+                    alert('Failed to download slip');
+                }
+            } catch (error) {
+                alert('Error downloading slip: ' + error.message);
+            }
+        }
+
+        async function sendSlipEmail(payrollId) {
+            if (!confirm('Kirim slip gaji via email ke karyawan?')) return;
+
+            try {
+                const payroll = payrolls.find(p => p.id == payrollId);
+                if (!payroll) {
+                    alert('Payroll not found');
+                    return;
+                }
+
+                // This endpoint needs to be implemented
+                const response = await fetch(`/api/reports/send-payslip/${payrollId}`, {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+
+                if (response.ok) {
+                    alert('Slip gaji berhasil dikirim via email');
+                    // Update emails sent count
+                    updateSummary();
+                } else {
+                    alert('Failed to send email');
+                }
+            } catch (error) {
+                alert('Error sending email: ' + error.message);
+            }
+        }
+
+        function updateSummary() {
+            document.getElementById('totalEmployees').textContent = employees.length;
+            document.getElementById('slipsGenerated').textContent = payrolls.length;
+            document.getElementById('emailsSent').textContent = payrolls.filter(p => p.status === 'paid').length;
+        }
+
+        // Employee selection change handler
+        document.getElementById('slipEmployee').addEventListener('change', function() {
+            const empId = this.value;
+            const emp = employees.find(e => e.id == empId);
+            if (emp && emp.basicSalary) {
+                document.getElementById('slipBasicSalary').value = emp.basicSalary;
+                document.getElementById('slipAllowances').value = 0;
+                document.getElementById('slipDeductions').value = 0;
+            }
+        });
+
+        // Generate Slip Button
+        document.getElementById('generateSlipBtn').addEventListener('click', async function() {
+            const formData = {
+                employeeId: document.getElementById('slipEmployee').value,
+                month: document.getElementById('slipMonth').value,
+                year: document.getElementById('slipYear').value,
+                basicSalary: parseFloat(document.getElementById('slipBasicSalary').value || 0),
+                allowances: parseFloat(document.getElementById('slipAllowances').value || 0),
+                deductions: parseFloat(document.getElementById('slipDeductions').value || 0)
+            };
+
+            if (!formData.employeeId || !formData.month || !formData.year) {
+                alert('Mohon lengkapi semua field yang diperlukan');
+                return;
+            }
+
+            // Create payroll record first
+            const payrollPayload = {
+                employee: { id: Number(formData.employeeId) },
+                payrollMonth: formData.month,
+                payrollYear: formData.year,
+                basicSalary: formData.basicSalary,
+                allowances: formData.allowances,
+                deductions: formData.deductions,
+                netSalary: formData.basicSalary + formData.allowances - formData.deductions
+            };
+
+            try {
+                const response = await fetch('/api/payrolls', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify(payrollPayload)
+                });
+
+                if (response.ok) {
+                    const payroll = await response.json();
+                    bootstrap.Modal.getInstance(document.getElementById('generateSlipModal')).hide();
+                    await loadPayrolls();
+                    alert('Slip gaji berhasil dibuat!');
+
+                    // Optionally auto-download the slip
+                    if (confirm('Download slip gaji sekarang?')) {
+                        downloadSlip(payroll.id);
+                    }
+                } else {
+                    alert('Gagal membuat slip gaji');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        });
+
+        // Filter functionality
+        document.getElementById('filterBtn').addEventListener('click', function() {
+            const month = document.getElementById('monthFilter').value;
+            const year = document.getElementById('yearFilter').value;
+            const employeeId = document.getElementById('employeeFilter').value;
+
+            let filtered = payrolls;
+
+            if (month) {
+                filtered = filtered.filter(p => String(p.payrollMonth) === month);
+            }
+            if (year) {
+                filtered = filtered.filter(p => String(p.payrollYear) === year);
+            }
+            if (employeeId) {
+                filtered = filtered.filter(p => p.employee?.id == employeeId);
+            }
+
+            renderSlipsTable(filtered);
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadEmployees();
+            await loadPayrolls();
+        });
+    </script>
+</body>
+</html>
+

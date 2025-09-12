@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Absensi - Face + Lokasi</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <style>
+    #map { height: 320px; }
+    .video-box { background:#000; }
+  </style>
+</head>
+<body>
+  <%- include('partials/navbar') %>
+
+  <div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <h2>Absensi (Face + Lokasi)</h2>
+        <p class="text-muted mb-0">Ambil foto wajah dan titik lokasi sebagai bukti kehadiran. Gunakan foto referensi siswa yang telah diupdate untuk pencocokan.</p>
+      </div>
+      <a class="btn btn-outline-secondary" href="/students/photo-update">Update Foto Siswa</a>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-6">
+        <div class="card h-100">
+          <div class="card-header">Kamera</div>
+          <div class="card-body">
+            <div class="row g-2 mb-2">
+              <div class="col-6">
+                <label class="form-label">NISN (opsional)</label>
+                <input id="nisn" class="form-control" placeholder="Masukkan NISN siswa" />
+              </div>
+            </div>
+            <div class="ratio ratio-16x9 video-box mb-2">
+              <video id="video" autoplay playsinline></video>
+            </div>
+            <div class="d-flex gap-2">
+              <button id="btnStartCam" class="btn btn-outline-primary" type="button">Aktifkan Kamera</button>
+              <button id="btnCapture" class="btn btn-primary" type="button">Ambil Foto</button>
+              <button id="btnStopCam" class="btn btn-outline-danger" type="button">Matikan Kamera</button>
+            </div>
+            <div class="mt-3">
+              <label class="form-label">Foto Referensi (opsional)</label>
+              <input class="form-control" type="file" id="refPhoto" accept="image/*" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card h-100">
+          <div class="card-header">Lokasi</div>
+          <div class="card-body">
+            <div id="map" class="mb-2 border rounded"></div>
+            <div>
+              <div class="row g-2">
+                <div class="col-6">
+                  <label class="form-label">Latitude</label>
+                  <input id="lat" class="form-control" readonly>
+                </div>
+                <div class="col-6">
+                  <label class="form-label">Longitude</label>
+                  <input id="lng" class="form-control" readonly>
+                </div>
+              </div>
+              <button id="btnLocate" class="btn btn-outline-secondary mt-2" type="button">Ambil Lokasi</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4 mt-1">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">Hasil Foto</div>
+          <div class="card-body text-center">
+            <img id="snapshot" class="img-fluid" style="max-height:260px" alt="Snapshot" />
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">Status Pencocokan Wajah</div>
+          <div class="card-body">
+            <p id="faceStatus" class="text-muted mb-2">Belum dilakukan pencocokan.</p>
+            <small class="text-muted">Catatan: Implementasi face recognition penuh memerlukan model dan/atau layanan backend. Halaman ini menyiapkan alur dan data (gambar + lokasi) untuk dikirim ke backend.</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2 mt-3">
+      <button id="btnSubmit" class="btn btn-success" type="button">Kirim Absensi</button>
+      <button class="btn btn-outline-secondary" type="button" onclick="window.print()">Print</button>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script>
+    let map, marker, stream;
+    const video = document.getElementById('video');
+    const snapshot = document.getElementById('snapshot');
+    const btnStartCam = document.getElementById('btnStartCam');
+    const btnStopCam = document.getElementById('btnStopCam');
+    const btnCapture = document.getElementById('btnCapture');
+    const btnLocate = document.getElementById('btnLocate');
+    const btnSubmit = document.getElementById('btnSubmit');
+    const latEl = document.getElementById('lat');
+    const lngEl = document.getElementById('lng');
+    const refPhoto = document.getElementById('refPhoto');
+    const faceStatus = document.getElementById('faceStatus');
+    const nisnEl = document.getElementById('nisn');
+
+    // Map init (OpenStreetMap via Leaflet)
+    function initMap() {
+      map = L.map('map');
+      const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
+      });
+      osm.addTo(map);
+      map.setView([0,0], 2);
+    }
+
+    function setMarker(lat, lng) {
+      if (!map) return;
+      if (!marker) {
+        marker = L.marker([lat, lng]).addTo(map);
+      } else {
+        marker.setLatLng([lat, lng]);
+      }
+      map.setView([lat, lng], 17);
+    }
+
+    function getLocation() {
+      if (!navigator.geolocation) {
+        alert('Geolocation tidak didukung browser ini.');
+        return;
+      }
+      navigator.geolocation.getCurrentPosition((pos) => {
+        const { latitude, longitude } = pos.coords;
+        latEl.value = latitude;
+        lngEl.value = longitude;
+        setMarker(latitude, longitude);
+      }, (err) => {
+        alert('Gagal mendapatkan lokasi: ' + err.message);
+      }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
+    }
+
+    async function startCamera() {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+        video.srcObject = stream;
+      } catch (e) {
+        alert('Gagal mengakses kamera: ' + e.message);
+      }
+    }
+    function stopCamera() {
+      if (stream) {
+        stream.getTracks().forEach(t => t.stop());
+        stream = null;
+        video.srcObject = null;
+      }
+    }
+    function captureFrame() {
+      if (!video.videoWidth) { alert('Kamera belum siap'); return; }
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0);
+      snapshot.src = canvas.toDataURL('image/jpeg', 0.9);
+    }
+
+    // Placeholder face matching demo (front-end only)
+    function mockFaceMatch() {
+      if (!snapshot.src) { faceStatus.textContent = 'Ambil foto terlebih dahulu.'; return; }
+      if (!refPhoto.files || refPhoto.files.length === 0) { faceStatus.textContent = 'Unggah foto referensi siswa untuk pencocokan.'; return; }
+      // NOTE: Implementasi sebenarnya perlu model (mis. face-api.js) di backend/FE.
+      faceStatus.textContent = 'Pencocokan wajah diproses di backend (mock).';
+    }
+
+    btnStartCam.addEventListener('click', startCamera);
+    btnStopCam.addEventListener('click', stopCamera);
+    btnCapture.addEventListener('click', () => { captureFrame(); mockFaceMatch(); });
+    btnLocate.addEventListener('click', getLocation);
+    btnSubmit.addEventListener('click', async () => {
+      const payload = {
+        timestamp: new Date().toISOString(),
+        lat: latEl.value,
+        lng: lngEl.value,
+        snapshotBase64: snapshot.src || null,
+        nisn: (nisnEl && nisnEl.value.trim()) || undefined
+      };
+      if (!payload.snapshotBase64) { alert('Ambil foto terlebih dahulu.'); return; }
+      if (!payload.lat || !payload.lng) { alert('Ambil lokasi terlebih dahulu.'); return; }
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('/api/attendance/face-checkin', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': 'Bearer ' + token } : {})
+          },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error('Gagal submit absensi: ' + res.status);
+        const data = await res.json().catch(() => ({}));
+        alert('Absensi terkirim. ' + (data.message || ''));
+      } catch (err) {
+        console.error(err);
+        alert('Gagal kirim ke backend. Pastikan API tersedia.');
+      }
+    });
+
+    // Auto init
+    initMap();
+    if (navigator.geolocation) getLocation();
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) startCamera();
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

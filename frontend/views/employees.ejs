@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Employee Management - HRM & Payroll System</title>
+   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+   <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+   <%- include('partials/navbar') %>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-8">
+                <h2>Manajemen Karyawan</h2>
+            </div>
+            <div class="col-md-4 text-end">
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEmployeeModal">
+                    <i class="bi bi-plus-circle"></i> Tambah Karyawan
+                </button>
+            </div>
+        </div>
+
+        <!-- Filters and Controls -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="statusFilter" class="form-label">Status</label>
+                                    <select class="form-select" id="statusFilter">
+                                        <option value="active">Aktif</option>
+                                        <option value="inactive">Tidak Aktif</option>
+                                        <option value="all">Semua</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="searchInput" class="form-label">Cari Karyawan</label>
+                                    <input type="text" class="form-control" id="searchInput" placeholder="Nama atau ID karyawan">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">&nbsp;</label>
+                                    <div>
+                                        <button class="btn btn-outline-primary me-2" id="refreshBtn">
+                                            <i class="bi bi-arrow-clockwise"></i> Refresh
+                                        </button>
+                                        <button class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#exportModal">
+                                            <i class="bi bi-cloud-download"></i> Export
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label">Aksi Bulk</label>
+                            <div>
+                                <button class="btn btn-outline-danger me-2" id="bulkDeleteBtn" disabled>
+                                    <i class="bi bi-trash"></i> Hapus Terpilih
+                                </button>
+                                <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#importModal">
+                                    <i class="bi bi-cloud-upload"></i> Import Excel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">Total: <span id="totalEmployees">0</span> karyawan</small>
+                    <small class="text-muted">Dipilih: <span id="selectedCount">0</span></small>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th width="50">
+                                    <input type="checkbox" id="selectAll">
+                                </th>
+                                <th>ID</th>
+                                <th>Nama</th>
+                                <th>Jabatan</th>
+                                <th>Departemen</th>
+                                <th>Alamat</th>
+                                <th>Email</th>
+                                <th>Telepon</th>
+                                <th>Tipe Karyawan</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="employeeTableBody">
+                            <!-- Employee data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exportModalLabel">Export Data Karyawan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Pilih format export untuk data karyawan:</p>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-success" id="exportExcelBtn">
+                            <i class="bi bi-file-earmark-spreadsheet"></i> Export ke Excel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="importModalLabel">Import Data Karyawan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <strong>Langkah:</strong> 1. Download template Excel → 2. Isi data karyawan → 3. Upload file yang sudah diisi
+                    </div>
+                    <div class="d-grid gap-2 mb-3">
+                        <button class="btn btn-outline-primary" id="downloadTemplateBtn">
+                            <i class="bi bi-cloud-download"></i> Download Template Excel
+                        </button>
+                    </div>
+                    <p>Silakan upload file Excel yang sudah diisi dengan data karyawan:</p>
+                    <form id="importForm">
+                        <div class="mb-3">
+                            <input type="file" class="form-control" id="importFile" accept=".xlsx,.xls" required>
+                            <div class="form-text">Format: .xlsx atau .xls</div>
+                        </div>
+                        <button type="submit" class="btn btn-success" id="importBtn">
+                            <i class="bi bi-cloud-upload"></i> Upload dan Import
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Employee Modal -->
+    <div class="modal fade" id="addEmployeeModal" tabindex="-1" aria-labelledby="addEmployeeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addEmployeeModalLabel">Tambah Karyawan Baru</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addEmployeeForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="firstName" class="form-label">Nama Depan *</label>
+                                    <input type="text" class="form-control" id="firstName" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="lastName" class="form-label">Nama Belakang *</label>
+                                    <input type="text" class="form-control" id="lastName" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email *</label>
+                                    <input type="email" class="form-control" id="email" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">Telepon</label>
+                                    <input type="text" class="form-control" id="phone">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="employeeId" class="form-label">ID Karyawan</label>
+                                    <input type="text" class="form-control" id="employeeId" disabled>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="joiningDate" class="form-label">Tanggal Bergabung *</label>
+                                    <input type="date" class="form-control" id="joiningDate" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="department" class="form-label">Departemen *</label>
+                                    <select class="form-select" id="department" required>
+                                        <option value="">Pilih Departemen</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="designation" class="form-label">Penunjukan *</label>
+                                    <select class="form-select" id="designation" required>
+                                        <option value="">Pilih Penunjukan</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="employeeType" class="form-label">Tipe Karyawan</label>
+                                    <select class="form-select" id="employeeType">
+                                        <option value="PERMANENT">Tetap</option>
+                                        <option value="CONTRACT">Kontrak</option>
+                                        <option value="DAILY_CASUAL">Harian Lepas</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="endDate" class="form-label">Tanggal Berakhir (untuk Kontrak/Harian)</label>
+                                    <input type="date" class="form-control" id="endDate">
+                                    <div class="form-text">Kosongkan untuk karyawan tetap</div>
+                                </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="basicSalary" class="form-label">Gaji Pokok *</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">Rp</span>
+                                        <input type="number" class="form-control" id="basicSalary" min="0" placeholder="5000000" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="salaryType" class="form-label">Tipe Gaji</label>
+                                    <select class="form-select" id="salaryType">
+                                        <option value="fixed">Tetap</option>
+                                        <option value="hourly">Per Jam</option>
+                                        <option value="daily">Per Hari</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label for="address" class="form-label">Alamat Lengkap *</label>
+                                    <textarea class="form-control" id="address" rows="3" placeholder="Jl. Contoh No. 123, Jakarta" required></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="city" class="form-label">Kota</label>
+                                    <input type="text" class="form-control" id="city" placeholder="Jakarta">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="state" class="form-label">Provinsi</label>
+                                    <input type="text" class="form-control" id="state" placeholder="DKI Jakarta">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="zip" class="form-label">Kode Pos</label>
+                                    <input type="text" class="form-control" id="zip" placeholder="12345">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="yearlyLeaveLimit" class="form-label">Batas Cuti Tahunan</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="yearlyLeaveLimit" min="0" max="30" value="12">
+                                        <span class="input-group-text">hari</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="employeePhoto" class="form-label">Foto Profil</label>
+                                    <input type="file" class="form-control" id="employeePhoto" accept="image/*">
+                                    <div class="form-text">Format: JPG, PNG, GIF. Maksimal 2MB</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label for="emergencyContact" class="form-label">Kontak Darurat</label>
+                                    <input type="text" class="form-control" id="emergencyContact" placeholder="Nama & Nomor Telepon">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle-fill"></i>
+                            Pastikan semua data karyawan terisi dengan lengkap dan benar. Data ini akan digunakan untuk keperluan administrasi dan pelaporan.
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-primary" id="saveEmployeeBtn">Simpan Karyawan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/validation.js"></script>
+    <script>
+        // Employee type change handler - show/hide end date for non-permanent employees
+        document.getElementById('employeeType').addEventListener('change', function(e) {
+            const endDateField = document.getElementById('endDate');
+            const endDateLabel = document.querySelector('label[for="endDate"]');
+
+            if (e.target.value === 'PERMANENT') {
+                endDateField.style.display = 'none';
+                endDateLabel.style.display = 'none';
+                endDateField.value = '';
+            } else {
+                endDateField.style.display = 'block';
+                endDateLabel.style.display = 'block';
+            }
+        });
+
+        // Initialize on modal show
+        document.getElementById('addEmployeeModal').addEventListener('show.bs.modal', function() {
+            const employeeTypeSelect = document.getElementById('employeeType');
+            const endDateField = document.getElementById('endDate');
+            const endDateLabel = document.querySelector('label[for="endDate"]');
+
+            if (employeeTypeSelect.value === 'PERMANENT') {
+                endDateField.style.display = 'none';
+                endDateLabel.style.display = 'none';
+            } else {
+                endDateField.style.display = 'block';
+                endDateLabel.style.display = 'block';
+            }
+        });
+    </script>
+    <script src="/js/employee.js"></script>
+</body>
+</html>

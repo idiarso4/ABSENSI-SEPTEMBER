@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Update Foto Siswa</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <%- include('partials/navbar') %>
+
+  <div class="container mt-4">
+    <div class="row">
+      <div class="col-md-7">
+        <h2 class="mb-3">Update Foto Siswa</h2>
+        <p class="text-muted">Ambil foto dari kamera atau unggah file. Foto ini digunakan sebagai referensi pencocokan wajah saat absensi.</p>
+      </div>
+      <div class="col-md-5 text-end">
+        <a class="btn btn-outline-secondary" href="/attendance/face">Ke Halaman Absensi (Face + Lokasi)</a>
+      </div>
+    </div>
+
+    <div class="card mt-2">
+      <div class="card-body">
+        <form id="photoForm" class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">NISN</label>
+            <input type="text" class="form-control" id="nisn" placeholder="Masukkan NISN" required>
+          </div>
+          <div class="col-md-8">
+            <label class="form-label">Nama Siswa</label>
+            <input type="text" class="form-control" id="studentName" placeholder="Masukkan Nama" required>
+          </div>
+
+          <div class="col-12"></div>
+
+          <div class="col-md-6">
+            <label class="form-label">Kamera</label>
+            <div class="ratio ratio-16x9 bg-dark rounded">
+              <video id="video" autoplay playsinline class="rounded"></video>
+            </div>
+            <div class="mt-2 d-flex gap-2">
+              <button class="btn btn-primary" type="button" id="btnCapture">Ambil Foto</button>
+              <button class="btn btn-outline-secondary" type="button" id="btnStartCam">Aktifkan Kamera</button>
+              <button class="btn btn-outline-danger" type="button" id="btnStopCam">Matikan Kamera</button>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Hasil / Unggah Foto</label>
+            <div class="border rounded p-2 text-center">
+              <img id="preview" alt="Preview" class="img-fluid" style="max-height: 260px;" />
+            </div>
+            <div class="mt-2">
+              <input class="form-control" type="file" id="fileInput" accept="image/*">
+            </div>
+          </div>
+
+          <div class="col-12 d-flex justify-content-end gap-2">
+            <button class="btn btn-success" type="submit">Simpan Foto</button>
+            <button class="btn btn-outline-secondary" type="button" onclick="window.print()">Print</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let stream;
+    const video = document.getElementById('video');
+    const preview = document.getElementById('preview');
+    const fileInput = document.getElementById('fileInput');
+    const btnStartCam = document.getElementById('btnStartCam');
+    const btnStopCam = document.getElementById('btnStopCam');
+    const btnCapture = document.getElementById('btnCapture');
+    const form = document.getElementById('photoForm');
+
+    async function startCamera() {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+        video.srcObject = stream;
+      } catch (e) {
+        alert('Gagal mengakses kamera: ' + e.message);
+      }
+    }
+
+    function stopCamera() {
+      if (stream) {
+        stream.getTracks().forEach(t => t.stop());
+        stream = null;
+        video.srcObject = null;
+      }
+    }
+
+    function captureFrame() {
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 360;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      preview.src = canvas.toDataURL('image/jpeg', 0.9);
+    }
+
+    btnStartCam.addEventListener('click', startCamera);
+    btnStopCam.addEventListener('click', stopCamera);
+    btnCapture.addEventListener('click', captureFrame);
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => { preview.src = reader.result; };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const nisn = document.getElementById('nisn').value.trim();
+      const name = document.getElementById('studentName').value.trim();
+      if (!nisn || !name || !preview.src) {
+        alert('Lengkapi NISN, Nama, dan Foto terlebih dahulu.');
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('/api/students/' + encodeURIComponent(nisn) + '/photo', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': 'Bearer ' + token } : {})
+          },
+          body: JSON.stringify({ imageBase64: preview.src, name })
+        });
+        if (!res.ok) throw new Error('Gagal menyimpan foto: ' + res.status);
+        const data = await res.json().catch(() => ({}));
+        alert('Foto tersimpan. ' + (data.message || ''));
+      } catch (err) {
+        console.error(err);
+        alert('Gagal kirim ke backend. Pastikan API tersedia.');
+      }
+    });
+
+    // Optional: otomatis aktifkan kamera jika tersedia
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      startCamera();
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

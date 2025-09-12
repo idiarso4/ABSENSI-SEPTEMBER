@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Cuti - Sistem HRM & Payroll</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <%- include('partials/navbar') %>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Manajemen Cuti</h2>
+            <div class="d-flex gap-2 align-items-center">
+                <select id="employeeSelect" class="form-select">
+                    <option value="">Pilih Karyawan</option>
+                </select>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#applyLeaveModal">
+                    <i class="bi bi-plus-circle"></i> Ajukan Cuti
+                </button>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5>Saldo Cuti</h5>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="alert alert-info">
+                            <strong>Cuti Tahunan:</strong> 15/20 hari
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="alert alert-info">
+                            <strong>Cuti Sakit:</strong> 5/10 hari
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="alert alert-info">
+                            <strong>Cuti Biasa:</strong> 3/5 hari
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5>Pengajuan Cuti</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Jenis Cuti</th>
+                                <th>Tanggal Mulai</th>
+                                <th>Tanggal Akhir</th>
+                                <th>Hari</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaveTableBody">
+                            <!-- Leave data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Apply for Leave Modal -->
+    <div class="modal fade" id="applyLeaveModal" tabindex="-1" aria-labelledby="applyLeaveModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="applyLeaveModalLabel">Ajukan Cuti</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="applyLeaveForm">
+                        <div class="mb-3">
+                            <label for="leaveEmployee" class="form-label">Karyawan</label>
+                            <select class="form-select" id="leaveEmployee" required></select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="leaveType" class="form-label">Jenis Cuti</label>
+                            <select class="form-select" id="leaveType" required>
+                                <option value="">Pilih Jenis Cuti</option>
+                                <option value="annual">Cuti Tahunan</option>
+                                <option value="sick">Cuti Sakit</option>
+                                <option value="casual">Cuti Biasa</option>
+                                <option value="maternity">Cuti Melahirkan</option>
+                                <option value="paternity">Cuti Ayah</option>
+                            </select>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="startDate" class="form-label">Tanggal Mulai</label>
+                                    <input type="date" class="form-control" id="startDate" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="endDate" class="form-label">Tanggal Akhir</label>
+                                    <input type="date" class="form-control" id="endDate" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="reason" class="form-label">Alasan</label>
+                            <textarea class="form-control" id="reason" rows="3" required></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-primary" id="submitLeaveBtn">Kirim Pengajuan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Leave Modal -->
+    <div class="modal fade" id="viewLeaveModal" tabindex="-1" aria-labelledby="viewLeaveModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewLeaveModalLabel">Detail Pengajuan Cuti</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body" id="viewLeaveContent">
+                    <!-- Leave details will be loaded here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-primary" onclick="printLeave(currentLeaveId)">Cetak</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Leave Modal -->
+    <div class="modal fade" id="editLeaveModal" tabindex="-1" aria-labelledby="editLeaveModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editLeaveModalLabel">Edit Pengajuan Cuti</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editLeaveForm">
+                        <input type="hidden" id="editLeaveId">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editLeaveType" class="form-label">Jenis Cuti</label>
+                                    <select class="form-select" id="editLeaveType" required>
+                                        <option value="annual">Cuti Tahunan</option>
+                                        <option value="sick">Cuti Sakit</option>
+                                        <option value="casual">Cuti Biasa</option>
+                                        <option value="maternity">Cuti Melahirkan</option>
+                                        <option value="paternity">Cuti Ayah</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editEmployee" class="form-label">Karyawan</label>
+                                    <select class="form-select" id="editEmployee" required></select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editStartDate" class="form-label">Tanggal Mulai</label>
+                                    <input type="date" class="form-control" id="editStartDate" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editEndDate" class="form-label">Tanggal Akhir</label>
+                                    <input type="date" class="form-control" id="editEndDate" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editReason" class="form-label">Alasan</label>
+                            <textarea class="form-control" id="editReason" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editStatus" class="form-label">Status</label>
+                            <select class="form-select" id="editStatus">
+                                <option value="pending">Pending</option>
+                                <option value="approved">Approved</option>
+                                <option value="rejected">Rejected</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-primary" id="updateLeaveBtn">Update</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteLeaveModal" tabindex="-1" aria-labelledby="deleteLeaveModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteLeaveModalLabel">Konfirmasi Hapus</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Apakah Anda yakin ingin menghapus pengajuan cuti ini?</p>
+                    <p class="text-danger"><strong>Perhatian:</strong> Tindakan ini tidak dapat dibatalkan.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Hapus</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function getToken() { return localStorage.getItem('token') || ''; }
+        let allEmployees = [];
+        let isSubmitting = false;
+
+        async function loadEmployees() {
+            const res = await fetch('/api/employees', { headers: { 'Authorization': 'Bearer ' + getToken() } });
+            if (res.status === 401) return window.location.href = '/login';
+            allEmployees = await res.json();
+            const sel = document.getElementById('employeeSelect');
+            const leaveSel = document.getElementById('leaveEmployee');
+            sel.innerHTML = '<option value="">Pilih Karyawan</option>';
+            leaveSel.innerHTML = '<option value="">Pilih Karyawan</option>';
+            allEmployees.forEach(e => {
+                const opt1 = new Option(`${e.firstName} ${e.lastName} (${e.employeeId})`, e.id);
+                const opt2 = new Option(`${e.firstName} ${e.lastName} (${e.employeeId})`, e.id);
+                sel.add(opt1); leaveSel.add(opt2);
+            });
+        }
+
+        async function loadLeaves() {
+            const res = await fetch('/api/leaves', { headers: { 'Authorization': 'Bearer ' + getToken() } });
+            if (!res.ok) return;
+            const leaves = await res.json();
+            const tbody = document.getElementById('leaveTableBody');
+            tbody.innerHTML = '';
+            if (!leaves.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Tidak ada data</td></tr>'; return; }
+            leaves.forEach(l => {
+                const row = document.createElement('tr');
+                const statusLabel = l.status === 'approved' ? 'success' : (l.status === 'pending' ? 'warning' : 'danger');
+                row.innerHTML = `
+                    <td>${l.leaveType || '-'}</td>
+                    <td>${l.startDate ? new Date(l.startDate).toLocaleDateString('id-ID') : '-'}</td>
+                    <td>${l.endDate ? new Date(l.endDate).toLocaleDateString('id-ID') : '-'}</td>
+                    <td>${l.numberOfDays || '-'}</td>
+                    <td><span class="badge bg-${statusLabel}">${l.status || '-'}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="viewLeave(${l.id})" title="Lihat Detail"><i class="bi bi-eye"></i></button>
+                        <button class="btn btn-sm btn-outline-warning me-1" onclick="editLeave(${l.id})" title="Edit"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-sm btn-outline-success me-1" onclick="printLeave(${l.id})" title="Cetak"><i class="bi bi-printer"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteLeave(${l.id})" title="Hapus"><i class="bi bi-trash"></i></button>
+                    </td>`;
+                tbody.appendChild(row);
+            });
+        }
+
+        document.getElementById('submitLeaveBtn').addEventListener('click', async function() {
+            // Prevent duplicate submissions
+            if (isSubmitting) return;
+
+            const employeeId = document.getElementById('leaveEmployee').value || document.getElementById('employeeSelect').value;
+            const leaveType = document.getElementById('leaveType').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const reason = document.getElementById('reason').value;
+
+            if (!employeeId) return alert('Pilih karyawan');
+            if (!leaveType || !startDate || !endDate || !reason) return alert('Lengkapi form');
+
+            const days = Math.max(1, Math.ceil((new Date(endDate) - new Date(startDate)) / 86400000) + 1);
+
+            // Set submitting flag and disable button
+            isSubmitting = true;
+            const submitBtn = document.getElementById('submitLeaveBtn');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Mengirim...';
+            submitBtn.disabled = true;
+
+            try {
+                const res = await fetch('/api/leaves', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() },
+                    body: JSON.stringify({
+                        employee: { id: Number(employeeId) },
+                        leaveType, startDate, endDate, numberOfDays: days, reason
+                    })
+                });
+                if (!res.ok) throw new Error('Gagal mengajukan cuti');
+
+                // Success - hide modal and reset form
+                bootstrap.Modal.getInstance(document.getElementById('applyLeaveModal')).hide();
+                document.getElementById('applyLeaveForm').reset();
+                await loadLeaves();
+                alert('Pengajuan cuti berhasil dikirim!');
+            } catch (err) {
+                alert('Error: ' + err.message);
+            } finally {
+                // Reset submitting flag and re-enable button
+                isSubmitting = false;
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+
+        let currentLeaveId = null;
+
+        async function viewLeave(id) {
+            currentLeaveId = id;
+            try {
+                const res = await fetch(`/api/leaves/${id}`, { headers: { 'Authorization': 'Bearer ' + getToken() } });
+                if (!res.ok) throw new Error('Gagal memuat detail cuti');
+                const leave = await res.json();
+
+                const employee = allEmployees.find(e => e.id === leave.employeeId);
+                const employeeName = employee ? `${employee.firstName} ${employee.lastName} (${employee.employeeId})` : 'Unknown';
+
+                const content = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Informasi Karyawan</h6>
+                            <p><strong>Nama:</strong> ${employeeName}</p>
+                            <p><strong>Jenis Cuti:</strong> ${leave.leaveType || '-'}</p>
+                            <p><strong>Status:</strong>
+                                <span class="badge bg-${leave.status === 'approved' ? 'success' : leave.status === 'pending' ? 'warning' : 'danger'}">
+                                    ${leave.status || '-'}
+                                </span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Detail Cuti</h6>
+                            <p><strong>Tanggal Mulai:</strong> ${leave.startDate ? new Date(leave.startDate).toLocaleDateString('id-ID') : '-'}</p>
+                            <p><strong>Tanggal Akhir:</strong> ${leave.endDate ? new Date(leave.endDate).toLocaleDateString('id-ID') : '-'}</p>
+                            <p><strong>Jumlah Hari:</strong> ${leave.numberOfDays || '-'} hari</p>
+                            <p><strong>Tanggal Pengajuan:</strong> ${leave.appliedDate ? new Date(leave.appliedDate).toLocaleDateString('id-ID') : '-'}</p>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Alasan</h6>
+                            <p>${leave.reason || '-'}</p>
+                        </div>
+                    </div>
+                    ${leave.approvalNotes ? `
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Catatan Persetujuan</h6>
+                            <p>${leave.approvalNotes}</p>
+                        </div>
+                    </div>
+                    ` : ''}
+                `;
+
+                document.getElementById('viewLeaveContent').innerHTML = content;
+                new bootstrap.Modal(document.getElementById('viewLeaveModal')).show();
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        }
+
+        async function editLeave(id) {
+            try {
+                const res = await fetch(`/api/leaves/${id}`, { headers: { 'Authorization': 'Bearer ' + getToken() } });
+                if (!res.ok) throw new Error('Gagal memuat data cuti');
+                const leave = await res.json();
+
+                document.getElementById('editLeaveId').value = leave.id;
+                document.getElementById('editLeaveType').value = leave.leaveType || '';
+                document.getElementById('editStartDate').value = leave.startDate ? leave.startDate.split('T')[0] : '';
+                document.getElementById('editEndDate').value = leave.endDate ? leave.endDate.split('T')[0] : '';
+                document.getElementById('editReason').value = leave.reason || '';
+                document.getElementById('editStatus').value = leave.status || 'pending';
+
+                // Populate employee dropdown
+                const employeeSel = document.getElementById('editEmployee');
+                employeeSel.innerHTML = '';
+                allEmployees.forEach(e => {
+                    const opt = new Option(`${e.firstName} ${e.lastName} (${e.employeeId})`, e.id);
+                    if (e.id === leave.employeeId) opt.selected = true;
+                    employeeSel.add(opt);
+                });
+
+                new bootstrap.Modal(document.getElementById('editLeaveModal')).show();
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        }
+
+        function printLeave(id) {
+            // Open print-friendly page
+            const printWindow = window.open(`/leaves/${id}/print`, '_blank');
+            if (printWindow) {
+                printWindow.onload = function() {
+                    printWindow.print();
+                };
+            } else {
+                alert('Popup blocker mungkin mencegah pembukaan jendela cetak. Silakan izinkan popup untuk situs ini.');
+            }
+        }
+
+        function deleteLeave(id) {
+            leaveToDelete = id;
+            const modal = new bootstrap.Modal(document.getElementById('deleteLeaveModal'));
+            modal.show();
+        }
+
+        // Update leave functionality
+        document.getElementById('updateLeaveBtn').addEventListener('click', async function() {
+            const leaveId = document.getElementById('editLeaveId').value;
+            const employeeId = document.getElementById('editEmployee').value;
+            const leaveType = document.getElementById('editLeaveType').value;
+            const startDate = document.getElementById('editStartDate').value;
+            const endDate = document.getElementById('editEndDate').value;
+            const reason = document.getElementById('editReason').value;
+            const status = document.getElementById('editStatus').value;
+
+            if (!employeeId || !leaveType || !startDate || !endDate || !reason) {
+                alert('Lengkapi semua field yang diperlukan');
+                return;
+            }
+
+            const days = Math.max(1, Math.ceil((new Date(endDate) - new Date(startDate)) / 86400000) + 1);
+
+            try {
+                const res = await fetch(`/api/leaves/${leaveId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify({
+                        employee: { id: Number(employeeId) },
+                        leaveType, startDate, endDate, numberOfDays: days, reason, status
+                    })
+                });
+
+                if (!res.ok) throw new Error('Gagal mengupdate cuti');
+
+                bootstrap.Modal.getInstance(document.getElementById('editLeaveModal')).hide();
+                await loadLeaves();
+                alert('Pengajuan cuti berhasil diupdate!');
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        });
+
+        // Delete leave functionality
+        document.getElementById('confirmDeleteBtn').addEventListener('click', async function() {
+            if (!leaveToDelete) return;
+
+            try {
+                const res = await fetch(`/api/leaves/${leaveToDelete}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+
+                if (!res.ok) throw new Error('Gagal menghapus cuti');
+
+                bootstrap.Modal.getInstance(document.getElementById('deleteLeaveModal')).hide();
+                leaveToDelete = null;
+                await loadLeaves();
+                alert('Pengajuan cuti berhasil dihapus!');
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadEmployees();
+            await loadLeaves();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Biaya Karyawan - HRM & Payroll System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <%- include('partials/navbar') %>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="bi bi-cash-stack"></i> Biaya Karyawan</h2>
+            <div class="d-flex gap-2">
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
+                    <i class="bi bi-plus-circle"></i> Tambah Pengeluaran
+                </button>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+                    <i class="bi bi-folder-plus"></i> Tambah Kategori
+                </button>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Pengeluaran</h5>
+                        <h3 id="totalExpenses">-</h3>
+                        <small>Bulan Ini</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Kategori Aktif</h5>
+                        <h3 id="activeCategories">-</h3>
+                        <small>Digunakan</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Rata-rata/Bulan</h5>
+                        <h3 id="avgMonthly">-</h3>
+                        <small>3 Bulan Terakhir</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Pengeluaran Tertinggi</h5>
+                        <h3 id="highestExpense">-</h3>
+                        <small>Kategori</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs mb-4" id="expenseTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="expenses-tab" data-bs-toggle="tab" data-bs-target="#expenses" type="button" role="tab">Pengeluaran</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="categories-tab" data-bs-toggle="tab" data-bs-target="#categories" type="button" role="tab">Kategori</button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="expenseTabContent">
+            <!-- Expenses Tab -->
+            <div class="tab-pane fade show active" id="expenses" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5>Daftar Pengeluaran</h5>
+                            <div class="d-flex gap-2">
+                                <select class="form-select form-select-sm" id="monthFilter" style="width: auto;">
+                                    <option value="">Semua Bulan</option>
+                                    <option value="1">Januari</option>
+                                    <option value="2">Februari</option>
+                                    <option value="3">Maret</option>
+                                    <option value="4">April</option>
+                                    <option value="5">Mei</option>
+                                    <option value="6">Juni</option>
+                                    <option value="7">Juli</option>
+                                    <option value="8">Agustus</option>
+                                    <option value="9">September</option>
+                                    <option value="10">Oktober</option>
+                                    <option value="11">November</option>
+                                    <option value="12">Desember</option>
+                                </select>
+                                <select class="form-select form-select-sm" id="yearFilter" style="width: auto;">
+                                    <option value="">Semua Tahun</option>
+                                    <option value="2025">2025</option>
+                                    <option value="2024">2024</option>
+                                    <option value="2023">2023</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Tanggal</th>
+                                        <th>Kategori</th>
+                                        <th>Deskripsi</th>
+                                        <th>Jumlah</th>
+                                        <th>Karyawan</th>
+                                        <th>Status</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="expensesTableBody">
+                                    <tr>
+                                        <td colspan="7" class="text-center">
+                                            <div class="spinner-border" role="status">
+                                                <span class="visually-hidden">Memuat...</span>
+                                            </div>
+                                            Memuat data pengeluaran...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categories Tab -->
+            <div class="tab-pane fade" id="categories" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Kelola Kategori Pengeluaran</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Nama Kategori</th>
+                                        <th>Deskripsi</th>
+                                        <th>Budget Bulanan</th>
+                                        <th>Pengeluaran Bulan Ini</th>
+                                        <th>Status</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="categoriesTableBody">
+                                    <tr>
+                                        <td colspan="6" class="text-center">
+                                            <div class="spinner-border" role="status">
+                                                <span class="visually-hidden">Memuat...</span>
+                                            </div>
+                                            Memuat data kategori...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Expense Modal -->
+    <div class="modal fade" id="addExpenseModal" tabindex="-1" aria-labelledby="addExpenseModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addExpenseModalLabel">Tambah Pengeluaran</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="expenseForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="expenseDate" class="form-label">Tanggal *</label>
+                                    <input type="date" class="form-control" id="expenseDate" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="expenseCategory" class="form-label">Kategori *</label>
+                                    <select class="form-select" id="expenseCategory" required>
+                                        <option value="">Pilih Kategori</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="expenseAmount" class="form-label">Jumlah (Rp) *</label>
+                                    <input type="number" class="form-control" id="expenseAmount" min="0" step="1000" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="expenseEmployee" class="form-label">Karyawan</label>
+                                    <select class="form-select" id="expenseEmployee">
+                                        <option value="">Pilih Karyawan (Opsional)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="expenseDescription" class="form-label">Deskripsi *</label>
+                            <textarea class="form-control" id="expenseDescription" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="expenseReceipt" class="form-label">Upload Bukti</label>
+                            <input type="file" class="form-control" id="expenseReceipt" accept="image/*,.pdf">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="saveExpenseBtn">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Category Modal -->
+    <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addCategoryModalLabel">Tambah Kategori</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="categoryForm">
+                        <div class="mb-3">
+                            <label for="categoryName" class="form-label">Nama Kategori *</label>
+                            <input type="text" class="form-control" id="categoryName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="categoryDescription" class="form-label">Deskripsi</label>
+                            <textarea class="form-control" id="categoryDescription" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="monthlyBudget" class="form-label">Budget Bulanan (Rp)</label>
+                            <input type="number" class="form-control" id="monthlyBudget" min="0" step="1000">
+                        </div>
+                        <div class="mb-3">
+                            <label for="categoryColor" class="form-label">Warna Kategori</label>
+                            <input type="color" class="form-control" id="categoryColor" value="#007bff">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="saveCategoryBtn">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function getToken() { return localStorage.getItem('token') || ''; }
+
+        function formatIDR(n) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0
+            }).format(n || 0);
+        }
+
+        let employees = [];
+        let categories = [];
+        let expenses = [];
+
+        // Logout functionality
+        document.getElementById('logoutBtn')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.removeItem('token');
+            window.location.href = '/login';
+        });
+
+        async function loadEmployees() {
+            try {
+                const response = await fetch('/api/employees', {
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+                if (response.status === 401) {
+                    window.location.href = '/login';
+                    return;
+                }
+                employees = await response.json();
+                populateEmployeeDropdowns();
+            } catch (error) {
+                console.error('Error loading employees:', error);
+            }
+        }
+
+        async function loadCategories() {
+            try {
+                const response = await fetch('/api/expense-categories', {
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+                if (response.ok) {
+                    categories = await response.json();
+                    populateCategoryDropdowns();
+                    renderCategoriesTable();
+                }
+            } catch (error) {
+                console.error('Error loading categories:', error);
+            }
+        }
+
+        async function loadExpenses() {
+            try {
+                const response = await fetch('/api/employee-expenses', {
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+                if (response.ok) {
+                    expenses = await response.json();
+                    renderExpensesTable();
+                    updateSummary();
+                }
+            } catch (error) {
+                console.error('Error loading expenses:', error);
+            }
+        }
+
+        function populateEmployeeDropdowns() {
+            const employeeSelects = ['expenseEmployee'];
+            employeeSelects.forEach(id => {
+                const select = document.getElementById(id);
+                if (select) {
+                    select.innerHTML = '<option value="">Pilih Karyawan (Opsional)</option>';
+                    employees.forEach(emp => {
+                        select.add(new Option(`${emp.firstName} ${emp.lastName}`, emp.id));
+                    });
+                }
+            });
+        }
+
+        function populateCategoryDropdowns() {
+            const categorySelects = ['expenseCategory'];
+            categorySelects.forEach(id => {
+                const select = document.getElementById(id);
+                if (select) {
+                    select.innerHTML = '<option value="">Pilih Kategori</option>';
+                    categories.forEach(cat => {
+                        select.add(new Option(cat.name, cat.id));
+                    });
+                }
+            });
+        }
+
+        function renderExpensesTable() {
+            const tableBody = document.getElementById('expensesTableBody');
+            tableBody.innerHTML = '';
+
+            if (!expenses || expenses.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Tidak ada data pengeluaran</td></tr>';
+                return;
+            }
+
+            expenses.forEach(expense => {
+                const employee = employees.find(e => e.id === expense.employeeId);
+                const category = categories.find(c => c.id === expense.categoryId);
+                const statusClass = expense.status === 'approved' ? 'success' : expense.status === 'pending' ? 'warning' : 'danger';
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${new Date(expense.date).toLocaleDateString('id-ID')}</td>
+                    <td>${category ? category.name : 'N/A'}</td>
+                    <td>${expense.description || '-'}</td>
+                    <td>${formatIDR(expense.amount)}</td>
+                    <td>${employee ? `${employee.firstName} ${employee.lastName}` : '-'}</td>
+                    <td><span class="badge bg-${statusClass}">${expense.status || 'pending'}</span></td>
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-primary view-expense" data-id="${expense.id}" title="Lihat Detail">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-warning edit-expense" data-id="${expense.id}" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger delete-expense" data-id="${expense.id}" title="Hapus">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            addExpenseActionListeners();
+        }
+
+        function renderCategoriesTable() {
+            const tableBody = document.getElementById('categoriesTableBody');
+            tableBody.innerHTML = '';
+
+            if (!categories || categories.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Tidak ada data kategori</td></tr>';
+                return;
+            }
+
+            categories.forEach(category => {
+                const monthlyExpenses = expenses.filter(e =>
+                    e.categoryId === category.id &&
+                    new Date(e.date).getMonth() === new Date().getMonth()
+                ).reduce((sum, e) => sum + e.amount, 0);
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${category.name}</td>
+                    <td>${category.description || '-'}</td>
+                    <td>${formatIDR(category.monthlyBudget)}</td>
+                    <td>${formatIDR(monthlyExpenses)}</td>
+                    <td><span class="badge bg-success">Aktif</span></td>
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-warning edit-category" data-id="${category.id}" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger delete-category" data-id="${category.id}" title="Hapus">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            addCategoryActionListeners();
+        }
+
+        function updateSummary() {
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+
+            const monthlyExpenses = expenses.filter(e =>
+                new Date(e.date).getMonth() === currentMonth &&
+                new Date(e.date).getFullYear() === currentYear
+            );
+
+            const totalExpenses = monthlyExpenses.reduce((sum, e) => sum + e.amount, 0);
+            const activeCategories = categories.length;
+
+            // Calculate average for last 3 months
+            const avgMonthly = totalExpenses; // Simplified for now
+
+            // Find highest expense category
+            const categoryTotals = {};
+            monthlyExpenses.forEach(e => {
+                categoryTotals[e.categoryId] = (categoryTotals[e.categoryId] || 0) + e.amount;
+            });
+            const highestCategoryId = Object.keys(categoryTotals).reduce((a, b) =>
+                categoryTotals[a] > categoryTotals[b] ? a : b, '');
+            const highestCategory = categories.find(c => c.id === highestCategoryId);
+
+            document.getElementById('totalExpenses').textContent = formatIDR(totalExpenses);
+            document.getElementById('activeCategories').textContent = activeCategories;
+            document.getElementById('avgMonthly').textContent = formatIDR(avgMonthly);
+            document.getElementById('highestExpense').textContent = highestCategory ? highestCategory.name : '-';
+        }
+
+        function addExpenseActionListeners() {
+            document.querySelectorAll('.view-expense').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const expenseId = e.target.closest('button').dataset.id;
+                    viewExpense(expenseId);
+                });
+            });
+
+            document.querySelectorAll('.edit-expense').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const expenseId = e.target.closest('button').dataset.id;
+                    editExpense(expenseId);
+                });
+            });
+
+            document.querySelectorAll('.delete-expense').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const expenseId = e.target.closest('button').dataset.id;
+                    deleteExpense(expenseId);
+                });
+            });
+        }
+
+        function addCategoryActionListeners() {
+            document.querySelectorAll('.edit-category').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const categoryId = e.target.closest('button').dataset.id;
+                    editCategory(categoryId);
+                });
+            });
+
+            document.querySelectorAll('.delete-category').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const categoryId = e.target.closest('button').dataset.id;
+                    deleteCategory(categoryId);
+                });
+            });
+        }
+
+        // Form handlers
+        document.getElementById('saveExpenseBtn').addEventListener('click', async function() {
+            const formData = {
+                date: document.getElementById('expenseDate').value,
+                categoryId: document.getElementById('expenseCategory').value,
+                amount: parseFloat(document.getElementById('expenseAmount').value),
+                employeeId: document.getElementById('expenseEmployee').value || null,
+                description: document.getElementById('expenseDescription').value
+            };
+
+            if (!formData.date || !formData.categoryId || !formData.amount || !formData.description) {
+                alert('Mohon lengkapi semua field yang diperlukan');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/employee-expenses', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('addExpenseModal')).hide();
+                    document.getElementById('expenseForm').reset();
+                    await loadExpenses();
+                    alert('Pengeluaran berhasil ditambahkan!');
+                } else {
+                    alert('Gagal menambah pengeluaran');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        });
+
+        document.getElementById('saveCategoryBtn').addEventListener('click', async function() {
+            const formData = {
+                name: document.getElementById('categoryName').value,
+                description: document.getElementById('categoryDescription').value,
+                monthlyBudget: parseFloat(document.getElementById('monthlyBudget').value) || 0,
+                color: document.getElementById('categoryColor').value
+            };
+
+            if (!formData.name) {
+                alert('Nama kategori harus diisi');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/expense-categories', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('addCategoryModal')).hide();
+                    document.getElementById('categoryForm').reset();
+                    await loadCategories();
+                    alert('Kategori berhasil ditambahkan!');
+                } else {
+                    alert('Gagal menambah kategori');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        });
+
+        // Placeholder functions for future implementation
+        function viewExpense(id) { alert('Fitur lihat detail akan segera hadir'); }
+        function editExpense(id) { alert('Fitur edit akan segera hadir'); }
+        function deleteExpense(id) { alert('Fitur hapus akan segera hadir'); }
+        function editCategory(id) { alert('Fitur edit kategori akan segera hadir'); }
+        function deleteCategory(id) { alert('Fitur hapus kategori akan segera hadir'); }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadEmployees();
+            await loadCategories();
+            await loadExpenses();
+        });
+    </script>
+</body>
+</html>

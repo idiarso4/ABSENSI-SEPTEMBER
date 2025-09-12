@@ -1,0 +1,93 @@
+version: '3.8'
+
+services:
+    # PostgreSQL Database
+    postgres:
+        image: postgres:15
+        container_name: hrm_postgres
+        environment:
+            POSTGRES_DB: hrm_production
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgres
+        ports:
+            - "5432:5432"
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+            - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+        networks:
+            - hrm_network
+        restart: always
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+
+    # Cassandra Database (Optional - for advanced analytics)
+    cassandra:
+        image: cassandra:4.0
+        container_name: hrm_cassandra
+        ports:
+            - "9042:9042"
+            - "9160:9160"
+        volumes:
+            - cassandra_data:/var/lib/cassandra
+        networks:
+            - hrm_network
+        restart: always
+        healthcheck:
+            test: ["CMD-SHELL", "nodetool status"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+
+    # Redis Cache (Optional - for session management and caching)
+    redis:
+        image: redis:7-alpine
+        container_name: hrm_redis
+        ports:
+            - "6379:6379"
+        volumes:
+            - redis_data:/data
+        networks:
+            - hrm_network
+        restart: always
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+        command: redis-server --appendonly yes
+
+    # Application (Optional - for containerized deployment)
+    hrm-app:
+        image: hrm-backend:latest
+        container_name: hrm_backend
+        environment:
+            SPRING_PROFILES_ACTIVE: prod
+            SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/hrm_production
+            SPRING_DATASOURCE_USERNAME: postgres
+            SPRING_DATASOURCE_PASSWORD: postgres
+            JWT_SECRET: ${JWT_SECRET:-yourSuperSecureJWTKeyHere}
+        ports:
+            - "8080:8080"
+        depends_on:
+            postgres:
+                condition: service_healthy
+        networks:
+            - hrm_network
+        restart: always
+        healthcheck:
+            test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+
+volumes:
+    postgres_data:
+    cassandra_data:
+    redis_data:
+
+networks:
+    hrm_network:
+        driver: bridge

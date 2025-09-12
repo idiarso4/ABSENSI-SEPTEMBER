@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Tunjangan & Potongan - Sistem HRM</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <%- include('partials/navbar') %>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Manajemen Tunjangan & Potongan Karyawan</h2>
+        </div>
+
+        <!-- Employee Selection -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5>Pilih Karyawan</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <select class="form-select" id="employeeSelect">
+                            <option value="">Pilih Karyawan</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <button class="btn btn-success" onclick="addNewBenefit()" id="addBtn" disabled>
+                            <i class="bi bi-plus-circle"></i> Tambah Tunjangan/Potongan
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Employee Summary -->
+        <div class="card mb-4" id="employeeSummary" style="display: none;">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="alert alert-info">
+                            <h6>Total Tunjangan</h6>
+                            <h4 id="totalBenefits">-</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="alert alert-warning">
+                            <h6>Total Potongan</h6>
+                            <h4 id="totalDeductions">-</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="alert alert-success">
+                            <h6>Dampak Bersih</h6>
+                            <h4 id="netImpact">-</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="alert alert-primary">
+                            <h6>Gaji Pokok</h6>
+                            <h4 id="baseSalary">-</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Benefits & Deductions Table -->
+        <div class="card" id="benefitsCard" style="display: none;">
+            <div class="card-header">
+                <h5>Daftar Tunjangan & Potongan</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Nama</th>
+                                <th>Jenis</th>
+                                <th>Jumlah</th>
+                                <th>Tipe Jumlah</th>
+                                <th>Aksi</th>
+                                <th>Masa Berlaku</th>
+                                <th>Frekuensi</th>
+                                <th>Jumlah Terhitung</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="benefitsTableBody">
+                            <!-- Data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Benefit Modal -->
+    <div class="modal fade" id="benefitModal" tabindex="-1" aria-labelledby="benefitModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="benefitModalLabel">Tambah Tunjangan/Potongan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="benefitForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="benefitName" class="form-label">Nama Tunjangan/Potongan *</label>
+                                    <input type="text" class="form-control" id="benefitName" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="benefitType" class="form-label">Tipe Aksi *</label>
+                                    <select class="form-select" id="benefitType" required>
+                                        <option value="add">Tambah (Tunjangan)</option>
+                                        <option value="deduct">Potong</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="amount" class="form-label">Jumlah *</label>
+                                    <input type="number" step="0.01" class="form-control" id="amount" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="amountType" class="form-label">Tipe Jumlah *</label>
+                                    <select class="form-select" id="amountType" required>
+                                        <option value="fixed">Tetap (Rp)</option>
+                                        <option value="percent">Persentase (%)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="effectiveFrom" class="form-label">Berlaku Mulai</label>
+                                    <input type="date" class="form-control" id="effectiveFrom">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="effectiveUntil" class="form-label">Berlaku Hingga</label>
+                                    <input type="date" class="form-control" id="effectiveUntil">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="frequency" class="form-label">Frekuensi *</label>
+                                    <select class="form-select" id="frequency" required>
+                                        <option value="monthly">Bulanan</option>
+                                        <option value="yearly">Tahunan</option>
+                                        <option value="quarterly">Triwulanan</option>
+                                        <option value="once">Sekali</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Deskripsi</label>
+                                    <textarea class="form-control" id="description" rows="2"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="remarks" class="form-label">Catatan</label>
+                            <textarea class="form-control" id="remarks" rows="2"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="saveBenefitBtn">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/benefits.js"></script>
+</body>
+</html>

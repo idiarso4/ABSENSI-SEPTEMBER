@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Departemen - Sistem HRM</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <%- include('partials/navbar') %>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="bi bi-building"></i> Manajemen Departemen</h2>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#departmentModal">
+                <i class="bi bi-plus-circle"></i> Tambah Departemen
+            </button>
+        </div>
+
+        <!-- Department Statistics -->
+        <div class="row mb-4" id="departmentStats">
+            <div class="col-md-4">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Total Departemen</h5>
+                        <h2 id="totalDepartments">-</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Total Karyawan</h5>
+                        <h2 id="totalEmployees">-</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Rata-rata per Departemen</h5>
+                        <h2 id="avgEmployees">-</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Departments Table -->
+        <div class="card">
+            <div class="card-header">
+                <h5>Daftar Departemen</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <input type="text" class="form-control" id="searchInput" placeholder="Cari departemen...">
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn btn-secondary" id="searchBtn">
+                            <i class="bi bi-search"></i> Cari
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nama Departemen</th>
+                                <th>Deskripsi</th>
+                                <th>Jumlah Karyawan</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="departmentTableBody">
+                            <!-- Department data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <nav aria-label="Departemen pagination" class="mt-4">
+                    <ul class="pagination justify-content-center" id="departmentPagination">
+                        <!-- Pagination will be generated here -->
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Department Modal -->
+    <div class="modal fade" id="departmentModal" tabindex="-1" aria-labelledby="departmentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="departmentModalLabel">Tambah Departemen</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="departmentForm">
+                        <input type="hidden" id="departmentId">
+                        <div class="mb-3">
+                            <label for="departmentName" class="form-label">Nama Departemen *</label>
+                            <input type="text" class="form-control" id="departmentName" required maxLength="100"
+                                   placeholder="Contoh: Human Resources, Finance, Engineering">
+                        </div>
+                        <div class="mb-3">
+                            <label for="departmentDescription" class="form-label">Deskripsi</label>
+                            <textarea class="form-control" id="departmentDescription" rows="3"
+                                      placeholder="Masukkan deskripsi singkat tentang departemen ini..."></textarea>
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle-fill"></i>
+                            Nama departemen harus unik dan akan digunakan di seluruh sistem.
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="saveDepartmentBtn">Simpan Departemen</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Department Details Modal -->
+    <div class="modal fade" id="departmentDetailsModal" tabindex="-1" aria-labelledby="departmentDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="departmentDetailsModalLabel">Detail Departemen</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6>Informasi Departemen</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Nama:</strong> <span id="detailsName">-</span></p>
+                                    <p><strong>Deskripsi:</strong> <span id="detailsDescription">-</span></p>
+                                    <p><strong>Jumlah Karyawan:</strong> <span id="detailsEmployeeCount">-</span></p>
+                                    <p><strong>Status:</strong> <span id="detailsStatus" class="badge bg-primary">Aktif</span></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6>Karyawan di Departemen Ini</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="employeeList" class="list-group">
+                                        <!-- Employee list will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/departments.js"></script>
+</body>
+</html>

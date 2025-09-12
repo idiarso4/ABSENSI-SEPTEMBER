@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Akuntansi - HRM & Payroll System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <%- include('partials/navbar') %>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="bi bi-calculator"></i> Sistem Akuntansi</h2>
+            <div class="d-flex gap-2">
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addTransactionModal">
+                    <i class="bi bi-plus-circle"></i> Tambah Transaksi
+                </button>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAccountModal">
+                    <i class="bi bi-folder-plus"></i> Tambah Akun
+                </button>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Pendapatan</h5>
+                        <h3 id="totalIncome">-</h3>
+                        <small>Bulan Ini</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-danger text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Biaya</h5>
+                        <h3 id="totalExpenses">-</h3>
+                        <small>Bulan Ini</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Laba/Rugi</h5>
+                        <h3 id="netProfit">-</h3>
+                        <small>Bulan Ini</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Akun</h5>
+                        <h3 id="totalAccounts">-</h3>
+                        <small>Aktif</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs mb-4" id="accountingTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="chart-accounts-tab" data-bs-toggle="tab" data-bs-target="#chart-accounts" type="button" role="tab">Bagan Akun</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="transactions-tab" data-bs-toggle="tab" data-bs-target="#transactions" type="button" role="tab">Transaksi</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="journal-entries-tab" data-bs-toggle="tab" data-bs-target="#journal-entries" type="button" role="tab">Entri Jurnal</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="reports-tab" data-bs-toggle="tab" data-bs-target="#reports" type="button" role="tab">Laporan</button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="accountingTabContent">
+            <!-- Chart of Accounts Tab -->
+            <div class="tab-pane fade show active" id="chart-accounts" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Bagan Akun (Chart of Accounts)</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Kode Akun</th>
+                                        <th>Nama Akun</th>
+                                        <th>Tipe</th>
+                                        <th>Kategori</th>
+                                        <th>Saldo</th>
+                                        <th>Status</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="accountsTableBody">
+                                    <tr>
+                                        <td colspan="7" class="text-center">
+                                            <div class="spinner-border" role="status">
+                                                <span class="visually-hidden">Memuat...</span>
+                                            </div>
+                                            Memuat data akun...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transactions Tab -->
+            <div class="tab-pane fade" id="transactions" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5>Riwayat Transaksi</h5>
+                            <div class="d-flex gap-2">
+                                <select class="form-select form-select-sm" id="transactionMonthFilter" style="width: auto;">
+                                    <option value="">Semua Bulan</option>
+                                    <option value="1">Januari</option>
+                                    <option value="2">Februari</option>
+                                    <option value="3">Maret</option>
+                                    <option value="4">April</option>
+                                    <option value="5">Mei</option>
+                                    <option value="6">Juni</option>
+                                    <option value="7">Juli</option>
+                                    <option value="8">Agustus</option>
+                                    <option value="9">September</option>
+                                    <option value="10">Oktober</option>
+                                    <option value="11">November</option>
+                                    <option value="12">Desember</option>
+                                </select>
+                                <select class="form-select form-select-sm" id="transactionYearFilter" style="width: auto;">
+                                    <option value="">Semua Tahun</option>
+                                    <option value="2025">2025</option>
+                                    <option value="2024">2024</option>
+                                    <option value="2023">2023</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Tanggal</th>
+                                        <th>Deskripsi</th>
+                                        <th>Akun Debit</th>
+                                        <th>Akun Kredit</th>
+                                        <th>Jumlah</th>
+                                        <th>Referensi</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="transactionsTableBody">
+                                    <tr>
+                                        <td colspan="7" class="text-center">
+                                            <div class="spinner-border" role="status">
+                                                <span class="visually-hidden">Memuat...</span>
+                                            </div>
+                                            Memuat data transaksi...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Journal Entries Tab -->
+            <div class="tab-pane fade" id="journal-entries" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Entri Jurnal Umum</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Tanggal</th>
+                                        <th>Nomor Jurnal</th>
+                                        <th>Deskripsi</th>
+                                        <th>Akun</th>
+                                        <th>Debit</th>
+                                        <th>Kredit</th>
+                                        <th>Referensi</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="journalTableBody">
+                                    <tr>
+                                        <td colspan="8" class="text-center">
+                                            <div class="spinner-border" role="status">
+                                                <span class="visually-hidden">Memuat...</span>
+                                            </div>
+                                            Memuat data jurnal...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Tab -->
+            <div class="tab-pane fade" id="reports" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Pendapatan Baru</h5>
+                            </div>
+                            <div class="card-body">
+                                <button class="btn btn-success w-100 mb-3" data-bs-toggle="modal" data-bs-target="#addIncomeModal">
+                                    <i class="bi bi-plus-circle"></i> Catat Pendapatan
+                                </button>
+                                <div class="list-group" id="recentIncomeList">
+                                    <div class="list-group-item text-center text-muted">
+                                        <div class="spinner-border" role="status">
+                                            <span class="visually-hidden">Memuat...</span>
+                                        </div>
+                                        Memuat data pendapatan...
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Biaya Baru</h5>
+                            </div>
+                            <div class="card-body">
+                                <button class="btn btn-danger w-100 mb-3" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
+                                    <i class="bi bi-dash-circle"></i> Catat Biaya
+                                </button>
+                                <div class="list-group" id="recentExpenseList">
+                                    <div class="list-group-item text-center text-muted">
+                                        <div class="spinner-border" role="status">
+                                            <span class="visually-hidden">Memuat...</span>
+                                        </div>
+                                        Memuat data biaya...
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Account Modal -->
+    <div class="modal fade" id="addAccountModal" tabindex="-1" aria-labelledby="addAccountModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addAccountModalLabel">Tambah Akun Baru</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="accountForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="accountCode" class="form-label">Kode Akun *</label>
+                                    <input type="text" class="form-control" id="accountCode" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="accountType" class="form-label">Tipe Akun *</label>
+                                    <select class="form-select" id="accountType" required>
+                                        <option value="">Pilih Tipe</option>
+                                        <option value="asset">Asset</option>
+                                        <option value="liability">Liability</option>
+                                        <option value="equity">Equity</option>
+                                        <option value="revenue">Revenue</option>
+                                        <option value="expense">Expense</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="accountName" class="form-label">Nama Akun *</label>
+                            <input type="text" class="form-control" id="accountName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="accountDescription" class="form-label">Deskripsi</label>
+                            <textarea class="form-control" id="accountDescription" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="initialBalance" class="form-label">Saldo Awal</label>
+                            <div class="input-group">
+                                <span class="input-group-text">Rp</span>
+                                <input type="number" class="form-control" id="initialBalance" value="0">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="saveAccountBtn">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Transaction Modal -->
+    <div class="modal fade" id="addTransactionModal" tabindex="-1" aria-labelledby="addTransactionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addTransactionModalLabel">Tambah Transaksi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="transactionForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="transactionDate" class="form-label">Tanggal *</label>
+                                    <input type="date" class="form-control" id="transactionDate" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="transactionType" class="form-label">Tipe Transaksi *</label>
+                                    <select class="form-select" id="transactionType" required>
+                                        <option value="">Pilih Tipe</option>
+                                        <option value="journal">Jurnal Umum</option>
+                                        <option value="income">Pendapatan</option>
+                                        <option value="expense">Biaya</option>
+                                        <option value="transfer">Transfer</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="transactionDescription" class="form-label">Deskripsi *</label>
+                            <textarea class="form-control" id="transactionDescription" rows="2" required></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="debitAccount" class="form-label">Akun Debit</label>
+                                    <select class="form-select" id="debitAccount">
+                                        <option value="">Pilih Akun Debit</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="creditAccount" class="form-label">Akun Kredit</label>
+                                    <select class="form-select" id="creditAccount">
+                                        <option value="">Pilih Akun Kredit</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="transactionAmount" class="form-label">Jumlah (Rp) *</label>
+                            <input type="number" class="form-control" id="transactionAmount" min="0" step="1000" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="transactionReference" class="form-label">Referensi</label>
+                            <input type="text" class="form-control" id="transactionReference" placeholder="No. Invoice, No. Kwitansi, dll">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="saveTransactionBtn">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Income Modal -->
+    <div class="modal fade" id="addIncomeModal" tabindex="-1" aria-labelledby="addIncomeModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addIncomeModalLabel">Catat Pendapatan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="incomeForm">
+                        <div class="mb-3">
+                            <label for="incomeDate" class="form-label">Tanggal *</label>
+                            <input type="date" class="form-control" id="incomeDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="incomeDescription" class="form-label">Deskripsi Pendapatan *</label>
+                            <input type="text" class="form-control" id="incomeDescription" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="incomeAmount" class="form-label">Jumlah (Rp) *</label>
+                            <input type="number" class="form-control" id="incomeAmount" min="0" step="1000" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="incomeAccount" class="form-label">Akun Pendapatan *</label>
+                            <select class="form-select" id="incomeAccount" required>
+                                <option value="">Pilih Akun Pendapatan</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="incomeReference" class="form-label">Referensi</label>
+                            <input type="text" class="form-control" id="incomeReference" placeholder="No. Invoice, dll">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-success" id="saveIncomeBtn">Catat Pendapatan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Expense Modal -->
+    <div class="modal fade" id="addExpenseModal" tabindex="-1" aria-labelledby="addExpenseModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addExpenseModalLabel">Catat Biaya</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="expenseForm">
+                        <div class="mb-3">
+                            <label for="expenseDate" class="form-label">Tanggal *</label>
+                            <input type="date" class="form-control" id="expenseDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="expenseDescription" class="form-label">Deskripsi Biaya *</label>
+                            <input type="text" class="form-control" id="expenseDescription" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="expenseAmount" class="form-label">Jumlah (Rp) *</label>
+                            <input type="number" class="form-control" id="expenseAmount" min="0" step="1000" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="expenseAccount" class="form-label">Akun Biaya *</label>
+                            <select class="form-select" id="expenseAccount" required>
+                                <option value="">Pilih Akun Biaya</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="expenseReference" class="form-label">Referensi</label>
+                            <input type="text" class="form-control" id="expenseReference" placeholder="No. Kwitansi, dll">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-danger" id="saveExpenseBtn">Catat Biaya</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function getToken() { return localStorage.getItem('token') || ''; }
+
+        function formatIDR(n) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0
+            }).format(n || 0);
+        }
+
+        let accounts = [];
+        let transactions = [];
+        let journalEntries = [];
+
+        // Logout functionality
+        document.getElementById('logoutBtn')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.removeItem('token');
+            window.location.href = '/login';
+        });
+
+        async function loadAccounts() {
+            try {
+                const response = await fetch('/api/chart-of-accounts', {
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+                if (response.ok) {
+                    accounts = await response.json();
+                    populateAccountDropdowns();
+                    renderAccountsTable();
+                }
+            } catch (error) {
+                console.error('Error loading accounts:', error);
+            }
+        }
+
+        async function loadTransactions() {
+            try {
+                const response = await fetch('/api/accounting/transactions', {
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+                if (response.ok) {
+                    transactions = await response.json();
+                    renderTransactionsTable();
+                }
+            } catch (error) {
+                console.error('Error loading transactions:', error);
+            }
+        }
+
+        async function loadJournalEntries() {
+            try {
+                const response = await fetch('/api/accounting/journal-entries', {
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+                if (response.ok) {
+                    journalEntries = await response.json();
+                    renderJournalTable();
+                }
+            } catch (error) {
+                console.error('Error loading journal entries:', error);
+            }
+        }
+
+        function populateAccountDropdowns() {
+            const accountSelects = ['debitAccount', 'creditAccount', 'incomeAccount', 'expenseAccount'];
+            accountSelects.forEach(id => {
+                const select = document.getElementById(id);
+                if (select) {
+                    select.innerHTML = '<option value="">Pilih Akun</option>';
+                    accounts.forEach(account => {
+                        select.add(new Option(`${account.code} - ${account.name}`, account.id));
+                    });
+                }
+            });
+        }
+
+        function renderAccountsTable() {
+            const tableBody = document.getElementById('accountsTableBody');
+            tableBody.innerHTML = '';
+
+            if (!accounts || accounts.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Tidak ada data akun</td></tr>';
+                return;
+            }
+
+            accounts.forEach(account => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${account.code}</td>
+                    <td>${account.name}</td>
+                    <td><span class="badge bg-primary">${account.type}</span></td>
+                    <td>${account.category || '-'}</td>
+                    <td>${formatIDR(account.balance)}</td>
+                    <td><span class="badge bg-success">Aktif</span></td>
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-primary view-account" data-id="${account.id}" title="Lihat Detail">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-warning edit-account" data-id="${account.id}" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            addAccountActionListeners();
+            updateSummary();
+        }
+
+        function renderTransactionsTable() {
+            const tableBody = document.getElementById('transactionsTableBody');
+            tableBody.innerHTML = '';
+
+            if (!transactions || transactions.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Tidak ada data transaksi</td></tr>';
+                return;
+            }
+
+            transactions.forEach(transaction => {
+                const debitAccount = accounts.find(a => a.id === transaction.debitAccountId);
+                const creditAccount = accounts.find(a => a.id === transaction.creditAccountId);
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${new Date(transaction.date).toLocaleDateString('id-ID')}</td>
+                    <td>${transaction.description}</td>
+                    <td>${debitAccount ? `${debitAccount.code} - ${debitAccount.name}` : '-'}</td>
+                    <td>${creditAccount ? `${creditAccount.code} - ${creditAccount.name}` : '-'}</td>
+                    <td>${formatIDR(transaction.amount)}</td>
+                    <td>${transaction.reference || '-'}</td>
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-primary view-transaction" data-id="${transaction.id}" title="Lihat Detail">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger delete-transaction" data-id="${transaction.id}" title="Hapus">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            addTransactionActionListeners();
+        }
+
+        function renderJournalTable() {
+            const tableBody = document.getElementById('journalTableBody');
+            tableBody.innerHTML = '';
+
+            if (!journalEntries || journalEntries.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">Tidak ada data jurnal</td></tr>';
+                return;
+            }
+
+            journalEntries.forEach(entry => {
+                const account = accounts.find(a => a.id === entry.accountId);
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${new Date(entry.date).toLocaleDateString('id-ID')}</td>
+                    <td>${entry.journalNumber}</td>
+                    <td>${entry.description}</td>
+                    <td>${account ? `${account.code} - ${account.name}` : '-'}</td>
+                    <td>${formatIDR(entry.debitAmount)}</td>
+                    <td>${formatIDR(entry.creditAmount)}</td>
+                    <td>${entry.reference || '-'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary view-journal" data-id="${entry.id}" title="Lihat Detail">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function updateSummary() {
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+
+            const monthlyTransactions = transactions.filter(t =>
+                new Date(t.date).getMonth() === currentMonth &&
+                new Date(t.date).getFullYear() === currentYear
+            );
+
+            const totalIncome = monthlyTransactions
+                .filter(t => t.type === 'income')
+                .reduce((sum, t) => sum + t.amount, 0);
+
+            const totalExpenses = monthlyTransactions
+                .filter(t => t.type === 'expense')
+                .reduce((sum, t) => sum + t.amount, 0);
+
+            const netProfit = totalIncome - totalExpenses;
+
+            document.getElementById('totalIncome').textContent = formatIDR(totalIncome);
+            document.getElementById('totalExpenses').textContent = formatIDR(totalExpenses);
+            document.getElementById('netProfit').textContent = formatIDR(netProfit);
+            document.getElementById('totalAccounts').textContent = accounts.length;
+        }
+
+        function addAccountActionListeners() {
+            document.querySelectorAll('.view-account').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const accountId = e.target.closest('button').dataset.id;
+                    viewAccount(accountId);
+                });
+            });
+
+            document.querySelectorAll('.edit-account').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const accountId = e.target.closest('button').dataset.id;
+                    editAccount(accountId);
+                });
+            });
+        }
+
+        function addTransactionActionListeners() {
+            document.querySelectorAll('.view-transaction').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const transactionId = e.target.closest('button').dataset.id;
+                    viewTransaction(transactionId);
+                });
+            });
+
+            document.querySelectorAll('.delete-transaction').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const transactionId = e.target.closest('button').dataset.id;
+                    deleteTransaction(transactionId);
+                });
+            });
+        }
+
+        // Form handlers
+        document.getElementById('saveAccountBtn').addEventListener('click', async function() {
+            const formData = {
+                code: document.getElementById('accountCode').value,
+                name: document.getElementById('accountName').value,
+                type: document.getElementById('accountType').value,
+                description: document.getElementById('accountDescription').value,
+                balance: parseFloat(document.getElementById('initialBalance').value) || 0
+            };
+
+            if (!formData.code || !formData.name || !formData.type) {
+                alert('Mohon lengkapi semua field yang diperlukan');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/chart-of-accounts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('addAccountModal')).hide();
+                    document.getElementById('accountForm').reset();
+                    await loadAccounts();
+                    alert('Akun berhasil ditambahkan!');
+                } else {
+                    alert('Gagal menambah akun');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        });
+
+        document.getElementById('saveTransactionBtn').addEventListener('click', async function() {
+            const formData = {
+                date: document.getElementById('transactionDate').value,
+                type: document.getElementById('transactionType').value,
+                description: document.getElementById('transactionDescription').value,
+                debitAccountId: document.getElementById('debitAccount').value,
+                creditAccountId: document.getElementById('creditAccount').value,
+                amount: parseFloat(document.getElementById('transactionAmount').value),
+                reference: document.getElementById('transactionReference').value
+            };
+
+            if (!formData.date || !formData.type || !formData.description || !formData.amount) {
+                alert('Mohon lengkapi semua field yang diperlukan');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/accounting/transactions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('addTransactionModal')).hide();
+                    document.getElementById('transactionForm').reset();
+                    await loadTransactions();
+                    alert('Transaksi berhasil ditambahkan!');
+                } else {
+                    alert('Gagal menambah transaksi');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        });
+
+        document.getElementById('saveIncomeBtn').addEventListener('click', async function() {
+            const formData = {
+                date: document.getElementById('incomeDate').value,
+                description: document.getElementById('incomeDescription').value,
+                amount: parseFloat(document.getElementById('incomeAmount').value),
+                accountId: document.getElementById('incomeAccount').value,
+                reference: document.getElementById('incomeReference').value,
+                type: 'income'
+            };
+
+            if (!formData.date || !formData.description || !formData.amount || !formData.accountId) {
+                alert('Mohon lengkapi semua field yang diperlukan');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/accounting/transactions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('addIncomeModal')).hide();
+                    document.getElementById('incomeForm').reset();
+                    await loadTransactions();
+                    alert('Pendapatan berhasil dicatat!');
+                } else {
+                    alert('Gagal mencatat pendapatan');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        });
+
+        document.getElementById('saveExpenseBtn').addEventListener('click', async function() {
+            const formData = {
+                date: document.getElementById('expenseDate').value,
+                description: document.getElementById('expenseDescription').value,
+                amount: parseFloat(document.getElementById('expenseAmount').value),
+                accountId: document.getElementById('expenseAccount').value,
+                reference: document.getElementById('expenseReference').value,
+                type: 'expense'
+            };
+
+            if (!formData.date || !formData.description || !formData.amount || !formData.accountId) {
+                alert('Mohon lengkapi semua field yang diperlukan');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/accounting/transactions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('addExpenseModal')).hide();
+                    document.getElementById('expenseForm').reset();
+                    await loadTransactions();
+                    alert('Biaya berhasil dicatat!');
+                } else {
+                    alert('Gagal mencatat biaya');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        });
+
+        // Placeholder functions for future implementation
+        function viewAccount(id) { alert('Fitur lihat detail akun akan segera hadir'); }
+        function editAccount(id) { alert('Fitur edit akun akan segera hadir'); }
+        function viewTransaction(id) { alert('Fitur lihat detail transaksi akan segera hadir'); }
+        function deleteTransaction(id) { alert('Fitur hapus transaksi akan segera hadir'); }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadAccounts();
+            await loadTransactions();
+            await loadJournalEntries();
+        });
+    </script>
+</body>
+</html>

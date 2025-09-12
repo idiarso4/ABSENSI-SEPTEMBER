@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Jabatan - Sistem HRM & Payroll</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <%- include('partials/navbar') %>
+
+    <div class="container mt-4">
+        <!-- Designation Statistics -->
+        <div class="row mb-4" id="designationStats">
+            <div class="col-md-4">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Total Jabatan</h5>
+                        <h2 id="totalDesignations">-</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Aktif</h5>
+                        <h2 id="activeDesignations">-</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Rata-rata Gaji</h5>
+                        <h2 id="avgSalary">-</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="bi bi-person-badge"></i> Manajemen Jabatan</h2>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#designationModal">
+                <i class="bi bi-plus-circle"></i> Tambah Jabatan
+            </button>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5>Daftar Jabatan</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <input type="text" class="form-control" id="searchInput" placeholder="Cari jabatan...">
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn btn-secondary" id="searchBtn">
+                            <i class="bi bi-search"></i> Cari
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover" id="designationsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nama Jabatan</th>
+                                <th>Deskripsi</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="designationTableBody">
+                            <tr>
+                                <td colspan="5" class="text-center">
+                                    <div class="spinner-border" role="status">
+                                        <span class="visually-hidden">Memuat...</span>
+                                    </div>
+                                    Memuat data jabatan...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <nav aria-label="Pagination jabatan" class="mt-4">
+                    <ul class="pagination justify-content-center" id="designationPagination">
+                        <!-- Pagination akan dibuat di sini -->
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Designation Modal -->
+    <div class="modal fade" id="designationModal" tabindex="-1" aria-labelledby="designationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="designationModalLabel">Tambah Jabatan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="designationForm">
+                        <input type="hidden" id="designationId">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="designationName" class="form-label">Nama Jabatan *</label>
+                                    <input type="text" class="form-control" id="designationName" required maxLength="100"
+                                           placeholder="Contoh: Manager, Supervisor, Staff">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="departmentSelect" class="form-label">Departemen</label>
+                                    <select class="form-select" id="departmentSelect">
+                                        <option value="">Pilih Departemen (Opsional)</option>
+                                        <!-- Departemen akan dimuat di sini -->
+                                    </select>
+                                    <div class="form-text">Departemen ini untuk klasifikasi organisasional (tidak tersimpan dengan jabatan)</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="basicSalary" class="form-label">Gaji Dasar *</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">Rp</span>
+                                        <input type="number" class="form-control" id="basicSalary" required min="0"
+                                               placeholder="5000000">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="allowance" class="form-label">Tunjangan</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">Rp</span>
+                                        <input type="number" class="form-control" id="allowance" min="0"
+                                               placeholder="1000000">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="designationDescription" class="form-label">Deskripsi Jabatan</label>
+                            <textarea class="form-control" id="designationDescription" rows="3"
+                                      placeholder="Masukkan deskripsi tugas dan tanggung jawab jabatan ini..."></textarea>
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle-fill"></i>
+                            Nama jabatan harus unik dan akan digunakan di seluruh sistem. Departemen bersifat opsional untuk klasifikasi organisasional.
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="saveDesignationBtn">Simpan Jabatan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Designation Details Modal -->
+    <div class="modal fade" id="designationDetailsModal" tabindex="-1" aria-labelledby="designationDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="designationDetailsModalLabel">Detail Jabatan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6>Informasi Jabatan</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Nama Jabatan:</strong> <span id="detailsName">-</span></p>
+                                    <p><strong>Departemen:</strong> <span id="detailsDepartment">-</span></p>
+                                    <p><strong>Gaji Dasar:</strong> <span id="detailsSalary">-</span></p>
+                                    <p><strong>Tunjangan:</strong> <span id="detailsAllowance">-</span></p>
+                                    <p><strong>Total Gaji:</strong> <span id="detailsTotalSalary">-</span></p>
+                                    <p><strong>Jumlah Karyawan:</strong> <span id="detailsEmployeeCount">-</span></p>
+                                    <p><strong>Status:</strong> <span id="detailsStatus" class="badge bg-primary">Aktif</span></p>
+                                    <div class="mt-3">
+                                        <strong>Deskripsi:</strong>
+                                        <p id="detailsDescription" class="mt-2">-</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6>Karyawan dalam Jabatan Ini</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="employeeList" class="list-group">
+                                        <!-- Daftar karyawan akan dimuat di sini -->
+                                        <li class="list-group-item text-center text-muted">Belum ada karyawan</li>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/designations.js"></script>
+</body>
+</html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jadwal Pelajaran - SIM Sekolah</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <%- include('partials/navbar') %>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2>Jadwal Pelajaran</h2>
+                <p class="text-muted">Kelola jadwal pelajaran dan kegiatan sekolah</p>
+            </div>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addScheduleModal">
+                <i class="fas fa-plus"></i> Tambah Jadwal
+            </button>
+        </div>
+
+        <!-- Schedule Filters -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <select class="form-select" id="classFilter">
+                            <option value="">Semua Kelas</option>
+                            <!-- Classes will be loaded dynamically -->
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="dayFilter">
+                            <option value="">Semua Hari</option>
+                            <option value="MONDAY">Senin</option>
+                            <option value="TUESDAY">Selasa</option>
+                            <option value="WEDNESDAY">Rabu</option>
+                            <option value="THURSDAY">Kamis</option>
+                            <option value="FRIDAY">Jumat</option>
+                            <option value="SATURDAY">Sabtu</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="semesterFilter">
+                            <option value="">Semua Semester</option>
+                            <option value="GANJIL">Ganjil</option>
+                            <option value="GENAP">Genap</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-outline-primary w-100" id="filterBtn">Filter</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schedule Table -->
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped" id="schedulesTable">
+                        <thead>
+                            <tr>
+                                <th>Hari</th>
+                                <th>Waktu</th>
+                                <th>Mata Pelajaran</th>
+                                <th>Guru</th>
+                                <th>Kelas</th>
+                                <th>Ruang</th>
+                                <th>Semester</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="schedulesTableBody">
+                            <tr>
+                                <td colspan="8" class="text-center">
+                                    <div class="spinner-border spinner-border-sm" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    Memuat data jadwal...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Schedule Modal -->
+    <div class="modal fade" id="addScheduleModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Tambah Jadwal Pelajaran</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addScheduleForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="classId" class="form-label">Kelas</label>
+                                    <select class="form-select" id="classId" name="classId" required>
+                                        <option value="">Pilih Kelas</option>
+                                        <!-- Classes will be loaded dynamically -->
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="subjectId" class="form-label">Mata Pelajaran</label>
+                                    <select class="form-select" id="subjectId" name="subjectId" required>
+                                        <option value="">Pilih Mata Pelajaran</option>
+                                        <!-- Subjects will be loaded dynamically -->
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="dayOfWeek" class="form-label">Hari</label>
+                                    <select class="form-select" id="dayOfWeek" name="dayOfWeek" required>
+                                        <option value="MONDAY">Senin</option>
+                                        <option value="TUESDAY">Selasa</option>
+                                        <option value="WEDNESDAY">Rabu</option>
+                                        <option value="THURSDAY">Kamis</option>
+                                        <option value="FRIDAY">Jumat</option>
+                                        <option value="SATURDAY">Sabtu</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="startTime" class="form-label">Waktu Mulai</label>
+                                    <input type="time" class="form-control" id="startTime" name="startTime" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="endTime" class="form-label">Waktu Selesai</label>
+                                    <input type="time" class="form-control" id="endTime" name="endTime" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="teacherId" class="form-label">Guru Pengajar</label>
+                                    <select class="form-select" id="teacherId" name="teacherId" required>
+                                        <option value="">Pilih Guru</option>
+                                        <!-- Teachers will be loaded dynamically -->
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="room" class="form-label">Ruang Kelas</label>
+                                    <input type="text" class="form-control" id="room" name="room" placeholder="101, Lab Komputer, dll." required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="academicYear" class="form-label">Tahun Ajaran</label>
+                                    <input type="text" class="form-control" id="academicYear" name="academicYear" value="2024/2025" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="semester" class="form-label">Semester</label>
+                                    <select class="form-select" id="semester" name="semester" required>
+                                        <option value="GANJIL">Ganjil</option>
+                                        <option value="GENAP">Genap</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="saveScheduleBtn">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/schedules.js"></script>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Penilaian - SIM Sekolah</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <%- include('partials/navbar') %>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2>Penilaian Siswa</h2>
+                <p class="text-muted">Kelola penilaian dan ujian siswa</p>
+            </div>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAssessmentModal">
+                <i class="fas fa-plus"></i> Tambah Penilaian
+            </button>
+        </div>
+
+        <!-- Assessment Filters -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <select class="form-select" id="subjectFilter">
+                            <option value="">Semua Mata Pelajaran</option>
+                            <!-- Subjects will be loaded dynamically -->
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="classFilter">
+                            <option value="">Semua Kelas</option>
+                            <!-- Classes will be loaded dynamically -->
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="typeFilter">
+                            <option value="">Semua Tipe</option>
+                            <option value="QUIZ">Kuis</option>
+                            <option value="MIDTERM">UTS</option>
+                            <option value="FINAL">UAS</option>
+                            <option value="ASSIGNMENT">Tugas</option>
+                            <option value="PROJECT">Proyek</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-outline-primary w-100" id="filterBtn">Filter</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assessments Table -->
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped" id="assessmentsTable">
+                        <thead>
+                            <tr>
+                                <th>Mata Pelajaran</th>
+                                <th>Kelas</th>
+                                <th>Tipe Penilaian</th>
+                                <th>Tanggal</th>
+                                <th>Bobot (%)</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="assessmentsTableBody">
+                            <tr>
+                                <td colspan="7" class="text-center">
+                                    <div class="spinner-border spinner-border-sm" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    Memuat data penilaian...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Assessment Modal -->
+    <div class="modal fade" id="addAssessmentModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Tambah Penilaian</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addAssessmentForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="subjectId" class="form-label">Mata Pelajaran</label>
+                                    <select class="form-select" id="subjectId" name="subjectId" required>
+                                        <option value="">Pilih Mata Pelajaran</option>
+                                        <!-- Subjects will be loaded dynamically -->
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="classId" class="form-label">Kelas</label>
+                                    <select class="form-select" id="classId" name="classId" required>
+                                        <option value="">Pilih Kelas</option>
+                                        <!-- Classes will be loaded dynamically -->
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="assessmentType" class="form-label">Tipe Penilaian</label>
+                                    <select class="form-select" id="assessmentType" name="assessmentType" required>
+                                        <option value="QUIZ">Kuis</option>
+                                        <option value="MIDTERM">UTS</option>
+                                        <option value="FINAL">UAS</option>
+                                        <option value="ASSIGNMENT">Tugas</option>
+                                        <option value="PROJECT">Proyek</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="assessmentDate" class="form-label">Tanggal</label>
+                                    <input type="date" class="form-control" id="assessmentDate" name="assessmentDate" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="weight" class="form-label">Bobot (%)</label>
+                                    <input type="number" class="form-control" id="weight" name="weight" min="1" max="100" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Judul Penilaian</label>
+                            <input type="text" class="form-control" id="title" name="title" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Deskripsi</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="maxScore" class="form-label">Nilai Maksimal</label>
+                                    <input type="number" class="form-control" id="maxScore" name="maxScore" min="1" max="100" value="100" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="passingScore" class="form-label">Nilai Kelulusan</label>
+                                    <input type="number" class="form-control" id="passingScore" name="passingScore" min="1" max="100" value="75" required>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="saveAssessmentBtn">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/assessments.js"></script>
+</body>
+</html>
