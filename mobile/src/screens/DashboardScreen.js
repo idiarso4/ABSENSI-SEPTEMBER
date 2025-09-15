@@ -30,16 +30,20 @@ const DashboardScreen = ({ navigation }) => {
       try { Alert.alert('Network Error', 'Failed to load dashboard data. Showing cached/default data.'); } catch (_) {}
       // Set default data if API fails
       setDashboardData({
-        totalEmployees: 150,
-        newHiresThisMonth: 12,
-        employeesOnLeave: 8,
-        pendingLeaveRequests: 5,
-        departments: [
-          { name: 'Engineering', count: 45 },
-          { name: 'HR', count: 12 },
-          { name: 'Finance', count: 8 },
-          { name: 'Marketing', count: 15 },
-          { name: 'Operations', count: 25 },
+        totalStudents: 450,
+        activeStudents: 420,
+        newStudentsThisMonth: 15,
+        totalTeachers: 35,
+        activeTeachers: 30,
+        newTeachersThisMonth: 2,
+        totalClassrooms: 25,
+        activeClassrooms: 22,
+        totalSubjects: 18,
+        activeSubjects: 18,
+        recentActivities: [
+          { type: 'student', message: '15 new students this month', color: '#28a745' },
+          { type: 'teacher', message: '2 new teachers this month', color: '#007bff' },
+          { type: 'enrollment', message: 'Student enrollment completed', color: '#17a2b8' }
         ]
       });
     } finally {
@@ -74,9 +78,9 @@ const DashboardScreen = ({ navigation }) => {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <Icon name="business-outline" size={60} color="#007bff" />
-          <Text style={styles.loadingText}>Loading Dashboard...</Text>
-        </View>
+           <Icon name="school-outline" size={60} color="#007bff" />
+           <Text style={styles.loadingText}>Loading SIM Sekolah Dashboard...</Text>
+         </View>
       </SafeAreaView>
     );
   }
@@ -91,75 +95,96 @@ const DashboardScreen = ({ navigation }) => {
       >
         {/* Header */}
         <View style={styles.header}>
-          <Icon name="business-outline" size={30} color="#007bff" />
-          <Text style={styles.headerTitle}>HR Dashboard</Text>
-          <Text style={styles.headerSubtitle}>PT. COCOK GAN</Text>
-        </View>
+           <Icon name="school-outline" size={30} color="#007bff" />
+           <Text style={styles.headerTitle}>SIM Sekolah Dashboard</Text>
+           <Text style={styles.headerSubtitle}>Sistem Informasi Sekolah</Text>
+         </View>
 
         {/* Quick Stats */}
         <View style={styles.statsContainer}>
-          {renderStatCard('people-outline', 'Total Employees', dashboardData?.totalEmployees || 0)}
-          {renderStatCard('person-add-outline', 'New Hires (This Month)', dashboardData?.newHiresThisMonth || 0, '#28a745')}
-          {renderStatCard('airplane-outline', 'On Leave', dashboardData?.employeesOnLeave || 0, '#ffc107')}
-          {renderStatCard('document-text-outline', 'Pending Requests', dashboardData?.pendingLeaveRequests || 0, '#dc3545')}
-        </View>
+           {renderStatCard('school-outline', 'Total Students', dashboardData?.totalStudents || 0)}
+           {renderStatCard('person-add-outline', 'New Students (This Month)', dashboardData?.newStudentsThisMonth || 0, '#28a745')}
+           {renderStatCard('people-outline', 'Total Teachers', dashboardData?.totalTeachers || 0, '#007bff')}
+           {renderStatCard('business-outline', 'Active Classes', dashboardData?.activeClassrooms || 0, '#17a2b8')}
+         </View>
 
-        {/* Department Overview */}
+        {/* Subject Overview */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Department Overview</Text>
-          <View style={styles.departmentContainer}>
-            {dashboardData?.departments?.map(renderDepartmentCard) || []}
-          </View>
-        </View>
+           <Text style={styles.sectionTitle}>Subject Overview</Text>
+           <View style={styles.departmentContainer}>
+             <View style={styles.departmentCard}>
+               <Text style={styles.departmentName}>Total Subjects</Text>
+               <Text style={styles.departmentCount}>{dashboardData?.totalSubjects || 0} subjects</Text>
+             </View>
+             <View style={styles.departmentCard}>
+               <Text style={styles.departmentName}>Active Subjects</Text>
+               <Text style={styles.departmentCount}>{dashboardData?.activeSubjects || 0} subjects</Text>
+             </View>
+           </View>
+         </View>
 
         {/* Quick Actions */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Quick Actions</Text>
-          <View style={styles.actionsContainer}>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={() => navigation.navigate('Employees')}
-            >
-              <Icon name="people-outline" size={24} color="#007bff" />
-              <Text style={styles.actionButtonText}>Manage Employees</Text>
-            </TouchableOpacity>
+           <Text style={styles.sectionTitle}>Quick Actions</Text>
+           <View style={styles.actionsContainer}>
+             <TouchableOpacity
+               style={styles.actionButton}
+               onPress={() => navigation.navigate('Students')}
+             >
+               <Icon name="school-outline" size={24} color="#007bff" />
+               <Text style={styles.actionButtonText}>Manage Students</Text>
+             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={() => navigation.navigate('Reports')}
-            >
-              <Icon name="document-text-outline" size={24} color="#28a745" />
-              <Text style={styles.actionButtonText}>View Reports</Text>
-            </TouchableOpacity>
+             <TouchableOpacity
+               style={styles.actionButton}
+               onPress={() => navigation.navigate('Attendance')}
+             >
+               <Icon name="checkmark-circle-outline" size={24} color="#28a745" />
+               <Text style={styles.actionButtonText}>Mark Attendance</Text>
+             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={() => navigation.navigate('Profile')}
-            >
-              <Icon name="person-outline" size={24} color="#ffc107" />
-              <Text style={styles.actionButtonText}>Profile</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+             <TouchableOpacity
+               style={styles.actionButton}
+               onPress={() => navigation.navigate('Reports')}
+             >
+               <Icon name="document-text-outline" size={24} color="#17a2b8" />
+               <Text style={styles.actionButtonText}>View Reports</Text>
+             </TouchableOpacity>
+           </View>
+         </View>
 
         {/* Recent Activity */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Recent Activity</Text>
-          <View style={styles.activityContainer}>
-            <View style={styles.activityItem}>
-              <Icon name="person-add-outline" size={20} color="#28a745" />
-              <Text style={styles.activityText}>3 new employees onboarded this week</Text>
-            </View>
-            <View style={styles.activityItem}>
-              <Icon name="document-outline" size={20} color="#007bff" />
-              <Text style={styles.activityText}>15 payroll reports generated</Text>
-            </View>
-            <View style={styles.activityItem}>
-              <Icon name="checkmark-circle-outline" size={20} color="#28a745" />
-              <Text style={styles.activityText}>5 leave requests approved</Text>
-            </View>
-          </View>
-        </View>
+           <Text style={styles.sectionTitle}>Recent Activity</Text>
+           <View style={styles.activityContainer}>
+             {dashboardData?.recentActivities?.map((activity, index) => (
+               <View key={index} style={styles.activityItem}>
+                 <Icon name={
+                   activity.type === 'student' ? 'school-outline' :
+                   activity.type === 'teacher' ? 'people-outline' :
+                   activity.type === 'enrollment' ? 'checkmark-circle-outline' :
+                   'information-circle-outline'
+                 } size={20} color={activity.color} />
+                 <Text style={styles.activityText}>{activity.message}</Text>
+               </View>
+             )) || (
+               <>
+                 <View style={styles.activityItem}>
+                   <Icon name="school-outline" size={20} color="#28a745" />
+                   <Text style={styles.activityText}>New student enrollments processed</Text>
+                 </View>
+                 <View style={styles.activityItem}>
+                   <Icon name="document-outline" size={20} color="#007bff" />
+                   <Text style={styles.activityText}>Monthly attendance reports generated</Text>
+                 </View>
+                 <View style={styles.activityItem}>
+                   <Icon name="checkmark-circle-outline" size={20} color="#17a2b8" />
+                   <Text style={styles.activityText}>Class schedules updated</Text>
+                 </View>
+               </>
+             )}
+           </View>
+         </View>
       </ScrollView>
     </SafeAreaView>
   );

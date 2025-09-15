@@ -1,6 +1,8 @@
 package com.simsekolah.controller;
 
+import com.simsekolah.dto.response.ImportResponse;
 import com.simsekolah.entity.Subject;
+import com.simsekolah.service.ExportService;
 import com.simsekolah.service.SubjectService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -9,15 +11,20 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -37,6 +44,9 @@ public class SubjectController {
 
     @Autowired
     private SubjectService subjectService;
+
+    @Autowired
+    private ExportService exportService;
 
     @PostMapping
     @Operation(summary = "Create subject", description = "Create a new subject")
@@ -229,5 +239,329 @@ public class SubjectController {
             logger.error("Failed to get subject statistics", e);
             throw e;
         }
+    }
+
+    /**
+     * Download subject import template (Excel)
+     */
+    @GetMapping("/excel/template")
+    @Operation(summary = "Download subject template", description = "Download Excel template for subject import")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN') or hasRole('TEACHER')")
+    public ResponseEntity<byte[]> downloadSubjectTemplate() {
+        logger.info("Downloading Excel template for subjects");
+
+    List<String> headers = List.of("Code", "Name", "Type", "Description");
+    // Add example subjects
+    Map<String, Object> s1 = new HashMap<>();
+    s1.put("Code", "MAT");
+    s1.put("Name", "Matematika");
+    s1.put("Type", "THEORY");
+    s1.put("Description", "Pelajaran matematika dasar");
+    Map<String, Object> s2 = new HashMap<>();
+    s2.put("Code", "RPL101");
+    s2.put("Name", "Pemrograman Dasar");
+    s2.put("Type", "PRACTICE");
+    s2.put("Description", "Dasar-dasar pemrograman");
+    List<Map<String, Object>> sample = List.of(s1, s2);
+    byte[] excel = exportService.exportListToExcel(sample, headers, "Subjects");
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.parseMediaType(exportService.getMimeType("excel")));
+        httpHeaders.setContentDispositionFormData("attachment", "subject_import_template.xlsx");
+        httpHeaders.setContentLength(excel.length);
+
+        return ResponseEntity.ok().headers(httpHeaders).body(excel);
+    }
+
+    /**
+     * Export subjects to Excel
+     */
+    @PostMapping("/excel/export")
+    @Operation(summary = "Export subjects to Excel", description = "Export all subjects to an Excel file")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN') or hasRole('TEACHER')")
+    public ResponseEntity<byte[]> exportSubjectsToExcel() {
+        logger.info("Exporting subjects to Excel");
+
+        Page<Subject> page = subjectService.getAllSubjects(Pageable.unpaged());
+        List<Subject> subjects = page.getContent();
+
+        List<Map<String, Object>> rows = subjects.stream().map(s -> {
+            Map<String, Object> m = new HashMap<>();
+            m.put("Code", s.getCode());
+            m.put("Name", s.getName());
+            m.put("Type", s.getSubjectType() != null ? s.getSubjectType().name() : "");
+            m.put("Description", s.getDescription());
+            return m;
+        }).toList();
+
+        List<String> headers = List.of("Code", "Name", "Type", "Description");
+        byte[] excel = exportService.exportListToExcel(rows, headers, "Subjects");
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.parseMediaType(exportService.getMimeType("excel")));
+        httpHeaders.setContentDispositionFormData("attachment", "subjects_export.xlsx");
+        httpHeaders.setContentLength(excel.length);
+
+        return ResponseEntity.ok().headers(httpHeaders).body(excel);
+    }
+
+    /**
+     * Export subjects to Excel (GET variant for convenience)
+     */
+    @GetMapping("/excel/export")
+    @Operation(summary = "Export subjects to Excel (GET)", description = "Export all subjects to an Excel file via GET request")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN') or hasRole('TEACHER')")
+    public ResponseEntity<byte[]> exportSubjectsToExcelGet() {
+        return exportSubjectsToExcel();
+    }
+
+    /**
+     * Import subjects from Excel (placeholder)
+     */
+    @PostMapping("/excel/import")
+    @Operation(summary = "Import subjects from Excel", description = "Import subjects from an .xlsx file with columns: Code, Name, Type, Description")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
+    public ResponseEntity<?> importSubjectsFromExcel(@RequestParam("file") MultipartFile file,
+                                                                       @RequestParam(value = "dryRun", required = false, defaultValue = "false") boolean dryRun,
+                                                                       @RequestParam(value = "mode", required = false, defaultValue = "create") String mode) {
+        logger.info("Received subject Excel import file: {} ({} bytes) (dryRun={}, mode={})", file.getOriginalFilename(), file.getSize(), dryRun, mode);
+
+        Map<String, Object> result = new HashMap<>();
+        List<Map<String, Object>> errors = new java.util.ArrayList<>();
+    List<String> createdItems = new java.util.ArrayList<>();
+    List<String> updatedItems = new java.util.ArrayList<>();
+
+        // Basic validation
+        if (file == null || file.isEmpty()) {
+            result.put("message", "No file uploaded");
+            result.put("status", "BAD_REQUEST");
+            return ResponseEntity.badRequest().body(result);
+        }
+
+        // Validate file type (xlsx) and row count conservatively
+        String filename = file.getOriginalFilename();
+        if (filename == null || !filename.toLowerCase().endsWith(".xlsx")) {
+            result.put("message", "Invalid file type. Please upload an .xlsx Excel file.");
+            result.put("status", "BAD_REQUEST");
+            return ResponseEntity.badRequest().body(result);
+        }
+
+        try (Workbook workbook = new XSSFWorkbook(file.getInputStream())) {
+            Sheet sheet = workbook.getSheetAt(0);
+            if (sheet == null) {
+                result.put("message", "Excel file does not contain any sheets");
+                result.put("status", "BAD_REQUEST");
+                return ResponseEntity.badRequest().body(result);
+            }
+
+            // Guard against excessively large files (default 5000, same as teacher)
+            int dataRows = sheet.getLastRowNum();
+            if (dataRows > 5000) {
+                result.put("message", "Too many rows in Excel: " + dataRows + ". Maximum allowed: 5000");
+                result.put("status", "BAD_REQUEST");
+                return ResponseEntity.badRequest().body(result);
+            }
+
+            // Read header row to map columns
+            Row headerRow = sheet.getRow(0);
+            if (headerRow == null) {
+                result.put("message", "Header row (first row) is missing");
+                result.put("status", "BAD_REQUEST");
+                return ResponseEntity.badRequest().body(result);
+            }
+
+            Map<String, Integer> colIdx = mapHeaderColumns(headerRow);
+
+            int totalRows = 0;
+            int successful = 0;
+
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                Row row = sheet.getRow(i);
+                if (row == null) continue;
+
+                // Skip completely empty rows
+                if (isRowEmpty(row)) continue;
+
+                totalRows++;
+                int rowNumber = i + 1; // human-friendly
+
+                try {
+                    String code = getCellString(row, colIdx.get("code"));
+                    String name = getCellString(row, colIdx.get("name"));
+                    String typeStr = getCellString(row, colIdx.get("type"));
+                    String description = getCellString(row, colIdx.get("description"));
+
+                    // Validate mandatory fields
+                    if (code == null || code.isBlank()) {
+                        addError(errors, rowNumber, "Code", code, "Code is required");
+                        continue;
+                    }
+                    if (name == null || name.isBlank()) {
+                        addError(errors, rowNumber, "Name", name, "Name is required");
+                        continue;
+                    }
+
+                    // Check for duplicates
+                    Optional<Subject> existingSubject = subjectService.getSubjectByCode(code);
+                    boolean exists = existingSubject.isPresent();
+                    if (exists && !"upsert".equalsIgnoreCase(mode)) {
+                        addError(errors, rowNumber, "Code", code, "Subject with this code already exists");
+                        continue;
+                    }
+
+                    Subject subject = new Subject();
+                    subject.setCode(code.trim());
+                    subject.setName(name.trim());
+                    subject.setDescription((description != null && !description.isBlank()) ? description.trim() : null);
+                    subject.setIsActive(true);
+
+                    // Parse subject type if provided
+                    if (typeStr != null && !typeStr.isBlank()) {
+                        Subject.SubjectType parsedType = parseSubjectType(typeStr);
+                        if (parsedType == null) {
+                            addError(errors, rowNumber, "Type", typeStr, "Invalid type. Use THEORY, PRACTICE, or MIXED");
+                            continue;
+                        }
+                        subject.setSubjectType(parsedType);
+                    }
+
+                    // Persist
+                    if (!dryRun) {
+                        if (exists && "upsert".equalsIgnoreCase(mode)) {
+                            // Update existing subject
+                            subject.setId(existingSubject.get().getId()); // Set ID for update
+                            subjectService.updateSubject(existingSubject.get().getId(), subject);
+                            updatedItems.add(code.trim());
+                        } else {
+                            // Create new subject
+                            subjectService.createSubject(subject);
+                            createdItems.add(code.trim());
+                        }
+                    } else {
+                        // Dry run - just add to appropriate list
+                        if (exists && "upsert".equalsIgnoreCase(mode)) {
+                            updatedItems.add(code.trim());
+                        } else {
+                            createdItems.add(code.trim());
+                        }
+                    }
+                    successful++;
+                } catch (Exception e) {
+                    addError(errors, rowNumber, "General", "", e.getMessage());
+                }
+            }
+
+            ImportResponse response = ImportResponse.builder()
+                .filename(file.getOriginalFilename())
+                .totalRows(totalRows)
+                .successfulImports(successful)
+                .failedImports(totalRows - successful)
+                .createdItems(createdItems)
+                .updatedItems(updatedItems)
+                .mode(mode)
+                .errors(errors)
+                .status(errors.isEmpty() ? (dryRun ? "SUCCESS_DRY_RUN" : "SUCCESS") : "PARTIAL_SUCCESS")
+                .build();
+
+            logger.info("Subject import completed: total={}, success={}, failed={}, created={}, updated={}, mode={}", 
+                       totalRows, successful, totalRows - successful, createdItems.size(), updatedItems.size(), mode);
+            return ResponseEntity.ok(response);
+        } catch (Exception ex) {
+            logger.error("Failed to import subjects from Excel", ex);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", "Failed to process Excel file: " + ex.getMessage());
+            errorResponse.put("status", "ERROR");
+            return ResponseEntity.internalServerError().body(errorResponse);
+        }
+    }
+
+    // Map header names to column indices (case-insensitive with common aliases)
+    private Map<String, Integer> mapHeaderColumns(Row headerRow) {
+        Map<String, Integer> map = new HashMap<>();
+        for (int c = 0; c < headerRow.getLastCellNum(); c++) {
+            Cell cell = headerRow.getCell(c);
+            if (cell == null) continue;
+            String raw = cell.getCellType() == CellType.STRING ? cell.getStringCellValue() : String.valueOf(cell);
+            if (raw == null) continue;
+            String key = raw.trim().toLowerCase();
+            switch (key) {
+                case "code":
+                case "kode":
+                case "kode mapel":
+                    map.put("code", c); break;
+                case "name":
+                case "nama":
+                case "nama mapel":
+                    map.put("name", c); break;
+                case "type":
+                case "tipe":
+                case "jenis":
+                    map.put("type", c); break;
+                case "description":
+                case "deskripsi":
+                case "keterangan":
+                    map.put("description", c); break;
+                default:
+                    // ignore unknown headers
+            }
+        }
+        return map;
+    }
+
+    private boolean isRowEmpty(Row row) {
+        if (row == null) return true;
+        for (int c = row.getFirstCellNum(); c < row.getLastCellNum(); c++) {
+            Cell cell = row.getCell(c);
+            if (cell != null && cell.getCellType() != CellType.BLANK) {
+                String v = getCellString(cell);
+                if (v != null && !v.isBlank()) return false;
+            }
+        }
+        return true;
+    }
+
+    private String getCellString(Row row, Integer col) {
+        if (col == null) return null;
+        return getCellString(row.getCell(col));
+    }
+
+    private String getCellString(Cell cell) {
+        if (cell == null) return null;
+        return switch (cell.getCellType()) {
+            case STRING -> cell.getStringCellValue().trim();
+            case NUMERIC -> {
+                double d = cell.getNumericCellValue();
+                if (Math.floor(d) == d) {
+                    yield String.valueOf((long) d);
+                }
+                yield String.valueOf(d);
+            }
+            case BOOLEAN -> String.valueOf(cell.getBooleanCellValue());
+            case FORMULA -> cell.getCellFormula();
+            default -> null;
+        };
+    }
+
+    private Subject.SubjectType parseSubjectType(String raw) {
+        if (raw == null) return null;
+        String v = raw.trim().toUpperCase();
+        // Accept some aliases in EN/ID
+        if (v.equals("THEORY") || v.equals("TEORI")) return Subject.SubjectType.THEORY;
+        if (v.equals("PRACTICE") || v.equals("PRAKTIK") || v.equals("PRAKTEK")) return Subject.SubjectType.PRACTICE;
+        if (v.equals("MIXED") || v.equals("CAMPURAN")) return Subject.SubjectType.MIXED;
+        try {
+            return Subject.SubjectType.valueOf(v);
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private void addError(List<Map<String, Object>> errors, int rowNumber, String field, String value, String message) {
+        Map<String, Object> err = new HashMap<>();
+        err.put("row", rowNumber);
+        err.put("field", field);
+        err.put("value", value);
+        err.put("message", message);
+        errors.add(err);
     }
 }

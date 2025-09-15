@@ -23,6 +23,12 @@ public interface ClassRoomRepository extends JpaRepository<ClassRoom, Long> {
     @Query("SELECT c FROM ClassRoom c WHERE c.className = :name")
     Optional<ClassRoom> findByName(@Param("name") String name);
 
+       /**
+        * Find class room by name, case-insensitive (maps to field className)
+        */
+       @Query("SELECT c FROM ClassRoom c WHERE LOWER(c.className) = LOWER(:name)")
+       Optional<ClassRoom> findByNameIgnoreCase(@Param("name") String name);
+
     /**
      * Find class rooms by grade (maps to field gradeLevel)
      */

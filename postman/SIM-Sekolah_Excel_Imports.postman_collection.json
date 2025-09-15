@@ -1,0 +1,221 @@
+{
+  "info": {
+    "name": "SIM Sekolah - Excel Templates & Imports",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "d3a0c7e2-3f4a-49a8-8b01-8f2b6e4b6c91"
+  },
+  "item": [
+    {
+      "name": "Subjects - Download Template",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/subjects/excel/template",
+          "host": ["{{baseUrl}}"],
+          "path": ["api","v1","subjects","excel","template"]
+        }
+      }
+    },
+    {
+      "name": "Subjects - Import (dryRun)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {"key": "file", "type": "file", "src": "{{fixturesPath}}/subjects_sample.xlsx"}
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/subjects/excel/import?dryRun=true",
+          "host": ["{{baseUrl}}"],
+          "path": ["api","v1","subjects","excel","import"],
+          "query": [{"key":"dryRun","value":"true"}]
+        }
+      }
+    },
+    {
+      "name": "Subjects - Import (dryRun + upsert)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {"key": "file", "type": "file", "src": "{{fixturesPath}}/subjects_sample.xlsx"}
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/subjects/excel/import?dryRun=true&mode=upsert",
+          "host": ["{{baseUrl}}"],
+          "path": ["api","v1","subjects","excel","import"],
+          "query": [
+            {"key":"dryRun","value":"true"},
+            {"key":"mode","value":"upsert"}
+          ]
+        }
+      }
+    },
+    {
+      "name": "Teachers - Download Template",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/teachers/excel/template",
+          "host": ["{{baseUrl}}"],
+          "path": ["api","v1","teachers","excel","template"]
+        }
+      }
+    },
+    {
+      "name": "Teachers - Import (dryRun)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {"key": "file", "type": "file", "src": "{{fixturesPath}}/teachers_sample.xlsx"}
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/teachers/excel/import?dryRun=true",
+          "host": ["{{baseUrl}}"],
+          "path": ["api","v1","teachers","excel","import"],
+          "query": [{"key":"dryRun","value":"true"}]
+        }
+      }
+    },
+    {
+      "name": "Teachers - Import (dryRun + upsert)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {"key": "file", "type": "file", "src": "{{fixturesPath}}/teachers_sample.xlsx"}
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/teachers/excel/import?dryRun=true&mode=upsert",
+          "host": ["{{baseUrl}}"],
+          "path": ["api","v1","teachers","excel","import"],
+          "query": [
+            {"key":"dryRun","value":"true"},
+            {"key":"mode","value":"upsert"}
+          ]
+        }
+      }
+    },
+    {
+      "name": "Classrooms - Download Template",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/classrooms/excel/template",
+          "host": ["{{baseUrl}}"],
+          "path": ["api","v1","classrooms","excel","template"]
+        }
+      }
+    },
+    {
+      "name": "Classrooms - Import (dryRun)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {"key": "file", "type": "file", "src": "{{fixturesPath}}/classrooms_sample.xlsx"}
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/classrooms/excel/import?dryRun=true",
+          "host": ["{{baseUrl}}"],
+          "path": ["api","v1","classrooms","excel","import"],
+          "query": [{"key":"dryRun","value":"true"}]
+        }
+      }
+    },
+    {
+      "name": "Classrooms - Import (dryRun + upsert)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {"key": "file", "type": "file", "src": "{{fixturesPath}}/classrooms_sample.xlsx"}
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/classrooms/excel/import?dryRun=true&mode=upsert",
+          "host": ["{{baseUrl}}"],
+          "path": ["api","v1","classrooms","excel","import"],
+          "query": [
+            {"key":"dryRun","value":"true"},
+            {"key":"mode","value":"upsert"}
+          ]
+        }
+      }
+    },
+    {
+      "name": "Students - Download Template",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/students/excel/template",
+          "host": ["{{baseUrl}}"],
+          "path": ["api","v1","students","excel","template"]
+        }
+      }
+    },
+    {
+      "name": "Students - Import (dryRun)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {"key": "file", "type": "file", "src": "{{fixturesPath}}/students_sample.xlsx"}
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/students/excel/import?dryRun=true",
+          "host": ["{{baseUrl}}"],
+          "path": ["api","v1","students","excel","import"],
+          "query": [{"key":"dryRun","value":"true"}]
+        }
+      }
+    },
+    {
+      "name": "Students - Import (dryRun + upsert)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {"key": "file", "type": "file", "src": "{{fixturesPath}}/students_sample.xlsx"}
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/students/excel/import?dryRun=true&mode=upsert",
+          "host": ["{{baseUrl}}"],
+          "path": ["api","v1","students","excel","import"],
+          "query": [
+            {"key":"dryRun","value":"true"},
+            {"key":"mode","value":"upsert"}
+          ]
+        }
+      }
+    }
+  ]
+}

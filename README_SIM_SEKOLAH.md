@@ -19,6 +19,18 @@ status.bat
 help.bat
 ```
 
+### 🧪 Smoke Test Excel Imports
+Validasi cepat untuk endpoint import Excel menggunakan dryRun (tidak mengubah database):
+```powershell
+# Jalankan smoke test (butuh backend running):
+.\tools\smoke_imports.ps1 -LoginIdentifier admin@simsekolah.com -LoginPassword admin123
+
+# Output contoh:
+# [STEP] Pulling latest templates â€¦
+# [SMOKE] Students â†’ /api/v1/students/excel/import
+#   status= totalRows=1 ok=1 failed=0 createdItems=1 errors=0
+```
+
 ### Docker (Production Only)
 ```bash
 # Jalankan dengan Docker untuk production:
@@ -182,6 +194,54 @@ POST /api/grades
 GET  /api/subjects
 GET  /api/classes
 ```
+
+### 📥 Excel Import (Baru)
+
+Gunakan endpoint berikut untuk impor data dari file .xlsx (Excel):
+
+- Subjects: `POST /api/v1/subjects/excel/import`
+   - Kolom: `Code`, `Name`, `Type` (THEORY/PRACTICE/MIXED), `Description`
+   - Template: `GET /api/v1/subjects/excel/template`
+
+- Teachers: `POST /api/v1/teachers/excel/import`
+   - Kolom: `NIP`, `Full Name`, `Email`, `Phone`, `Address`, `Status` (ACTIVE/AKTIF atau INACTIVE)
+   - Template: `GET /api/v1/teachers/excel/template`
+   - Catatan: Password default akan dibuat otomatis (mis. `Password123!`), disarankan segera reset.
+
+- Classrooms: `POST /api/v1/classrooms/excel/import`
+   - Kolom: `Class Name`, `Grade Level`, `Academic Year`, `Semester`, `Capacity`, `Location`, `Status`, `Major` (by Code or Name), `Homeroom Teacher` (by NIP or Email)
+   - Template: `GET /api/v1/classrooms/excel/template`
+
+  Opsi: tambahkan query `?dryRun=true` untuk validasi tanpa menyimpan perubahan (tetap mengembalikan ringkasan sukses/error).
+
+Semua endpoint import mengembalikan ringkasan: `totalRows`, `successfulImports`, `failedImports`, daftar yang dibuat, dan `errors` (baris, field, pesan).
+
+#### Konfigurasi Import (application.properties)
+
+```properties
+# Batas tipe file dan ukuran sudah diatur oleh Spring multipart
+spring.servlet.multipart.max-file-size=10MB
+spring.servlet.multipart.max-request-size=50MB
+
+# Pengaturan khusus import Excel
+app.import.excel.allowed-content-types=application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+app.import.max-rows=5000
+app.import.teacher.default-password=Password123!
+```
+
+Catatan:
+- `app.import.teacher.default-password` dipakai sebagai password awal untuk guru yang diimpor; segera minta reset.
+- `app.import.max-rows` membatasi jumlah baris data (tidak termasuk header) untuk mencegah beban berlebih.
+ - Import Classrooms: kolom `Major` akan dicocokkan dengan Major `code` atau `name` yang ada; `Homeroom Teacher` akan dicocokkan dengan `NIP` atau `Email` guru yang sudah terdaftar. Jika tidak ditemukan, baris akan ditandai error dan dilewati.
+
+Template Notes:
+- Semua template kini menyertakan 1-2 baris contoh. Classroom template menunjukkan contoh `Major` via Kode (RPL) dan Nama (Teknik Komputer Jaringan), serta `Homeroom Teacher` via NIP dan Email.
+- Subject/Teacher templates juga memiliki contoh baris (kode mapel, tipe THEORY/PRACTICE, dan contoh guru lengkap).
+
+Postman & Fixtures:
+- Postman Collection: `postman/SIM-Sekolah_Excel_Imports.postman_collection.json`
+- Environment (Local): `postman/SIM-Sekolah_Local.postman_environment.json` (set `baseUrl` dan `fixturesPath`)
+- Tempatkan file contoh `.xlsx` di folder `fixtures/` (lihat `fixtures/README.md`).
 
 ### 🆕 PKL Management (Admin Only)
 ```

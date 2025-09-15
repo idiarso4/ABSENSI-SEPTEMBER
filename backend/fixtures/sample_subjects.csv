@@ -1,0 +1,24 @@
+Code,Name,Type,Description
+MAT101,Matematika Dasar,THEORY,Mata pelajaran matematika tingkat dasar
+MAT201,Matematika Lanjutan,THEORY,Mata pelajaran matematika tingkat lanjutan
+BIO101,Biologi Dasar,PRACTICE,Mata pelajaran biologi dengan praktikum
+BIO201,Biologi Lanjutan,PRACTICE,Mata pelajaran biologi tingkat lanjutan dengan praktikum
+PHY101,Fisika Dasar,PRACTICE,Mata pelajaran fisika dengan praktikum
+PHY201,Fisika Lanjutan,PRACTICE,Mata pelajaran fisika tingkat lanjutan dengan praktikum
+CHE101,Kimia Dasar,PRACTICE,Mata pelajaran kimia dengan praktikum
+CHE201,Kimia Lanjutan,PRACTICE,Mata pelajaran kimia tingkat lanjutan dengan praktikum
+ENG101,Bahasa Inggris,THEORY,Mata pelajaran bahasa inggris komunikatif
+ENG201,Bahasa Inggris Lanjutan,THEORY,Mata pelajaran bahasa inggris tingkat lanjutan
+IND101,Bahasa Indonesia,THEORY,Mata pelajaran bahasa indonesia
+IND201,Bahasa Indonesia Lanjutan,THEORY,Mata pelajaran bahasa indonesia tingkat lanjutan
+HIS101,Sejarah Indonesia,THEORY,Mata pelajaran sejarah indonesia
+GEO101,Geografi,THEORY,Mata pelajaran geografi
+ECO101,Ekonomi,THEORY,Mata pelajaran ekonomi
+SOC101,Sosiologi,THEORY,Mata pelajaran sosiologi
+ART101,Seni Budaya,THEORY,Mata pelajaran seni budaya
+PE101,Pendidikan Jasmani,PRACTICE,Mata pelajaran pendidikan jasmani dan olahraga
+REL101,Pendidikan Agama Islam,THEORY,Mata pelajaran pendidikan agama islam
+REL102,Pendidikan Agama Kristen,THEORY,Mata pelajaran pendidikan agama kristen
+REL103,Pendidikan Agama Katolik,THEORY,Mata pelajaran pendidikan agama katolik
+REL104,Pendidikan Agama Hindu,THEORY,Mata pelajaran pendidikan agama hindu
+REL105,Pendidikan Agama Budha,THEORY,Mata pelajaran pendidikan agama budha

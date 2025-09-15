@@ -14,129 +14,132 @@ import {
 import Icon from '@expo/vector-icons/Ionicons';
 import { apiService } from '../services/apiService';
 
-const EmployeeListScreen = ({ navigation }) => {
-  const [employees, setEmployees] = useState([]);
-  const [filteredEmployees, setFilteredEmployees] = useState([]);
+const StudentListScreen = ({ navigation }) => {
+  const [students, setStudents] = useState([]);
+  const [filteredStudents, setFilteredStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [departments, setDepartments] = useState([]);
-  const [selectedDepartment, setSelectedDepartment] = useState(null);
+  const [classRooms, setClassRooms] = useState([]);
+  const [selectedClassRoom, setSelectedClassRoom] = useState(null);
 
   useEffect(() => {
-    loadEmployees();
-    loadDepartments();
+    loadStudents();
+    loadClassRooms();
   }, []);
 
   useEffect(() => {
-    filterEmployees();
-  }, [employees, searchQuery, selectedDepartment]);
+    filterStudents();
+  }, [students, searchQuery, selectedClassRoom]);
 
-  const loadEmployees = async () => {
+  const loadStudents = async () => {
     try {
-      const data = await apiService.getEmployees();
-      setEmployees(data.content || data);
+      const data = await apiService.getStudents();
+      setStudents(data.content || data);
     } catch (error) {
-      Alert.alert('Error', 'Failed to load employees');
-      console.log('Load employees error:', error);
+      Alert.alert('Error', 'Failed to load students');
+      console.log('Load students error:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const loadDepartments = async () => {
+  const loadClassRooms = async () => {
     try {
-      const data = await apiService.getDepartments();
-      setDepartments(data);
+      const data = await apiService.getClassRooms();
+      setClassRooms(data.content || data);
     } catch (error) {
-      console.log('Load departments error:', error);
+      console.log('Load class rooms error:', error);
     }
   };
 
-  const filterEmployees = () => {
-    let filtered = employees;
+  const filterStudents = () => {
+    let filtered = students;
 
     // Apply search filter
     if (searchQuery.trim()) {
-      filtered = filtered.filter(employee =>
-        employee.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        employee.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        employee.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        employee.employeeId?.toLowerCase().includes(searchQuery.toLowerCase())
+      filtered = filtered.filter(student =>
+        student.namaLengkap?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        student.nis?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        student.email?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
-    // Apply department filter
-    if (selectedDepartment) {
-      filtered = filtered.filter(employee =>
-        employee.department?.id === selectedDepartment
+    // Apply class room filter
+    if (selectedClassRoom) {
+      filtered = filtered.filter(student =>
+        student.classRoom?.id === selectedClassRoom
       );
     }
 
-    setFilteredEmployees(filtered);
+    setFilteredStudents(filtered);
   };
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await loadEmployees();
+    await loadStudents();
     setRefreshing(false);
   };
 
-  const handleEmployeePress = (employee) => {
-    navigation.navigate('EmployeeDetail', { employee });
+  const handleStudentPress = (student) => {
+    navigation.navigate('StudentDetail', { student });
   };
 
-  const renderEmployeeItem = ({ item }) => (
+  const renderStudentItem = ({ item }) => (
     <TouchableOpacity
-      style={styles.employeeCard}
-      onPress={() => handleEmployeePress(item)}
+      style={styles.studentCard}
+      onPress={() => handleStudentPress(item)}
     >
-      <View style={styles.employeeAvatar}>
-        <Icon name="person-outline" size={24} color="#007bff" />
+      <View style={styles.studentAvatar}>
+        <Icon name="school-outline" size={24} color="#007bff" />
       </View>
-      <View style={styles.employeeInfo}>
-        <Text style={styles.employeeName}>
-          {item.firstName} {item.lastName}
+      <View style={styles.studentInfo}>
+        <Text style={styles.studentName}>
+          {item.namaLengkap}
         </Text>
-        <Text style={styles.employeeDetails}>
-          ID: {item.employeeId}
+        <Text style={styles.studentDetails}>
+          NIS: {item.nis}
         </Text>
-        <Text style={styles.employeeDetails}>
-          {item.designation?.name} - {item.department?.name}
+        <Text style={styles.studentDetails}>
+          Class: {item.classRoom?.name || 'Not Assigned'}
         </Text>
-        <Text style={styles.employeeEmail}>
+        <Text style={styles.studentEmail}>
           {item.email}
         </Text>
       </View>
-      <View style={styles.employeeStatus}>
-        <View style={[styles.statusIndicator, { backgroundColor: '#28a745' }]} />
-        <Text style={styles.statusText}>Active</Text>
+      <View style={styles.studentStatus}>
+        <View style={[styles.statusIndicator, {
+          backgroundColor: item.status === 'ACTIVE' ? '#28a745' : '#ffc107'
+        }]} />
+        <Text style={styles.statusText}>
+          {item.status === 'ACTIVE' ? 'Active' : item.status}
+        </Text>
       </View>
     </TouchableOpacity>
   );
 
-  const renderDepartmentFilter = () => (
+  const renderClassRoomFilter = () => (
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
       style={styles.filterScroll}
     >
       <TouchableOpacity
-        style={[styles.filterChip, !selectedDepartment && styles.filterChipActive]}
-        onPress={() => setSelectedDepartment(null)}
+        style={[styles.filterChip, !selectedClassRoom && styles.filterChipActive]}
+        onPress={() => setSelectedClassRoom(null)}
       >
-        <Text style={[styles.filterChipText, !selectedDepartment && styles.filterChipTextActive]}>
-          All
+        <Text style={[styles.filterChipText, !selectedClassRoom && styles.filterChipTextActive]}>
+          All Classes
         </Text>
       </TouchableOpacity>
-      {departments.map(dept => (
+      {classRooms.map(classRoom => (
         <TouchableOpacity
-          key={dept.id}
-          style={[styles.filterChip, selectedDepartment === dept.id && styles.filterChipActive]}
-          onPress={() => setSelectedDepartment(dept.id)}
+          key={classRoom.id}
+          style={[styles.filterChip, selectedClassRoom === classRoom.id && styles.filterChipActive]}
+          onPress={() => setSelectedClassRoom(classRoom.id)}
         >
-          <Text style={[styles.filterChipText, selectedDepartment === dept.id && styles.filterChipTextActive]}>
-            {dept.name}
+          <Text style={[styles.filterChipText, selectedClassRoom === classRoom.id && styles.filterChipTextActive]}>
+            {classRoom.name}
           </Text>
         </TouchableOpacity>
       ))}
@@ -147,9 +150,9 @@ const EmployeeListScreen = ({ navigation }) => {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <Icon name="people-outline" size={60} color="#007bff" />
-          <Text style={styles.loadingText}>Loading Employees...</Text>
-        </View>
+           <Icon name="school-outline" size={60} color="#007bff" />
+           <Text style={styles.loadingText}>Loading Students...</Text>
+         </View>
       </SafeAreaView>
     );
   }
@@ -162,7 +165,7 @@ const EmployeeListScreen = ({ navigation }) => {
           <Icon name="search-outline" size={20} color="#666" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search employees..."
+            placeholder="Search students..."
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
@@ -174,20 +177,20 @@ const EmployeeListScreen = ({ navigation }) => {
         </View>
       </View>
 
-      {/* Department Filter */}
-      {renderDepartmentFilter()}
+      {/* Class Room Filter */}
+      {renderClassRoomFilter()}
 
-      {/* Employee Count */}
+      {/* Student Count */}
       <View style={styles.countContainer}>
         <Text style={styles.countText}>
-          {filteredEmployees.length} Employee{filteredEmployees.length !== 1 ? 's' : ''}
+          {filteredStudents.length} Student{filteredStudents.length !== 1 ? 's' : ''}
         </Text>
       </View>
 
-      {/* Employee List */}
+      {/* Student List */}
       <FlatList
-        data={filteredEmployees}
-        renderItem={renderEmployeeItem}
+        data={filteredStudents}
+        renderItem={renderStudentItem}
         keyExtractor={(item) => item.id.toString()}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -196,14 +199,14 @@ const EmployeeListScreen = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Icon name="person-outline" size={50} color="#ccc" />
-            <Text style={styles.emptyText}>No employees found</Text>
+            <Icon name="school-outline" size={50} color="#ccc" />
+            <Text style={styles.emptyText}>No students found</Text>
           </View>
         }
       />
 
-      {/* Add Employee Button */}
-      <TouchableOpacity style={styles.addButton} onPress={() => Alert.alert('Coming soon', 'Add Employee form will be available soon')}>
+      {/* Add Student Button */}
+      <TouchableOpacity style={styles.addButton} onPress={() => Alert.alert('Coming soon', 'Add Student form will be available soon')}>
         <Icon name="add" size={24} color="#fff" />
       </TouchableOpacity>
     </SafeAreaView>
@@ -273,7 +276,7 @@ const styles = StyleSheet.create({
     padding: 15,
     paddingBottom: 80, // Extra padding for FAB
   },
-  employeeCard: {
+  studentCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fff',
@@ -286,7 +289,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
   },
-  employeeAvatar: {
+  studentAvatar: {
     width: 50,
     height: 50,
     borderRadius: 25,
@@ -294,26 +297,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  employeeInfo: {
+  studentInfo: {
     flex: 1,
     marginLeft: 15,
   },
-  employeeName: {
+  studentName: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 2,
   },
-  employeeDetails: {
+  studentDetails: {
     fontSize: 14,
     color: '#666',
     marginBottom: 1,
   },
-  employeeEmail: {
+  studentEmail: {
     fontSize: 12,
     color: '#999',
   },
-  employeeStatus: {
+  studentStatus: {
     alignItems: 'center',
   },
   statusIndicator: {
@@ -363,4 +366,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default EmployeeListScreen;
+export default StudentListScreen;

@@ -8,6 +8,9 @@ import {
   TouchableOpacity,
   FlatList,
   RefreshControl,
+  TextInput,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import Icon from '@expo/vector-icons/Ionicons';
 import { apiService } from '../services/apiService';
@@ -17,6 +20,11 @@ const ReportsScreen = () => {
   const [statistics, setStatistics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Payslip generator state
+  const [employeeIdInput, setEmployeeIdInput] = useState('');
+  const [periodInput, setPeriodInput] = useState(''); // e.g., 2025-09
+  const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
     loadReportsData();
@@ -142,23 +150,24 @@ const ReportsScreen = () => {
   );
 
   const handleReportPress = (report) => {
-    // Handle navigation to specific report screens
-    console.log('Navigate to report:', report.title);
+    // Provide user feedback for now; detailed screens to be added later
+    try {
+      Alert.alert('Info', `${report.title}`, `Navigasi laporan khusus akan ditambahkan.\nDeskripsi: ${report.description}`);
+    } catch (_) {
+      console.log('Navigate to report:', report.title);
+    }
   };
 
   const exportReport = (reportType) => {
-    switch (reportType) {
-      case 'employee_list':
-        // Export employee list
-        break;
-      case 'payroll':
-        // Export payroll data
-        break;
-      case 'leave':
-        // Export leave data
-        break;
-      default:
-        break;
+    const labelMap = {
+      employee_list: 'Employee List',
+      payroll: 'Payroll Data',
+      leave: 'Leave Reports',
+    };
+    try {
+      Alert.alert('Export', `${labelMap[reportType] || reportType} akan tersedia segera (coming soon).`);
+    } catch (_) {
+      console.log('Export:', reportType);
     }
   };
 
@@ -206,7 +215,63 @@ const ReportsScreen = () => {
           </View>
         </View>
 
-        {/* Quick Actions */}
+        {/* Payslip Generator */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Payslip Generator</Text>
+          <View style={styles.formRow}>
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Employee ID</Text>
+              <TextInput
+                style={styles.textInput}
+                placeholder="e.g. 123"
+                keyboardType="number-pad"
+                value={employeeIdInput}
+                onChangeText={setEmployeeIdInput}
+              />
+            </View>
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Period (YYYY-MM)</Text>
+              <TextInput
+                style={styles.textInput}
+                placeholder="e.g. 2025-09"
+                value={periodInput}
+                onChangeText={setPeriodInput}
+                autoCapitalize="none"
+              />
+            </View>
+          </View>
+          <TouchableOpacity
+            style={[styles.generateButton, { opacity: generating ? 0.7 : 1 }]}
+            onPress={async () => {
+              if (!employeeIdInput || !periodInput) {
+                try { Alert.alert('Validasi', 'Mohon isi Employee ID dan Period (YYYY-MM).'); } catch (_) {}
+                return;
+              }
+              setGenerating(true);
+              try {
+                await apiService.generatePaySlip(employeeIdInput, periodInput);
+                try { Alert.alert('Sukses', 'Permintaan payslip berhasil dikirim. Preview/unduh akan ditambahkan.'); } catch (_) {}
+              } catch (err) {
+                const msg = typeof err === 'string' ? err : (err?.message || 'Gagal membuat payslip');
+                try { Alert.alert('Error', msg); } catch (_) { console.log('Error payslip:', err); }
+              } finally {
+                setGenerating(false);
+              }
+            }}
+            disabled={generating}
+          >
+            {generating ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <>
+                <Icon name="document-text-outline" size={20} color="#fff" />
+                <Text style={styles.generateButtonText}>Generate Payslip</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        {/* Quick Export */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Quick Export</Text>
           <View style={styles.quickActions}>
@@ -351,6 +416,42 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   actionButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    marginLeft: 8,
+  },
+  formRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  inputGroup: {
+    flex: 1,
+    marginHorizontal: 5,
+  },
+  inputLabel: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 6,
+  },
+  textInput: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    paddingHorizontal: 12,
+    height: 44,
+  },
+  generateButton: {
+    marginTop: 10,
+    backgroundColor: '#007bff',
+    borderRadius: 10,
+    paddingVertical: 14,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  generateButtonText: {
     color: '#fff',
     fontWeight: 'bold',
     marginLeft: 8,

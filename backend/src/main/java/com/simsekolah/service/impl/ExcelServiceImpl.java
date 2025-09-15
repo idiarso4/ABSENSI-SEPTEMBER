@@ -1,6 +1,7 @@
 package com.simsekolah.service.impl;
 
 import com.simsekolah.dto.response.StudentResponse;
+import com.simsekolah.enums.StudentStatus;
 import com.simsekolah.service.ExcelService;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -30,7 +31,7 @@ public class ExcelServiceImpl implements ExcelService {
         "NIS", "Nama Lengkap", "Kelas", "Tempat Lahir", "Tanggal Lahir",
         "Jenis Kelamin", "Agama", "Alamat", "Nama Ayah", "Nama Ibu",
         "Pekerjaan Ayah", "Pekerjaan Ibu", "No HP Orang Tua", "Alamat Orang Tua",
-        "Tahun Masuk", "Asal Sekolah", "Status"
+        "Tahun Masuk", "Asal Sekolah", "Major", "Wali Kelas", "Status"
     );
 
     @Override
@@ -185,7 +186,7 @@ public class ExcelServiceImpl implements ExcelService {
                 cell.setCellValue(STUDENT_HEADERS.get(i));
             }
 
-            // Add simple sample data
+            // Add sample data with better examples for Major and Wali Kelas
             Row sampleRow = sheet.createRow(1);
             sampleRow.createCell(0).setCellValue("12345678");
             sampleRow.createCell(1).setCellValue("John Doe");
@@ -203,7 +204,36 @@ public class ExcelServiceImpl implements ExcelService {
             sampleRow.createCell(13).setCellValue("Jl. Sudirman No. 123");
             sampleRow.createCell(14).setCellValue("2024");
             sampleRow.createCell(15).setCellValue("SDN 1 Jakarta");
-            sampleRow.createCell(16).setCellValue("AKTIF");
+            sampleRow.createCell(16).setCellValue("RPL"); // Major by Code
+            sampleRow.createCell(17).setCellValue("19800101"); // Wali Kelas by NIP
+            sampleRow.createCell(18).setCellValue("AKTIF");
+
+            // Add second example row with alternative formats
+            Row sampleRow2 = sheet.createRow(2);
+            sampleRow2.createCell(0).setCellValue("87654321");
+            sampleRow2.createCell(1).setCellValue("Jane Smith");
+            sampleRow2.createCell(2).setCellValue("XI TKJ 2");
+            sampleRow2.createCell(3).setCellValue("Bandung");
+            sampleRow2.createCell(4).setCellValue("2007-03-20");
+            sampleRow2.createCell(5).setCellValue("Perempuan");
+            sampleRow2.createCell(6).setCellValue("Kristen");
+            sampleRow2.createCell(7).setCellValue("Jl. Asia Afrika No. 456");
+            sampleRow2.createCell(8).setCellValue("Ahmad Rahman");
+            sampleRow2.createCell(9).setCellValue("Maya Sari");
+            sampleRow2.createCell(10).setCellValue("Wiraswasta");
+            sampleRow2.createCell(11).setCellValue("Guru");
+            sampleRow2.createCell(12).setCellValue("08198765432");
+            sampleRow2.createCell(13).setCellValue("Jl. Asia Afrika No. 456");
+            sampleRow2.createCell(14).setCellValue("2024");
+            sampleRow2.createCell(15).setCellValue("SDN 2 Bandung");
+            sampleRow2.createCell(16).setCellValue("Teknik Komputer Jaringan"); // Major by Name
+            sampleRow2.createCell(17).setCellValue("guru.tkj@sekolah.sch.id"); // Wali Kelas by Email
+            sampleRow2.createCell(18).setCellValue("AKTIF");
+
+            // Add instruction comment for Major and Wali Kelas columns
+            Row instructionRow = sheet.createRow(3);
+            instructionRow.createCell(16).setCellValue("Major: Gunakan kode (RPL) atau nama lengkap");
+            instructionRow.createCell(17).setCellValue("Wali Kelas: Gunakan NIP atau email guru");
 
             // Auto-size columns
             for (int i = 0; i < STUDENT_HEADERS.size(); i++) {
@@ -325,6 +355,17 @@ public class ExcelServiceImpl implements ExcelService {
 
             student.setAsalSekolah(getCellValueAsString(row.getCell(15))); // Asal Sekolah
 
+            // Parse status - convert string to enum
+            String statusStr = getCellValueAsString(row.getCell(18)); // Status
+            if (!statusStr.isEmpty()) {
+                try {
+                    student.setStatus(StudentStatus.valueOf(statusStr.toUpperCase()));
+                } catch (IllegalArgumentException e) {
+                    logger.warn("Invalid status value: {}, defaulting to ACTIVE", statusStr);
+                    student.setStatus(StudentStatus.ACTIVE);
+                }
+            }
+
             return student;
 
         } catch (Exception e) {
@@ -351,6 +392,8 @@ public class ExcelServiceImpl implements ExcelService {
         createCell(row, col++, student.getAlamatOrtu(), style);
         createCell(row, col++, student.getTahunMasuk() != null ? student.getTahunMasuk().toString() : "", style);
         createCell(row, col++, student.getAsalSekolah(), style);
+        createCell(row, col++, student.getClassRoom() != null && student.getClassRoom().getMajor() != null ? student.getClassRoom().getMajor().getCode() : "", style); // Major Code
+        createCell(row, col++, "", style); // Wali Kelas (placeholder - would need teacher lookup)
         createCell(row, col++, student.getStatus() != null ? student.getStatus().toString() : "", style);
     }
 

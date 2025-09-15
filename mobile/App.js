@@ -10,8 +10,8 @@ import Icon from '@expo/vector-icons/Ionicons';
 // Import Screens
 import LoginScreen from './src/screens/LoginScreen';
 import DashboardScreen from './src/screens/DashboardScreen';
-import EmployeeListScreen from './src/screens/EmployeeListScreen';
-import EmployeeDetailScreen from './src/screens/EmployeeDetailScreen';
+import StudentListScreen from './src/screens/StudentListScreen';
+import StudentDetailScreen from './src/screens/StudentDetailScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import ReportsScreen from './src/screens/ReportsScreen';
 
@@ -31,8 +31,8 @@ function MainTabs() {
 
           if (route.name === 'Dashboard') {
             iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'Employees') {
-            iconName = focused ? 'people' : 'people-outline';
+          } else if (route.name === 'Students') {
+            iconName = focused ? 'school' : 'school-outline';
           } else if (route.name === 'Reports') {
             iconName = focused ? 'document-text' : 'document-text-outline';
           } else if (route.name === 'Profile') {
@@ -53,7 +53,7 @@ function MainTabs() {
       })}
     >
       <Tab.Screen name="Dashboard" component={DashboardScreen} />
-      <Tab.Screen name="Employees" component={EmployeeListScreen} />
+      <Tab.Screen name="Students" component={StudentListScreen} />
       <Tab.Screen name="Reports" component={ReportsScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
@@ -144,10 +144,19 @@ export default function App() {
             </Stack.Screen>
           )}
           <Stack.Screen
-            name="EmployeeDetail"
-            component={EmployeeDetailScreen}
+            name="StudentDetail"
+            component={StudentDetailScreen}
             options={{
-              title: 'Employee Details',
+              title: 'Student Details',
+              headerStyle: { backgroundColor: '#007bff' },
+              headerTintColor: '#fff'
+            }}
+          />
+          <Stack.Screen
+            name="LeaveRequest"
+            component={require('./src/screens/LeaveRequestScreen').default}
+            options={{
+              title: 'Leave Request',
               headerStyle: { backgroundColor: '#007bff' },
               headerTintColor: '#fff'
             }}

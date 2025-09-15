@@ -1,0 +1,11 @@
+NIS,Nama Lengkap,Kelas,Tempat Lahir,Tanggal Lahir,Jenis Kelamin,Agama,Alamat,Nama Ayah,Nama Ibu,No HP Orang Tua,Alamat Orang Tua,Tahun Masuk,Asal Sekolah,Status
+12345678,Ahmad Rahman,X IPA 1,Jakarta,2005-05-15,LAKI_LAKI,Islam,Jl. Sudirman No. 123,Rahman Ahmad,Siti Aminah,08123456789,Jl. Sudirman No. 123,2023,SMP Negeri 1 Jakarta,ACTIVE
+87654321,Sari Dewi,X IPS 2,Bandung,2005-08-20,PEREMPUAN,Islam,Jl. Asia Afrika No. 456,Dewi Sari,Aminah Sari,08198765432,Jl. Asia Afrika No. 456,2023,SMP Negeri 2 Bandung,ACTIVE
+11223344,Budi Santoso,X IPA 2,Surabaya,2005-03-10,LAKI_LAKI,Kristen,Jl. Malioboro No. 789,Santoso Budi,Maria Santoso,08134567890,Jl. Malioboro No. 789,2023,SMP Kristen 1 Surabaya,ACTIVE
+44332211,Rina Kusuma,XI IPS 1,Yogyakarta,2004-07-25,PEREMPUAN,Hindu,Jl. Malioboro No. 321,Kusuma Rina,Dewi Kusuma,08145678901,Jl. Malioboro No. 321,2022,SMP Negeri 3 Yogyakarta,ACTIVE
+55667788,Deni Pratama,XI IPA 1,Semarang,2004-11-30,LAKI_LAKI,Islam,Jl. Pandanaran No. 654,Pratama Deni,Siti Pratama,08156789012,Jl. Pandanaran No. 654,2022,SMP Islam 1 Semarang,ACTIVE
+88776655,Lisa Permata,XII IPS 2,Medan,2004-01-05,PEREMPUAN,Budha,Jl. Thamrin No. 987,Permata Lisa,Ayu Permata,08167890123,Jl. Thamrin No. 987,2021,SMP Negeri 4 Medan,ACTIVE
+33445566,Rudi Hartono,XII IPA 1,Makassar,2004-09-12,LAKI_LAKI,Islam,Jl. Hasanuddin No. 147,Hartono Rudi,Sri Hartono,08178901234,Jl. Hasanuddin No. 147,2021,SMP Negeri 5 Makassar,ACTIVE
+77889900,Nova Sari,XII IPS 1,Palembang,2004-04-18,PEREMPUAN,Islam,Jl. Sudirman No. 258,Sari Nova,Dewi Sari,08189012345,Jl. Sudirman No. 258,2021,SMP Negeri 6 Palembang,ACTIVE
+00112233,Andi Wijaya,X IPA 3,Bali,2005-12-08,LAKI_LAKI,Hindu,Jl. Legian No. 369,Wijaya Andi,Ni Luh Sari,08190123456,Jl. Legian No. 369,2023,SMP Hindu 1 Bali,ACTIVE
+44556677,Sinta Melati,XI IPA 2,Lombok,2004-06-22,PEREMPUAN,Islam,Jl. Mataram No. 741,Melati Sinta,Aminah Melati,08101234567,Jl. Mataram No. 741,2022,SMP Negeri 7 Lombok,ACTIVE

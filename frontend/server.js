@@ -20,6 +20,17 @@ app.get('/', (req, res) => {
   res.render('index');
 });
 
+// Health endpoint for smoke tests
+app.get('/healthz', (req, res) => {
+  res.json({ ok: true, timestamp: new Date().toISOString() });
+});
+
+// Temporary endpoint for testing API connectivity without authentication
+// Place BEFORE proxy handlers so it's not intercepted
+app.get('/api/test', (req, res) => {
+  res.json({ message: 'Frontend backend connection works!', timestamp: new Date().toISOString() });
+});
+
 // Handle login requests and forward to backend
 app.post('/auth/login', async (req, res) => {
   try {
@@ -118,6 +129,16 @@ app.get('/reports', (req, res) => {
   res.render('reports');
 });
 
+// Additional pages referenced in navbar
+app.get('/tasks', (req, res) => { res.render('tasks'); });
+app.get('/invoices', (req, res) => { res.render('invoices'); });
+app.get('/payment-reminders', (req, res) => { res.render('payment-reminders'); });
+app.get('/academic-calendar', (req, res) => { res.render('academic-calendar'); });
+app.get('/semester-management', (req, res) => { res.render('semester-management'); });
+app.get('/attendance-calendar', (req, res) => { res.render('attendance-calendar'); });
+app.get('/analytics-dashboard', (req, res) => { res.render('analytics-dashboard'); });
+app.get('/export', (req, res) => { res.render('export'); });
+
 // PKL Management
 app.get('/pkl/absensi', (req, res) => { res.render('pkl/absensi'); });
 app.get('/pkl/kunjungan', (req, res) => { res.render('pkl/kunjungan'); });
@@ -209,16 +230,61 @@ app.post('/api/*', async (req, res) => {
     const backendUrl = `http://localhost:8080${req.originalUrl}`;
     console.log('Proxying POST to:', backendUrl);
     const authHeader = req.headers.authorization || req.headers.Authorization;
-    const response = await axios.post(backendUrl, req.body, {
+
+    const isMultipart = (req.headers['content-type'] || '').includes('multipart/form-data');
+
+    const axiosConfig = {
       headers: {
-        'Content-Type': 'application/json',
+        ...Object.fromEntries(Object.entries(req.headers).filter(([k]) => !['host', 'content-length'].includes(k.toLowerCase()))),
         'Authorization': authHeader
+      },
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity,
+      responseType: 'arraybuffer' // allow binary responses for exports/templates
+    };
+
+    // Ensure proper content-type for JSON posts
+    if (!isMultipart) {
+      axiosConfig.headers['Content-Type'] = 'application/json';
+    }
+
+    const postData = isMultipart ? req /* stream body as-is */ : req.body;
+    const response = await axios.post(backendUrl, postData, axiosConfig);
+
+    const contentType = response.headers['content-type'];
+    if (contentType && (contentType.includes('spreadsheet') || contentType.includes('excel') || contentType.includes('pdf') || contentType.includes('octet-stream'))) {
+      // Forward binary file response
+      res.setHeader('Content-Type', contentType);
+      if (response.headers['content-disposition']) {
+        res.setHeader('Content-Disposition', response.headers['content-disposition']);
       }
-    });
-    res.json(response.data);
+      if (response.headers['content-length']) {
+        res.setHeader('Content-Length', response.headers['content-length']);
+      }
+      res.send(Buffer.from(response.data));
+    } else {
+      // Attempt to parse JSON from buffer/string
+      let data = response.data;
+      if (Buffer.isBuffer(data)) {
+        try { data = JSON.parse(Buffer.from(data).toString()); } catch (_) {}
+      }
+      res.json(data);
+    }
   } catch (error) {
-    console.log('Backend error:', error.response?.status, error.response?.data);
-    res.status(error.response?.status || 500).json(error.response?.data || { error: 'Failed to send data to backend' });
+    console.log('Backend error:', error.response?.status);
+    if (error.response && error.response.data) {
+      const contentType = error.response.headers?.['content-type'] || '';
+      if (contentType.includes('application/json')) {
+        try {
+          const json = Buffer.isBuffer(error.response.data)
+            ? JSON.parse(Buffer.from(error.response.data).toString())
+            : error.response.data;
+          return res.status(error.response.status).json(json);
+        } catch (_) {}
+      }
+      return res.status(error.response.status).send(error.response.data);
+    }
+    res.status(500).json({ error: 'Failed to send data to backend' });
   }
 });
 
@@ -257,10 +323,6 @@ app.delete('/api/*', async (req, res) => {
   }
 });
 
-// Temporary endpoint for testing API connectivity without authentication
-app.get('/api/test', (req, res) => {
-  res.json({ message: 'Frontend backend connection works!', timestamp: new Date().toISOString() });
-});
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

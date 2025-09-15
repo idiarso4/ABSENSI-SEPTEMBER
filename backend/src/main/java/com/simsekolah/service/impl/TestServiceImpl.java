@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.*;
 
 @Service
@@ -43,9 +44,45 @@ public class TestServiceImpl implements TestService {
     @Override
     public Page<TestResponse> getAllTests(Pageable pageable) {
         log.info("Getting all tests with pagination: {}", pageable);
-        // TODO: Implement actual data retrieval
-        List<TestResponse> tests = new ArrayList<>();
-        return new PageImpl<>(tests, pageable, 0);
+            // Simple in-memory mock data for demonstration
+            List<TestResponse> tests = Arrays.asList(
+                TestResponse.builder()
+                    .id(1L)
+                    .testTitle("Math Midterm")
+                    .testDescription("Midterm exam for mathematics")
+                    .testType("MIDTERM")
+                    .subjectId(101L)
+                    .classRoomId(201L)
+                    .teacherId(301L)
+                    .testDate(LocalDate.of(2025, 9, 20))
+                    .testTime(LocalTime.parse("09:00"))
+                    .durationMinutes(90)
+                    .totalQuestions(40)
+                    .passingScore(70.0)
+                    .isPublished(true)
+                    .status("PUBLISHED")
+                    .build(),
+                TestResponse.builder()
+                    .id(2L)
+                    .testTitle("Science Quiz")
+                    .testDescription("Quiz for science chapter 3")
+                    .testType("QUIZ")
+                    .subjectId(102L)
+                    .classRoomId(202L)
+                    .teacherId(302L)
+                    .testDate(LocalDate.of(2025, 9, 22))
+                    .testTime(LocalTime.parse("10:00"))
+                    .durationMinutes(30)
+                    .totalQuestions(20)
+                    .passingScore(60.0)
+                    .isPublished(false)
+                    .status("DRAFT")
+                    .build()
+            );
+            int start = (int) pageable.getOffset();
+            int end = Math.min((start + pageable.getPageSize()), tests.size());
+            List<TestResponse> pageContent = start < end ? tests.subList(start, end) : new ArrayList<>();
+            return new PageImpl<>(pageContent, pageable, tests.size());
     }
 
     @Override
@@ -58,25 +95,151 @@ public class TestServiceImpl implements TestService {
     @Override
     public Page<TestResponse> getTestsBySubject(Long subjectId, Pageable pageable) {
         log.info("Getting tests for subject ID: {} with pagination: {}", subjectId, pageable);
-        // TODO: Implement actual data retrieval
-        List<TestResponse> tests = new ArrayList<>();
-        return new PageImpl<>(tests, pageable, 0);
+            // Mock data, filter by subjectId
+            List<TestResponse> allTests = Arrays.asList(
+                TestResponse.builder()
+                    .id(1L)
+                    .testTitle("Math Midterm")
+                    .testDescription("Midterm exam for mathematics")
+                    .testType("MIDTERM")
+                    .subjectId(101L)
+                    .classRoomId(201L)
+                    .teacherId(301L)
+                    .testDate(LocalDate.of(2025, 9, 20))
+                    .testTime(LocalTime.parse("09:00"))
+                    .durationMinutes(90)
+                    .totalQuestions(40)
+                    .passingScore(70.0)
+                    .isPublished(true)
+                    .status("PUBLISHED")
+                    .build(),
+                TestResponse.builder()
+                    .id(2L)
+                    .testTitle("Science Quiz")
+                    .testDescription("Quiz for science chapter 3")
+                    .testType("QUIZ")
+                    .subjectId(102L)
+                    .classRoomId(202L)
+                    .teacherId(302L)
+                    .testDate(LocalDate.of(2025, 9, 22))
+                    .testTime(LocalTime.parse("10:00"))
+                    .durationMinutes(30)
+                    .totalQuestions(20)
+                    .passingScore(60.0)
+                    .isPublished(false)
+                    .status("DRAFT")
+                    .build()
+            );
+            List<TestResponse> filtered = new ArrayList<>();
+            for (TestResponse test : allTests) {
+                if (Objects.equals(test.getSubjectId(), subjectId)) {
+                    filtered.add(test);
+                }
+            }
+            int start = (int) pageable.getOffset();
+            int end = Math.min((start + pageable.getPageSize()), filtered.size());
+            List<TestResponse> pageContent = start < end ? filtered.subList(start, end) : new ArrayList<>();
+            return new PageImpl<>(pageContent, pageable, filtered.size());
     }
 
     @Override
     public Page<TestResponse> getTestsByTeacher(Long teacherId, Pageable pageable) {
         log.info("Getting tests for teacher ID: {} with pagination: {}", teacherId, pageable);
-        // TODO: Implement actual data retrieval
-        List<TestResponse> tests = new ArrayList<>();
-        return new PageImpl<>(tests, pageable, 0);
+            // Mock data, filter by teacherId
+            List<TestResponse> allTests = Arrays.asList(
+                TestResponse.builder()
+                    .id(1L)
+                    .testTitle("Math Midterm")
+                    .testDescription("Midterm exam for mathematics")
+                    .testType("MIDTERM")
+                    .subjectId(101L)
+                    .classRoomId(201L)
+                    .teacherId(301L)
+                    .testDate(LocalDate.of(2025, 9, 20))
+                    .testTime(LocalTime.parse("09:00"))
+                    .durationMinutes(90)
+                    .totalQuestions(40)
+                    .passingScore(70.0)
+                    .isPublished(true)
+                    .status("PUBLISHED")
+                    .build(),
+                TestResponse.builder()
+                    .id(2L)
+                    .testTitle("Science Quiz")
+                    .testDescription("Quiz for science chapter 3")
+                    .testType("QUIZ")
+                    .subjectId(102L)
+                    .classRoomId(202L)
+                    .teacherId(302L)
+                    .testDate(LocalDate.of(2025, 9, 22))
+                    .testTime(LocalTime.parse("10:00"))
+                    .durationMinutes(30)
+                    .totalQuestions(20)
+                    .passingScore(60.0)
+                    .isPublished(false)
+                    .status("DRAFT")
+                    .build()
+            );
+            List<TestResponse> filtered = new ArrayList<>();
+            for (TestResponse test : allTests) {
+                if (Objects.equals(test.getTeacherId(), teacherId)) {
+                    filtered.add(test);
+                }
+            }
+            int start = (int) pageable.getOffset();
+            int end = Math.min((start + pageable.getPageSize()), filtered.size());
+            List<TestResponse> pageContent = start < end ? filtered.subList(start, end) : new ArrayList<>();
+            return new PageImpl<>(pageContent, pageable, filtered.size());
     }
 
     @Override
     public Page<TestResponse> getTestsByClassRoom(Long classRoomId, Pageable pageable) {
         log.info("Getting tests for classroom ID: {} with pagination: {}", classRoomId, pageable);
-        // TODO: Implement actual data retrieval
-        List<TestResponse> tests = new ArrayList<>();
-        return new PageImpl<>(tests, pageable, 0);
+            // Mock data, filter by classRoomId
+            List<TestResponse> allTests = Arrays.asList(
+                TestResponse.builder()
+                    .id(1L)
+                    .testTitle("Math Midterm")
+                    .testDescription("Midterm exam for mathematics")
+                    .testType("MIDTERM")
+                    .subjectId(101L)
+                    .classRoomId(201L)
+                    .teacherId(301L)
+                    .testDate(LocalDate.of(2025, 9, 20))
+                    .testTime(LocalTime.parse("09:00"))
+                    .durationMinutes(90)
+                    .totalQuestions(40)
+                    .passingScore(70.0)
+                    .isPublished(true)
+                    .status("PUBLISHED")
+                    .build(),
+                TestResponse.builder()
+                    .id(2L)
+                    .testTitle("Science Quiz")
+                    .testDescription("Quiz for science chapter 3")
+                    .testType("QUIZ")
+                    .subjectId(102L)
+                    .classRoomId(202L)
+                    .teacherId(302L)
+                    .testDate(LocalDate.of(2025, 9, 22))
+                    .testTime(LocalTime.parse("10:00"))
+                    .durationMinutes(30)
+                    .totalQuestions(20)
+                    .passingScore(60.0)
+                    .isPublished(false)
+                    .status("DRAFT")
+                    .build()
+            );
+            List<TestResponse> filtered = new ArrayList<>();
+            for (TestResponse test : allTests) {
+                if (Objects.equals(test.getClassRoomId(), classRoomId)) {
+                    filtered.add(test);
+                }
+            }
+            int start = (int) pageable.getOffset();
+            int end = Math.min((start + pageable.getPageSize()), filtered.size());
+            List<TestResponse> pageContent = start < end ? filtered.subList(start, end) : new ArrayList<>();
+            return new PageImpl<>(pageContent, pageable, filtered.size());
     }
 
     @Override
@@ -92,16 +255,115 @@ public class TestServiceImpl implements TestService {
     @Override
     public Page<TestResponse> getPublishedTests(Pageable pageable) {
         log.info("Getting published tests with pagination: {}", pageable);
-        // TODO: Implement actual data retrieval
-        List<TestResponse> tests = new ArrayList<>();
-        return new PageImpl<>(tests, pageable, 0);
+        // Mock data, filter by isPublished
+        List<TestResponse> allTests = Arrays.asList(
+            TestResponse.builder()
+                .id(1L)
+                .testTitle("Math Midterm")
+                .testDescription("Midterm exam for mathematics")
+                .testType("MIDTERM")
+                .subjectId(101L)
+                .classRoomId(201L)
+                .teacherId(301L)
+                .testDate(LocalDate.of(2025, 9, 20))
+                .testTime(LocalTime.parse("09:00"))
+                .durationMinutes(90)
+                .totalQuestions(40)
+                .passingScore(70.0)
+                .isPublished(true)
+                .status("PUBLISHED")
+                .build(),
+            TestResponse.builder()
+                .id(2L)
+                .testTitle("Science Quiz")
+                .testDescription("Quiz for science chapter 3")
+                .testType("QUIZ")
+                .subjectId(102L)
+                .classRoomId(202L)
+                .teacherId(302L)
+                .testDate(LocalDate.of(2025, 9, 22))
+                .testTime(LocalTime.parse("10:00"))
+                .durationMinutes(30)
+                .totalQuestions(20)
+                .passingScore(60.0)
+                .isPublished(false)
+                .status("DRAFT")
+                .build()
+        );
+        List<TestResponse> filtered = new ArrayList<>();
+        for (TestResponse test : allTests) {
+            if (Boolean.TRUE.equals(test.getIsPublished())) {
+                filtered.add(test);
+            }
+        }
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), filtered.size());
+        List<TestResponse> pageContent = start < end ? filtered.subList(start, end) : new ArrayList<>();
+        return new PageImpl<>(pageContent, pageable, filtered.size());
     }
 
     @Override
     public List<TestResponse> getTodaysTests() {
         log.info("Getting today's tests");
-        // TODO: Implement actual data retrieval
-        return new ArrayList<>();
+        // Mock data, filter by today's date
+        List<TestResponse> allTests = Arrays.asList(
+            TestResponse.builder()
+                .id(1L)
+                .testTitle("Math Midterm")
+                .testDescription("Midterm exam for mathematics")
+                .testType("MIDTERM")
+                .subjectId(101L)
+                .classRoomId(201L)
+                .teacherId(301L)
+                .testDate(LocalDate.of(2025, 9, 20))
+                .testTime(LocalTime.parse("09:00"))
+                .durationMinutes(90)
+                .totalQuestions(40)
+                .passingScore(70.0)
+                .isPublished(true)
+                .status("PUBLISHED")
+                .build(),
+            TestResponse.builder()
+                .id(2L)
+                .testTitle("Science Quiz")
+                .testDescription("Quiz for science chapter 3")
+                .testType("QUIZ")
+                .subjectId(102L)
+                .classRoomId(202L)
+                .teacherId(302L)
+                .testDate(LocalDate.of(2025, 9, 22))
+                .testTime(LocalTime.parse("10:00"))
+                .durationMinutes(30)
+                .totalQuestions(20)
+                .passingScore(60.0)
+                .isPublished(false)
+                .status("DRAFT")
+                .build(),
+            TestResponse.builder()
+                .id(3L)
+                .testTitle("Today's Test")
+                .testDescription("Test scheduled for today")
+                .testType("QUIZ")
+                .subjectId(103L)
+                .classRoomId(203L)
+                .teacherId(303L)
+                .testDate(LocalDate.now())
+                .testTime(LocalTime.parse("11:00"))
+                .durationMinutes(45)
+                .totalQuestions(25)
+                .passingScore(65.0)
+                .isPublished(true)
+                .status("PUBLISHED")
+                .build()
+        );
+        List<TestResponse> filtered = new ArrayList<>();
+        LocalDate today = LocalDate.now();
+        for (TestResponse test : allTests) {
+            if (today.equals(test.getTestDate())) {
+                filtered.add(test);
+            }
+        }
+        return filtered;
     }
 
     @Override

@@ -3,6 +3,11 @@ package com.simsekolah.service.impl;
 import com.simsekolah.dto.request.CreateQuestionBankRequest;
 import com.simsekolah.dto.response.QuestionBankResponse;
 import com.simsekolah.repository.QuestionBankRepository;
+import com.simsekolah.repository.SubjectRepository;
+import com.simsekolah.repository.UserRepository;
+import com.simsekolah.entity.QuestionBank;
+import com.simsekolah.entity.Subject;
+import com.simsekolah.entity.User;
 import com.simsekolah.service.QuestionBankService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,13 +30,91 @@ import java.util.Optional;
 public class QuestionBankServiceImpl implements QuestionBankService {
 
     private final QuestionBankRepository questionBankRepository;
+    private final SubjectRepository subjectRepository;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
     public QuestionBankResponse createQuestion(CreateQuestionBankRequest request) {
-        log.info("Creating question bank entry - stub implementation");
-        // TODO: Implement actual creation logic
-        return new QuestionBankResponse();
+        log.info("Creating question bank entry");
+
+        // Validate required fields (questionText, subjectId, teacherId)
+        if (request.getQuestionText() == null || request.getQuestionText().isBlank()) {
+            throw new IllegalArgumentException("Question text is required");
+        }
+        if (request.getSubjectId() == null) {
+            throw new IllegalArgumentException("Subject ID is required");
+        }
+        if (request.getTeacherId() == null) {
+            throw new IllegalArgumentException("Teacher ID is required");
+        }
+
+    // Fetch subject and teacher
+    // Jika import dari Excel, bisa tambahkan mapping dari nama ke ID di sini
+    // Contoh: jika request.getSubjectId() == null && request.getSubjectName() != null
+    // Subject subject = subjectRepository.findByName(request.getSubjectName()) ...
+    Subject subject = subjectRepository.findById(request.getSubjectId())
+        .orElseThrow(() -> new IllegalArgumentException("Subject not found: " + request.getSubjectId()));
+    User teacher = userRepository.findById(request.getTeacherId())
+        .orElseThrow(() -> new IllegalArgumentException("Teacher not found: " + request.getTeacherId()));
+
+    // NOTE: Untuk import Excel, pastikan template menyertakan kolom Nama Guru/Nama Mapel yang sesuai dengan data master
+    // dan lakukan mapping ke ID sebelum proses simpan. Jika ingin otomatis, tambahkan lookup di sini.
+
+        // Map enums
+        QuestionBank.QuestionType questionType = null;
+        if (request.getQuestionType() != null) {
+            try {
+                questionType = QuestionBank.QuestionType.valueOf(request.getQuestionType().toUpperCase());
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Invalid question type: " + request.getQuestionType());
+            }
+        }
+        QuestionBank.DifficultyLevel difficultyLevel = QuestionBank.DifficultyLevel.MEDIUM;
+        if (request.getDifficultyLevel() != null) {
+            try {
+                difficultyLevel = QuestionBank.DifficultyLevel.valueOf(request.getDifficultyLevel().toUpperCase());
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Invalid difficulty level: " + request.getDifficultyLevel());
+            }
+        }
+
+        // Build entity
+        QuestionBank qb = new QuestionBank();
+        qb.setQuestionText(request.getQuestionText());
+        qb.setQuestionType(questionType);
+        qb.setDifficultyLevel(difficultyLevel);
+        qb.setSubject(subject);
+        qb.setTeacher(teacher);
+        qb.setChapterTopic(request.getChapterTopic());
+        qb.setCorrectAnswer(request.getCorrectAnswer());
+        qb.setExplanation(request.getExplanation());
+        qb.setPoints(request.getPoints() != null ? request.getPoints() : 1);
+        qb.setIsActive(true);
+        qb.setUsageCount(0);
+        qb.setCorrectAnswerRate(0.0);
+        qb.setAverageTimeSeconds(0.0);
+
+        // Save
+        QuestionBank saved = questionBankRepository.save(qb);
+
+        // Map to response
+        return QuestionBankResponse.builder()
+                .id(saved.getId())
+                .questionText(saved.getQuestionText())
+                .questionType(saved.getQuestionType() != null ? saved.getQuestionType().name() : null)
+                .difficultyLevel(saved.getDifficultyLevel() != null ? saved.getDifficultyLevel().name() : null)
+                .subjectId(saved.getSubject() != null ? saved.getSubject().getId() : null)
+                .teacherId(saved.getTeacher() != null ? saved.getTeacher().getId() : null)
+                .chapterTopic(saved.getChapterTopic())
+                .correctAnswer(saved.getCorrectAnswer())
+                .explanation(saved.getExplanation())
+                .points(saved.getPoints())
+                .isActive(saved.getIsActive())
+                .usageCount(saved.getUsageCount())
+                .createdAt(saved.getCreatedAt())
+                .updatedAt(saved.getUpdatedAt())
+                .build();
     }
 
     @Override

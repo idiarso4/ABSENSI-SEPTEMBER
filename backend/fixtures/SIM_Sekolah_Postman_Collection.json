@@ -1,0 +1,1656 @@
+{
+  "info": {
+    "name": "SIM Sekolah API Collection",
+    "description": "Complete API collection for SIM Sekolah Backend - Student Information Management System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{auth_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"admin@simsekolah.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "description": "Login to get JWT token. Use admin credentials or create test user first."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('auth_token', response.accessToken);",
+                  "    pm.collectionVariables.set('refresh_token', response.refreshToken);",
+                  "    console.log('Login successful - Token saved');",
+                  "} else {",
+                  "    console.log('Login failed:', pm.response.code);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "refresh"]
+            },
+            "description": "Refresh JWT access token using refresh token"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('auth_token', response.accessToken);",
+                  "    console.log('Token refreshed successfully');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "me"]
+            },
+            "description": "Get current authenticated user information"
+          }
+        },
+        {
+          "name": "Validate Token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/validate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "validate"]
+            },
+            "description": "Validate JWT token"
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "currentPassword",
+                  "value": "admin123",
+                  "description": "Current password"
+                },
+                {
+                  "key": "newPassword",
+                  "value": "newpassword123",
+                  "description": "New password"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/change-password",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "change-password"]
+            },
+            "description": "Change password for authenticated user"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "logout"]
+            },
+            "description": "Logout and invalidate token"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Students",
+      "item": [
+        {
+          "name": "Get All Students",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/students?page=0&size=20&sortBy=namaLengkap&sortDir=asc",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "students"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0",
+                  "description": "Page number (0-based)"
+                },
+                {
+                  "key": "size",
+                  "value": "20",
+                  "description": "Page size"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "namaLengkap",
+                  "description": "Sort field"
+                },
+                {
+                  "key": "sortDir",
+                  "value": "asc",
+                  "description": "Sort direction"
+                }
+              ]
+            },
+            "description": "Get paginated list of all students"
+          }
+        },
+        {
+          "name": "Get Student by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/students/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "students", "1"]
+            },
+            "description": "Get student by ID. Replace 1 with actual student ID."
+          }
+        },
+        {
+          "name": "Get Student by NIS",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/students/nis/12345678",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "students", "nis", "12345678"]
+            },
+            "description": "Get student by NIS. Replace 12345678 with actual NIS."
+          }
+        },
+        {
+          "name": "Create Student",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nis\": \"12345678\",\n  \"namaLengkap\": \"Ahmad Rahman\",\n  \"tempatLahir\": \"Jakarta\",\n  \"tanggalLahir\": \"2005-05-15\",\n  \"jenisKelamin\": \"LAKI_LAKI\",\n  \"agama\": \"Islam\",\n  \"alamat\": \"Jl. Sudirman No. 123\",\n  \"namaAyah\": \"Rahman Ahmad\",\n  \"namaIbu\": \"Siti Aminah\",\n  \"noHpOrtu\": \"08123456789\",\n  \"tahunMasuk\": 2023,\n  \"asalSekolah\": \"SMP Negeri 1 Jakarta\",\n  \"status\": \"ACTIVE\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/students",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "students"]
+            },
+            "description": "Create a new student record"
+          }
+        },
+        {
+          "name": "Update Student",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"namaLengkap\": \"Ahmad Rahman Updated\",\n  \"alamat\": \"Jl. Thamrin No. 456\",\n  \"noHpOrtu\": \"08198765432\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/students/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "students", "1"]
+            },
+            "description": "Update student information. Replace 1 with actual student ID."
+          }
+        },
+        {
+          "name": "Delete Student",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/students/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "students", "1"]
+            },
+            "description": "Delete student record. Replace 1 with actual student ID."
+          }
+        },
+        {
+          "name": "Search Students",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"namaLengkap\": \"Ahmad\",\n  \"status\": \"ACTIVE\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/students/search?page=0&size=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "students", "search"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Search students with advanced criteria"
+          }
+        },
+        {
+          "name": "Get Students by Class",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/students/class/1?page=0&size=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "students", "class", "1"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get all students in a specific class. Replace 1 with actual class room ID."
+          }
+        },
+        {
+          "name": "Get Students by Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/students/status/ACTIVE?page=0&size=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "students", "status", "ACTIVE"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get students by status (ACTIVE, INACTIVE, GRADUATED, etc.)"
+          }
+        },
+        {
+          "name": "Assign Student to Class",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/students/1/assign-class/2",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "students", "1", "assign-class", "2"]
+            },
+            "description": "Assign student to class room. Replace 1 with student ID, 2 with class room ID."
+          }
+        },
+        {
+          "name": "Remove Student from Class",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/students/1/remove-class",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "students", "1", "remove-class"]
+            },
+            "description": "Remove student from class room. Replace 1 with student ID."
+          }
+        },
+        {
+          "name": "Get Student Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/students/statistics",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "students", "statistics"]
+            },
+            "description": "Get student statistics and distribution"
+          }
+        },
+        {
+          "name": "Bulk Assign Students to Class",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[1, 2, 3]"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/students/bulk/assign-class/2",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "students", "bulk", "assign-class", "2"]
+            },
+            "description": "Bulk assign multiple students to class room. Replace 2 with class room ID, and array with student IDs."
+          }
+        },
+        {
+          "name": "Download Student Template",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/students/excel/template",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "students", "excel", "template"]
+            },
+            "description": "Download Excel template for student import"
+          }
+        },
+        {
+          "name": "Export Students to Excel",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ACTIVE\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/students/excel/export",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "students", "excel", "export"]
+            },
+            "description": "Export students to Excel file. Optional search criteria in body."
+          }
+        },
+        {
+          "name": "Import Students from Excel (Create Mode)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [],
+                  "description": "Excel file (.xlsx) with student data"
+                },
+                {
+                  "key": "dryRun",
+                  "value": "false",
+                  "description": "Set to true for validation without saving",
+                  "type": "text"
+                },
+                {
+                  "key": "mode",
+                  "value": "create",
+                  "description": "Import mode: create or upsert",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/students/excel/import",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "students", "excel", "import"]
+            },
+            "description": "Import students from Excel file. Use student_import_template.xlsx as reference."
+          }
+        },
+        {
+          "name": "Import Students from Excel (Upsert Mode)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [],
+                  "description": "Excel file (.xlsx) with student data"
+                },
+                {
+                  "key": "dryRun",
+                  "value": "false",
+                  "description": "Set to true for validation without saving",
+                  "type": "text"
+                },
+                {
+                  "key": "mode",
+                  "value": "upsert",
+                  "description": "Import mode: create or upsert",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/students/excel/import",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "students", "excel", "import"]
+            },
+            "description": "Import students with upsert mode (update if exists, create if not). Use student_import_template.xlsx as reference."
+          }
+        },
+        {
+          "name": "Import Students Dry Run",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [],
+                  "description": "Excel file (.xlsx) with student data"
+                },
+                {
+                  "key": "dryRun",
+                  "value": "true",
+                  "description": "Set to true for validation without saving",
+                  "type": "text"
+                },
+                {
+                  "key": "mode",
+                  "value": "create",
+                  "description": "Import mode: create or upsert",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/students/excel/import",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "students", "excel", "import"]
+            },
+            "description": "Validate Excel file without saving data (dry run mode)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Teachers",
+      "item": [
+        {
+          "name": "Get All Teachers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/teachers?page=0&size=20&sortBy=firstName&sortDir=asc",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "teachers"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "firstName"
+                },
+                {
+                  "key": "sortDir",
+                  "value": "asc"
+                }
+              ]
+            },
+            "description": "Get paginated list of all teachers"
+          }
+        },
+        {
+          "name": "Get Teacher by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/teachers/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "teachers", "1"]
+            },
+            "description": "Get teacher by ID. Replace 1 with actual teacher ID."
+          }
+        },
+        {
+          "name": "Create Teacher",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Dr. Siti Nurhaliza\",\n  \"email\": \"siti.nurhaliza@school.com\",\n  \"nip\": \"1980010112345678\",\n  \"phone\": \"08123456789\",\n  \"address\": \"Jl. Education No. 123\",\n  \"userType\": \"TEACHER\",\n  \"active\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/teachers",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "teachers"]
+            },
+            "description": "Create a new teacher record"
+          }
+        },
+        {
+          "name": "Update Teacher",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Dr. Siti Nurhaliza, M.Pd\",\n  \"phone\": \"08198765432\",\n  \"address\": \"Jl. Knowledge No. 456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/teachers/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "teachers", "1"]
+            },
+            "description": "Update teacher information. Replace 1 with actual teacher ID."
+          }
+        },
+        {
+          "name": "Delete Teacher",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/teachers/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "teachers", "1"]
+            },
+            "description": "Delete teacher record. Replace 1 with actual teacher ID."
+          }
+        },
+        {
+          "name": "Search Teachers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/teachers/search?query=matematika&page=0&size=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "teachers", "search"],
+              "query": [
+                {
+                  "key": "query",
+                  "value": "matematika"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Search teachers by name or subject"
+          }
+        },
+        {
+          "name": "Get Active Teachers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/teachers/active?page=0&size=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "teachers", "active"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get all active teachers"
+          }
+        },
+        {
+          "name": "Get Teachers by Department",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/teachers/department/1?page=0&size=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "teachers", "department", "1"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get teachers by department. Replace 1 with actual department ID."
+          }
+        },
+        {
+          "name": "Get Teacher Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/teachers/statistics",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "teachers", "statistics"]
+            },
+            "description": "Get teacher statistics and distribution"
+          }
+        },
+        {
+          "name": "Download Teacher Template",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/teachers/excel/template",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "teachers", "excel", "template"]
+            },
+            "description": "Download Excel template for teacher import"
+          }
+        },
+        {
+          "name": "Export Teachers to Excel",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/teachers/excel/export",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "teachers", "excel", "export"]
+            },
+            "description": "Export teachers to Excel file"
+          }
+        },
+        {
+          "name": "Import Teachers from Excel (Create Mode)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [],
+                  "description": "Excel file (.xlsx) with teacher data"
+                },
+                {
+                  "key": "dryRun",
+                  "value": "false",
+                  "description": "Set to true for validation without saving",
+                  "type": "text"
+                },
+                {
+                  "key": "mode",
+                  "value": "create",
+                  "description": "Import mode: create or upsert",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/teachers/excel/import",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "teachers", "excel", "import"]
+            },
+            "description": "Import teachers from Excel file. Use teacher_import_template.xlsx as reference."
+          }
+        },
+        {
+          "name": "Import Teachers from Excel (Upsert Mode)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [],
+                  "description": "Excel file (.xlsx) with teacher data"
+                },
+                {
+                  "key": "dryRun",
+                  "value": "false",
+                  "description": "Set to true for validation without saving",
+                  "type": "text"
+                },
+                {
+                  "key": "mode",
+                  "value": "upsert",
+                  "description": "Import mode: create or upsert",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/teachers/excel/import",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "teachers", "excel", "import"]
+            },
+            "description": "Import teachers with upsert mode (update if exists, create if not). Use teacher_import_template.xlsx as reference."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Subjects",
+      "item": [
+        {
+          "name": "Get All Subjects",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/subjects?page=0&size=20&sortBy=name&sortDir=asc",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "subjects"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "name"
+                },
+                {
+                  "key": "sortDir",
+                  "value": "asc"
+                }
+              ]
+            },
+            "description": "Get paginated list of all subjects"
+          }
+        },
+        {
+          "name": "Get Subject by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/subjects/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "subjects", "1"]
+            },
+            "description": "Get subject by ID. Replace 1 with actual subject ID."
+          }
+        },
+        {
+          "name": "Get Subject by Code",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/subjects/code/MAT",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "subjects", "code", "MAT"]
+            },
+            "description": "Get subject by code. Replace MAT with actual subject code."
+          }
+        },
+        {
+          "name": "Create Subject",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"MAT101\",\n  \"name\": \"Matematika Dasar\",\n  \"subjectType\": \"THEORY\",\n  \"description\": \"Mata pelajaran matematika tingkat dasar\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/subjects",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "subjects"]
+            },
+            "description": "Create a new subject"
+          }
+        },
+        {
+          "name": "Update Subject",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Matematika Dasar Updated\",\n  \"description\": \"Mata pelajaran matematika tingkat dasar dengan pembaruan kurikulum\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/subjects/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "subjects", "1"]
+            },
+            "description": "Update subject information. Replace 1 with actual subject ID."
+          }
+        },
+        {
+          "name": "Delete Subject",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/subjects/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "subjects", "1"]
+            },
+            "description": "Delete subject. Replace 1 with actual subject ID."
+          }
+        },
+        {
+          "name": "Search Subjects",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/subjects/search?query=matematika&page=0&size=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "subjects", "search"],
+              "query": [
+                {
+                  "key": "query",
+                  "value": "matematika"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Search subjects by name or code"
+          }
+        },
+        {
+          "name": "Get Subjects by Type",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/subjects/type/THEORY?page=0&size=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "subjects", "type", "THEORY"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get subjects by type (THEORY, PRACTICE, MIXED)"
+          }
+        },
+        {
+          "name": "Get Subject Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/subjects/statistics",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "subjects", "statistics"]
+            },
+            "description": "Get subject statistics and distribution"
+          }
+        },
+        {
+          "name": "Download Subject Template",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/subjects/excel/template",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "subjects", "excel", "template"]
+            },
+            "description": "Download Excel template for subject import"
+          }
+        },
+        {
+          "name": "Export Subjects to Excel",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/subjects/excel/export",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "subjects", "excel", "export"]
+            },
+            "description": "Export subjects to Excel file"
+          }
+        },
+        {
+          "name": "Import Subjects from Excel (Create Mode)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [],
+                  "description": "Excel file (.xlsx) with subject data"
+                },
+                {
+                  "key": "dryRun",
+                  "value": "false",
+                  "description": "Set to true for validation without saving",
+                  "type": "text"
+                },
+                {
+                  "key": "mode",
+                  "value": "create",
+                  "description": "Import mode: create or upsert",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/subjects/excel/import",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "subjects", "excel", "import"]
+            },
+            "description": "Import subjects from Excel file. Use subject_import_template.xlsx as reference."
+          }
+        },
+        {
+          "name": "Import Subjects from Excel (Upsert Mode)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [],
+                  "description": "Excel file (.xlsx) with subject data"
+                },
+                {
+                  "key": "dryRun",
+                  "value": "false",
+                  "description": "Set to true for validation without saving",
+                  "type": "text"
+                },
+                {
+                  "key": "mode",
+                  "value": "upsert",
+                  "description": "Import mode: create or upsert",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/subjects/excel/import",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "subjects", "excel", "import"]
+            },
+            "description": "Import subjects with upsert mode (update if exists, create if not). Use subject_import_template.xlsx as reference."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Class Rooms",
+      "item": [
+        {
+          "name": "Get All Class Rooms",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/classrooms?page=0&size=20&sortBy=name&sortDir=asc",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "classrooms"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "name"
+                },
+                {
+                  "key": "sortDir",
+                  "value": "asc"
+                }
+              ]
+            },
+            "description": "Get paginated list of all class rooms"
+          }
+        },
+        {
+          "name": "Get Class Room by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/classrooms/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "classrooms", "1"]
+            },
+            "description": "Get class room by ID. Replace 1 with actual class room ID."
+          }
+        },
+        {
+          "name": "Create Class Room",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"X IPA 1\",\n  \"gradeLevel\": 10,\n  \"academicYear\": \"2024/2025\",\n  \"semester\": \"GANJIL\",\n  \"capacity\": 30,\n  \"location\": \"Gedung A Lantai 2\",\n  \"majorId\": 1,\n  \"homeroomTeacherId\": 1,\n  \"status\": \"ACTIVE\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/classrooms",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "classrooms"]
+            },
+            "description": "Create a new class room"
+          }
+        },
+        {
+          "name": "Update Class Room",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"X IPA 1 Updated\",\n  \"capacity\": 32,\n  \"location\": \"Gedung A Lantai 3\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/classrooms/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "classrooms", "1"]
+            },
+            "description": "Update class room information. Replace 1 with actual class room ID."
+          }
+        },
+        {
+          "name": "Delete Class Room",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/classrooms/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "classrooms", "1"]
+            },
+            "description": "Delete class room. Replace 1 with actual class room ID."
+          }
+        },
+        {
+          "name": "Search Class Rooms",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/classrooms/search?query=X IPA&page=0&size=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "classrooms", "search"],
+              "query": [
+                {
+                  "key": "query",
+                  "value": "X IPA"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Search class rooms by name"
+          }
+        },
+        {
+          "name": "Get Active Class Rooms",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/classrooms/active?page=0&size=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "classrooms", "active"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get all active class rooms"
+          }
+        },
+        {
+          "name": "Get Class Rooms by Grade",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/classrooms/grade/10?page=0&size=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "classrooms", "grade", "10"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get class rooms by grade level"
+          }
+        },
+        {
+          "name": "Get Class Room Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/classrooms/statistics",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "classrooms", "statistics"]
+            },
+            "description": "Get class room statistics and distribution"
+          }
+        },
+        {
+          "name": "Download Class Room Template",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/classrooms/excel/template",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "classrooms", "excel", "template"]
+            },
+            "description": "Download Excel template for class room import"
+          }
+        },
+        {
+          "name": "Export Class Rooms to Excel",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/classrooms/excel/export",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "classrooms", "excel", "export"]
+            },
+            "description": "Export class rooms to Excel file"
+          }
+        },
+        {
+          "name": "Import Class Rooms from Excel (Create Mode)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [],
+                  "description": "Excel file (.xlsx) with class room data"
+                },
+                {
+                  "key": "dryRun",
+                  "value": "false",
+                  "description": "Set to true for validation without saving",
+                  "type": "text"
+                },
+                {
+                  "key": "mode",
+                  "value": "create",
+                  "description": "Import mode: create or upsert",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/classrooms/excel/import",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "classrooms", "excel", "import"]
+            },
+            "description": "Import class rooms from Excel file. Use classroom_import_template.xlsx as reference."
+          }
+        },
+        {
+          "name": "Import Class Rooms from Excel (Upsert Mode)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [],
+                  "description": "Excel file (.xlsx) with class room data"
+                },
+                {
+                  "key": "dryRun",
+                  "value": "false",
+                  "description": "Set to true for validation without saving",
+                  "type": "text"
+                },
+                {
+                  "key": "mode",
+                  "value": "upsert",
+                  "description": "Import mode: create or upsert",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/classrooms/excel/import",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "classrooms", "excel", "import"]
+            },
+            "description": "Import class rooms with upsert mode (update if exists, create if not). Use classroom_import_template.xlsx as reference."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard & Reports",
+      "item": [
+        {
+          "name": "Get Dashboard Summary",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/dashboard/summary",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "dashboard", "summary"]
+            },
+            "description": "Get dashboard summary with key metrics and statistics"
+          }
+        },
+        {
+          "name": "Get Student Reports",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/reports/students?type=summary&period=monthly",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "reports", "students"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "summary"
+                },
+                {
+                  "key": "period",
+                  "value": "monthly"
+                }
+              ]
+            },
+            "description": "Get student reports and analytics"
+          }
+        },
+        {
+          "name": "Get Attendance Reports",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/reports/attendance?startDate=2024-09-01&endDate=2024-09-30",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "reports", "attendance"],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2024-09-01"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2024-09-30"
+                }
+              ]
+            },
+            "description": "Get attendance reports for specified date range"
+          }
+        },
+        {
+          "name": "Get Grade Reports",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/reports/grades?subjectId=1&classRoomId=1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "reports", "grades"],
+              "query": [
+                {
+                  "key": "subjectId",
+                  "value": "1"
+                },
+                {
+                  "key": "classRoomId",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Get grade reports for specific subject and class"
+          }
+        },
+        {
+          "name": "Export Report to Excel",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/reports/export?type=students&format=excel",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "reports", "export"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "students"
+                },
+                {
+                  "key": "format",
+                  "value": "excel"
+                }
+              ]
+            },
+            "description": "Export reports to Excel format"
+          }
+        }
+      ]
+    },
+    {
+      "name": "System Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/health",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "health"]
+            },
+            "description": "Check system health and status"
+          }
+        },
+        {
+          "name": "System Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/info",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "info"]
+            },
+            "description": "Get system information and version details"
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global pre-request script",
+          "// Add timestamp to all requests",
+          "pm.request.headers.add({key: 'X-Timestamp', value: new Date().toISOString()});",
+          "",
+          "// Add request ID for tracking",
+          "pm.request.headers.add({key: 'X-Request-ID', value: pm.variables.replaceIn('{{$guid}}')});"
+        ]
+      }
+    }
+  ]
+}

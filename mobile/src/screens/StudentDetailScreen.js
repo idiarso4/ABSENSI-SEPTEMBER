@@ -7,41 +7,71 @@ import {
   SafeAreaView,
   TouchableOpacity,
   Alert,
+  Linking,
+  ActivityIndicator,
 } from 'react-native';
 import Icon from '@expo/vector-icons/Ionicons';
 import { apiService } from '../services/apiService';
 
-const EmployeeDetailScreen = ({ route, navigation }) => {
-  const [employee, setEmployee] = useState(route.params?.employee || {});
+const StudentDetailScreen = ({ route, navigation }) => {
+  const [student, setStudent] = useState(route.params?.student || {});
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // If no employee in params, fetch by ID
-    if (!route.params?.employee?.id && route.params?.id) {
-      loadEmployeeDetails(route.params.id);
+    // If no student in params, fetch by ID
+    if (!route.params?.student?.id && route.params?.id) {
+      loadStudentDetails(route.params.id);
     }
   }, []);
 
-  const loadEmployeeDetails = async (id) => {
+  const loadStudentDetails = async (id) => {
     setLoading(true);
     try {
-      const data = await apiService.getEmployeeById(id);
-      setEmployee(data);
+      const data = await apiService.getStudentById(id);
+      setStudent(data);
     } catch (error) {
-      Alert.alert('Error', 'Failed to load employee details');
+      Alert.alert('Error', 'Failed to load student details');
     } finally {
       setLoading(false);
     }
   };
 
-  const callEmployee = () => {
-    // Implement phone call functionality
-    Alert.alert('Call', `Calling ${employee.firstName} ${employee.lastName}`);
+  const callEmployee = async () => {
+    const phone = (employee.phone || '').toString().trim();
+    if (!phone) {
+      Alert.alert('Info', 'No phone number available');
+      return;
+    }
+    const url = `tel:${phone}`;
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert('Error', 'Calling is not supported on this device');
+      }
+    } catch (e) {
+      Alert.alert('Error', 'Failed to initiate call');
+    }
   };
 
-  const emailEmployee = () => {
-    // Implement email functionality
-    Alert.alert('Email', `Sending email to ${employee.email}`);
+  const emailEmployee = async () => {
+    const email = (employee.email || '').toString().trim();
+    if (!email) {
+      Alert.alert('Info', 'No email address available');
+      return;
+    }
+    const url = `mailto:${email}`;
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert('Error', 'Email is not supported on this device');
+      }
+    } catch (e) {
+      Alert.alert('Error', 'Failed to open email client');
+    }
   };
 
   const formatDate = (dateString) => {
@@ -57,6 +87,17 @@ const EmployeeDetailScreen = ({ route, navigation }) => {
       minimumFractionDigits: 0
     }).format(amount);
   };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#007bff" />
+          <Text style={styles.loadingText}>Loading employee...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -171,22 +212,22 @@ const EmployeeDetailScreen = ({ route, navigation }) => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Quick Actions</Text>
           <View style={styles.actionContainer}>
-            <TouchableOpacity style={styles.quickActionButton}>
+            <TouchableOpacity style={styles.quickActionButton} onPress={() => Alert.alert('Coming soon', 'Payslip generation will be available soon')}>
               <Icon name="document-text-outline" size={24} color="#007bff" />
               <Text style={styles.quickActionText}>View Payslip</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.quickActionButton}>
+            <TouchableOpacity style={styles.quickActionButton} onPress={() => navigation.navigate('LeaveRequest', { employeeId: employee.id, employee })}>
               <Icon name="time-outline" size={24} color="#28a745" />
               <Text style={styles.quickActionText}>Leave Request</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.quickActionButton}>
+            <TouchableOpacity style={styles.quickActionButton} onPress={() => Alert.alert('Coming soon', 'Performance module is under development')}>
               <Icon name="star-outline" size={24} color="#ffc107" />
               <Text style={styles.quickActionText}>Performance</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.quickActionButton}>
+            <TouchableOpacity style={styles.quickActionButton} onPress={() => Alert.alert('Coming soon', 'Edit Profile will be added')}>
               <Icon name="create-outline" size={24} color="#dc3545" />
               <Text style={styles.quickActionText}>Edit Profile</Text>
             </TouchableOpacity>
@@ -359,6 +400,16 @@ const styles = StyleSheet.create({
     color: '#333',
     marginTop: 8,
     textAlign: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#666',
   },
 });
 
