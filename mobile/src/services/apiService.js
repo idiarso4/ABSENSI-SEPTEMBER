@@ -263,12 +263,70 @@ class ApiService {
     }
   }
 
+  async getAttendanceByStudent(studentId, params = {}) {
+    try {
+      const response = await this.client.get(`/attendance/student/${studentId}`, { params });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data?.message || 'Failed to fetch student attendance';
+    }
+  }
+
   async markAttendance(attendanceData) {
     try {
       const response = await this.client.post('/attendance', attendanceData);
       return response.data;
     } catch (error) {
       throw error.response?.data?.message || 'Failed to mark attendance';
+    }
+  }
+
+  async bulkMarkAttendance(attendanceData) {
+    try {
+      const response = await this.client.post('/attendance/bulk', attendanceData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data?.message || 'Failed to bulk mark attendance';
+    }
+  }
+
+  async getAttendanceStatistics(startDate, endDate) {
+    try {
+      const params = {};
+      if (startDate) params.startDate = startDate;
+      if (endDate) params.endDate = endDate;
+      const response = await this.client.get('/attendance/statistics', { params });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data?.message || 'Failed to fetch attendance statistics';
+    }
+  }
+
+  // Teaching Activity Management
+  async generateTodaysActivities() {
+    try {
+      const response = await this.client.post('/teaching-activities/generate-today');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data?.message || 'Failed to generate today\'s activities';
+    }
+  }
+
+  async getMyPendingActivities(params = {}) {
+    try {
+      const response = await this.client.get('/teaching-activities/me/pending', { params });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data?.message || 'Failed to fetch pending activities';
+    }
+  }
+
+  async getPendingStudentsForAttendance(activityId) {
+    try {
+      const response = await this.client.get(`/attendance/teaching-activity/${activityId}/pending-students`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data?.message || 'Failed to fetch pending students';
     }
   }
 

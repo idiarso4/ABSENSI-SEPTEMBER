@@ -145,6 +145,14 @@ const DashboardScreen = ({ navigation }) => {
 
              <TouchableOpacity
                style={styles.actionButton}
+               onPress={() => navigation.navigate('Teachers')}
+             >
+               <Icon name="people-outline" size={24} color="#ffc107" />
+               <Text style={styles.actionButtonText}>Manage Teachers</Text>
+             </TouchableOpacity>
+
+             <TouchableOpacity
+               style={styles.actionButton}
                onPress={() => navigation.navigate('Reports')}
              >
                <Icon name="document-text-outline" size={24} color="#17a2b8" />

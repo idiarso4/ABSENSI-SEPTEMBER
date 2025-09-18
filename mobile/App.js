@@ -12,6 +12,9 @@ import LoginScreen from './src/screens/LoginScreen';
 import DashboardScreen from './src/screens/DashboardScreen';
 import StudentListScreen from './src/screens/StudentListScreen';
 import StudentDetailScreen from './src/screens/StudentDetailScreen';
+import TeacherListScreen from './src/screens/TeacherListScreen';
+import TeacherDetailScreen from './src/screens/TeacherDetailScreen';
+import AttendanceScreen from './src/screens/AttendanceScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import ReportsScreen from './src/screens/ReportsScreen';
 
@@ -33,10 +36,10 @@ function MainTabs() {
             iconName = focused ? 'home' : 'home-outline';
           } else if (route.name === 'Students') {
             iconName = focused ? 'school' : 'school-outline';
+          } else if (route.name === 'Attendance') {
+            iconName = focused ? 'checkmark-circle' : 'checkmark-circle-outline';
           } else if (route.name === 'Reports') {
             iconName = focused ? 'document-text' : 'document-text-outline';
-          } else if (route.name === 'Profile') {
-            iconName = focused ? 'person' : 'person-outline';
           }
 
           return <Icon name={iconName} size={size} color={color} />;
@@ -54,8 +57,8 @@ function MainTabs() {
     >
       <Tab.Screen name="Dashboard" component={DashboardScreen} />
       <Tab.Screen name="Students" component={StudentListScreen} />
+      <Tab.Screen name="Attendance" component={AttendanceScreen} />
       <Tab.Screen name="Reports" component={ReportsScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );
 }
@@ -148,6 +151,33 @@ export default function App() {
             component={StudentDetailScreen}
             options={{
               title: 'Student Details',
+              headerStyle: { backgroundColor: '#007bff' },
+              headerTintColor: '#fff'
+            }}
+          />
+          <Stack.Screen
+            name="TeacherDetail"
+            component={TeacherDetailScreen}
+            options={{
+              title: 'Teacher Details',
+              headerStyle: { backgroundColor: '#007bff' },
+              headerTintColor: '#fff'
+            }}
+          />
+          <Stack.Screen
+            name="Teachers"
+            component={TeacherListScreen}
+            options={{
+              title: 'Teachers',
+              headerStyle: { backgroundColor: '#007bff' },
+              headerTintColor: '#fff'
+            }}
+          />
+          <Stack.Screen
+            name="Attendance"
+            component={AttendanceScreen}
+            options={{
+              title: 'Mark Attendance',
               headerStyle: { backgroundColor: '#007bff' },
               headerTintColor: '#fff'
             }}
